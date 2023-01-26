@@ -194,22 +194,20 @@ package object generatorTools {
     def infer(input: String): Option[IdentConverter] = {
       styles.foreach((e) => {
         val (str, func) = e
-        if (input endsWith str) {
-          val diff = input.length - str.length
-          return Some(if (diff > 0) {
-            val before = input.substring(0, diff)
-            prefix(before, func)
-          } else {
-            func
-          })
-        } else if (input startsWith str) {
-          val diff = input.length - str.length
-          return Some(if (diff > 0) {
-            val after = input.substring(str.length, input.length)
-            suffix(func, after)
-          } else {
-            func
-          })
+        val index = input.indexOf(str)
+        var result = func
+        if (index != -1) {
+          val startDiff = index
+          val endDiff = input.length - (index + str.length)
+          if (startDiff > 0) {
+            val before = input.substring(0, startDiff)
+            result = prefix(before, func)
+          }
+          if (endDiff > 0) {
+            val after = input.substring(index + str.length, input.length)
+            result = suffix(func, after)
+          }
+          return Some(result)
         }
       })
       None
