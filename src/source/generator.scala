@@ -197,13 +197,11 @@ package object generatorTools {
         val index = input.indexOf(str)
         var result = func
         if (index != -1) {
-          val startDiff = index
-          val endDiff = input.length - (index + str.length)
-          if (startDiff > 0) {
-            val before = input.substring(0, startDiff)
+          if (index > 0) {
+            val before = input.substring(0, index)
             result = prefix(before, func)
           }
-          if (endDiff > 0) {
+          if (input.length - (index + str.length) > 0) {
             val after = input.substring(index + str.length, input.length)
             result = suffix(func, after)
           }
