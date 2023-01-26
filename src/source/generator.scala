@@ -199,11 +199,11 @@ package object generatorTools {
         if (index != -1) {
           if (index > 0) {
             val before = input.substring(0, index)
-            result = prefix(before, func)
+            result = prefix(before, result)
           }
           if (input.length - (index + str.length) > 0) {
             val after = input.substring(index + str.length, input.length)
-            result = suffix(func, after)
+            result = suffix(result, after)
           }
           return Some(result)
         }
