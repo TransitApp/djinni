@@ -223,7 +223,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         generateHppConstants(w, r.consts)
         // Field definitions.
         for (f <- r.fields) {
-          val defaultValue = if (spec.cppStructConstructor) "" else getDefaulPropertiesValue(f.ty)
+          val defaultValue = if (spec.cppStructConstructor) "" else getDefaultPropertyValue(f.ty)
           writeDoc(w, f.doc)
           w.wl(marshal.fieldType(f.ty) + " " + idCpp.field(f.ident) + defaultValue + ";")
         }
@@ -379,7 +379,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     w.wl("template " + params.map(p => "typename " + idCpp.typeParam(p.ident)).mkString("<", ", ", ">"))
   }
 
-  def getDefaulPropertiesValue(ty: TypeRef) : String = {
+  def getDefaultPropertyValue(ty: TypeRef) : String = {
     val defaultValue = marshal.fieldType(ty) match {
       case "int8_t" => "0"
       case "int16_t" => "0"
