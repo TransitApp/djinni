@@ -380,8 +380,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
   }
 
   def getDefaulPropertiesValue(ty: TypeRef) : String = {
-    var defaultValue = ""
-    defaultValue = marshal.fieldType(ty) match {
+    val defaultValue = marshal.fieldType(ty) match {
       case "int8_t" => "0"
       case "int16_t" => "0"
       case "int32_t" => "0"
@@ -389,7 +388,6 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
       case "float" => "0"
       case "double" => "0"
       case "bool" => "false"
-      case "string" => """"""
       case _ => return ""
     }
     return " = " + defaultValue
