@@ -223,8 +223,9 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         generateHppConstants(w, r.consts)
         // Field definitions.
         for (f <- r.fields) {
+          val defaultValue = if (spec.cppStructConstructor) "" else getDefaulPropertiesValue(f.ty)
           writeDoc(w, f.doc)
-          w.wl(marshal.fieldType(f.ty) + " " + idCpp.field(f.ident) + ";")
+          w.wl(marshal.fieldType(f.ty) + " " + idCpp.field(f.ident) + defaultValue + ";")
         }
 
         if (r.derivingTypes.contains(DerivingType.Eq)) {
@@ -378,4 +379,19 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     w.wl("template " + params.map(p => "typename " + idCpp.typeParam(p.ident)).mkString("<", ", ", ">"))
   }
 
+  def getDefaulPropertiesValue(ty: TypeRef) : String = {
+    var defaultValue = ""
+    defaultValue = marshal.fieldType(ty) match {
+      case "int8_t" => "0"
+      case "int16_t" => "0"
+      case "int32_t" => "0"
+      case "int64_t" => "0"
+      case "float" => "0"
+      case "double" => "0"
+      case "bool" => "false"
+      case "string" => """"""
+      case _ => return ""
+    }
+    return " = " + defaultValue
+  }
 }
