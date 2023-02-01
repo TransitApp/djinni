@@ -224,7 +224,8 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         // Field definitions.
         for (f <- r.fields) {
           writeDoc(w, f.doc)
-          w.wl(marshal.fieldType(f.ty) + " " + idCpp.field(f.ident) + ";")
+          val defaultValue = if (f.defaultValue.isEmpty) "" else " = " + f.defaultValue
+          w.wl(marshal.fieldType(f.ty) + " " + idCpp.field(f.ident) + defaultValue + ";")
         }
 
         if (r.derivingTypes.contains(DerivingType.Eq)) {
