@@ -130,8 +130,8 @@ private object IdlParser extends RegexParsers {
       Record(ext, fields, consts, derivingTypes)
     }
   }
-  def field: Parser[Field] = doc ~ ident ~ ":" ~ typeRef ^^ {
-    case doc~ident~_~typeRef => Field(ident, typeRef, doc)
+  def field: Parser[Field] = doc ~ ident ~ ":" ~ typeRef ~ opt("=" ~> defaultValue) ^^ {
+    case doc~ident~_~typeRef~defaultValue => Field(ident, typeRef, defaultValue.getOrElse("").toString, doc)
   }
   def deriving: Parser[Set[DerivingType]] = "deriving" ~> parens(rep1sepend(ident, ",")) ^^ {
     _.map(ident => ident.name match {
@@ -211,6 +211,8 @@ private object IdlParser extends RegexParsers {
 
   // Integer before float for compatibility; ident for enum option
   def value = floatValue | intValue | boolValue | stringValue | enumValue | constRef | compositeValue
+  def anyWord: Parser[String] = ("""\w+::\w+""".r | """\w+\(\)""".r | """\w+""".r)
+  def defaultValue: Parser[String] = anyWord | stringValue
 
   def const: Parser[Const] = doc ~ "const" ~ ident ~ ":" ~ typeRef ~ "=" ~ value ^^ {
     case doc~_~ident~_~typeRef~_~value => Const(ident, typeRef, value, doc)
