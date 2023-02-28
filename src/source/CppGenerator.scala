@@ -202,14 +202,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     refs.hpp.add("#include <utility>") // Add for std::move
 
     val self = marshal.typename(ident, r)
-    // val (cppName, cppFinal) = if (r.ext.cpp) (ident.name + "_base", "") else (ident.name, " final")
-    val (cppName, cppFinal) = if (r.ext.cpp) (ident.name + "_base", "") else (ident.name, "")
-    val actualSelf = marshal.typename(cppName, r)
-
-    // Requiring the extended class
-    if (r.ext.cpp) {
-      refs.cpp.add("#include "+q(spec.cppExtendedRecordIncludePrefix + spec.cppFileIdentStyle(ident) + "." + spec.cppHeaderExt))
-    }
+    val isRecordInherited = isInherited(idl, ident.name)
 
     val superRecord = getSuperRecord(idl, r)
     
@@ -224,6 +217,16 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
       case None => Seq.empty
       case Some(value) => value.fields
     }
+
+    val (cppName, cppFinal) = if (r.ext.cpp) (ident.name + "_base", "") else if (!isRecordInherited && superFields.isEmpty) (ident.name, " final") else (ident.name, "")
+    val actualSelf = marshal.typename(cppName, r)
+
+    // Requiring the extended class
+    if (r.ext.cpp) {
+      refs.cpp.add("#include "+q(spec.cppExtendedRecordIncludePrefix + spec.cppFileIdentStyle(ident) + "." + spec.cppHeaderExt))
+    }
+
+
 
     // C++ Header
     def writeCppPrototype(w: IndentWriter) {

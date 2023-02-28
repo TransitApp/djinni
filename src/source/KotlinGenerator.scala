@@ -252,6 +252,7 @@ class KotlinGenerator(spec: Spec) extends Generator(spec) {
     val refs = new JavaRefs()
     r.fields.foreach(f => refs.find(f.ty))
 
+    val isRecordInherited = isInherited(idl, ident.name)
     val javaName = if (r.ext.java) (ident.name + "_base") else ident.name
     val javaFinal = if (!r.ext.java && spec.javaUseFinalForRecord) "val " else "var "
     val superRecord = getSuperRecord(idl, r)
@@ -272,7 +273,8 @@ class KotlinGenerator(spec: Spec) extends Generator(spec) {
           interfaces += "android.os.Parcelable"
           w.wl("@kotlinx.android.parcel.Parcelize")
       }
-      val classOrDataClassDesc = if (r.fields.nonEmpty) "open class" else "class"
+
+      val classOrDataClassDesc = if (r.fields.nonEmpty && !isRecordInherited) "data class" else "open class"
       val implementsSection = if (interfaces.isEmpty) "" else " : " + interfaces.mkString(", ")
       w.w(s"${javaClassAccessModifierString}$classOrDataClassDesc ${self + javaTypeParams(params)}")
       if (r.fields.nonEmpty) {
@@ -283,7 +285,13 @@ class KotlinGenerator(spec: Spec) extends Generator(spec) {
           skipFirst {
             w.wl(",")
           }
-          w.w(s"    _${idJava.field(f.ident)}: ${marshal.fieldType(f.ty)}")
+          
+          if (isRecordInherited) {
+            w.w(s"    ${idJava.field(f.ident)}: ${marshal.fieldType(f.ty)}")
+          }
+          else {
+            w.w(s"    val _${idJava.field(f.ident)}: ${marshal.fieldType(f.ty)}")
+          }
         }
 
         if (superFields.isEmpty) {
@@ -306,9 +314,15 @@ class KotlinGenerator(spec: Spec) extends Generator(spec) {
           skipFirst = SkipFirst()
           for (f <- superFields) {
             skipFirst {
-              w.w(",")
+              w.w(", ")
             }
-            w.w(s"_${idJava.field(f.ident)}")
+
+            if (isRecordInherited) {
+              w.w(s"${idJava.field(f.ident)}")
+            }
+            else {
+              w.w(s"_${idJava.field(f.ident)}")
+            }
           }
           w.w(")")
         }
@@ -434,6 +448,7 @@ class KotlinGenerator(spec: Spec) extends Generator(spec) {
       }
     })
   }
+
 
   def javaTypeParams(params: Seq[TypeParam]): String =
     if (params.isEmpty) "" else params.map(p => idJava.typeParam(p.ident)).mkString("<", ", ", ">")

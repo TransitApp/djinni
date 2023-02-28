@@ -491,6 +491,27 @@ abstract class Generator(spec: Spec)
     }
   }
 
+  def isInherited(idl: Seq[TypeDecl], name: String) : Boolean = {
+          val filtered = idl.filter(td => td.ident.name != name) 
+          for (element <- filtered) {
+            element.body match {
+              case myRecord: Record => {
+                myRecord.baseRecord match {
+                  case None => None
+                  case Some(value) => {
+                    if (value == name) {
+                      return true
+                    }
+                  }
+                }              
+              }
+              case _ => None
+            }
+          }
+
+      return false
+  }
+
   // --------------------------------------------------------------------------
   // Render type expression
 
