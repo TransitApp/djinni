@@ -91,12 +91,19 @@ class JNIGenerator(spec: Spec) extends Generator(spec) {
     })
   }
 
-  override def generateRecord(origin: String, ident: Ident, doc: Doc, params: Seq[TypeParam], r: Record) {
+  override def generateRecord(origin: String, ident: Ident, doc: Doc, params: Seq[TypeParam], r: Record, idl: Seq[TypeDecl]) {
     val prefixOverride: Option[String] = if (r.ext.cpp) {
       Some(spec.cppExtendedRecordIncludePrefix)
     } else {
       None
     }
+
+    val superRecord = getSuperRecord(idl, r)
+    val superFields: Seq[Field] = superRecord match {
+      case None => Seq.empty
+      case Some(value) => value.fields
+    }
+
     val refs = new JNIRefs(ident.name, prefixOverride)
     r.fields.foreach(f => refs.find(f.ty))
 
@@ -123,9 +130,9 @@ class JNIGenerator(spec: Spec) extends Generator(spec) {
         w.wl
         val classLookup = q(jniMarshal.undecoratedTypename(ident, r))
         w.wl(s"const ::djinni::GlobalRef<jclass> clazz { ::djinni::jniFindClass($classLookup) };")
-        val constructorSig = q(jniMarshal.javaMethodSignature(r.fields, None))
+        val constructorSig = q(jniMarshal.javaMethodSignature(superFields ++ r.fields, None))
         w.wl(s"const jmethodID jconstructor { ::djinni::jniGetMethodID(clazz.get(), ${q("<init>")}, $constructorSig) };")
-        for (f <- r.fields) {
+        for (f <- (superFields ++ r.fields)) {
           val javaFieldName = idJava.field(f.ident)
           val javaSig = q(jniMarshal.fqTypename(f.ty))
           w.wl(s"const jfieldID field_$javaFieldName { ::djinni::jniGetFieldID(clazz.get(), ${q(javaFieldName)}, $javaSig) };")

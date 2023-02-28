@@ -170,7 +170,7 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
     }
   }
 
-  override def generateRecord(origin: String, ident: Ident, doc: Doc, params: Seq[TypeParam], r: Record) {
+  override def generateRecord(origin: String, ident: Ident, doc: Doc, params: Seq[TypeParam], r: Record, idl: Seq[TypeDecl]) {
     val refs = new ObjcRefs()
     for (c <- r.consts)
       refs.find(c.ty)
@@ -180,6 +180,7 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
     val objcName = ident.name + (if (r.ext.objc) "_base" else "")
     val noBaseSelf = marshal.typename(ident, r) // Used for constant names
     val self = marshal.typename(objcName, r)
+    val superRecord = getSuperRecord(idl, r)
 
     refs.header.add("#import <Foundation/Foundation.h>")
     refs.body.add("!#import " + q((if (r.ext.objc) spec.objcExtendedRecordIncludePrefix else spec.objcIncludePrefix) + marshal.headerName(ident)))
@@ -198,21 +199,42 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
       case _ => false
     }
 
-    val firstInitializerArg = if(r.fields.isEmpty) "" else IdentStyle.camelUpper("with_" + r.fields.head.ident.name)
-
+    val superFields: Seq[Field] = superRecord match {
+      case None => Seq.empty
+      case Some(value) => value.fields
+    }
+    val (superClass, firstInitializerArg) =  superRecord match {
+      case None => {
+        ("NSObject", if(r.fields.isEmpty) "" else IdentStyle.camelUpper("with_" + r.fields.head.ident.name))
+      }
+      case Some(value) => {
+        ((if (r.ext.objc) spec.objcExtendedRecordIncludePrefix else spec.objcIncludePrefix) + marshal.typename(value.ident, value.record),
+        if(r.fields.isEmpty) "" else IdentStyle.camelUpper("with_" + value.fields.head.ident.name)
+        )
+      }
+    }
     // Generate the header file for record
     writeObjcFile(marshal.headerName(objcName), origin, refs.header, w => {
+
+      superRecord match {
+        case None => {}
+        case Some(value) => {
+          w.wl("#import " + q((if (r.ext.objc) spec.objcExtendedRecordIncludePrefix else spec.objcIncludePrefix) + marshal.headerName(value.ident)))
+        }
+      }
+
       writeDoc(w, doc)
 
       if (r.derivingTypes.contains(DerivingType.NSCopying)) {
-        w.wl(s"@interface $self : NSObject<NSCopying>")
+        w.wl(s"@interface $self : $superClass<NSCopying>")
       } else {
-        w.wl(s"@interface $self : NSObject")
+        w.wl(s"@interface $self : $superClass")
       }
 
+      // Constructor
       def writeInitializer(sign: String, prefix: String) {
         val decl = s"$sign (nonnull instancetype)$prefix$firstInitializerArg"
-        writeAlignedObjcCall(w, decl, r.fields, "", f => (idObjc.field(f.ident), s"(${marshal.paramType(f.ty)})${idObjc.local(f.ident)}"))
+        writeAlignedObjcCall(w, decl, superFields++r.fields, "", f => (idObjc.field(f.ident), s"(${marshal.paramType(f.ty)})${idObjc.local(f.ident)}"))
 
         if (prefix == "init") {
           w.wl(" NS_DESIGNATED_INITIALIZER;")
@@ -270,10 +292,17 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
       w.wl
       // Constructor from all fields (not copying)
       val init = s"- (nonnull instancetype)init$firstInitializerArg"
-      writeAlignedObjcCall(w, init, r.fields, "", f => (idObjc.field(f.ident), s"(${marshal.paramType(f.ty)})${idObjc.local(f.ident)}"))
+      writeAlignedObjcCall(w, init, superFields ++ r.fields, "", f => (idObjc.field(f.ident), s"(${marshal.paramType(f.ty)})${idObjc.local(f.ident)}"))
       w.wl
       w.braced {
-        w.w("if (self = [super init])").braced {
+        superRecord match {
+          case None => w.w("if (self = [super init])")
+          case Some(value) => {
+            writeAlignedObjcCall(w, s"if (self = [super init$firstInitializerArg", value.fields, "", f => (idObjc.field(f.ident), s"${idObjc.local(f.ident)}"))
+            w.wl("])")
+          }
+        }
+        w.braced {          
           for (f <- r.fields) {
             if (checkMutable(f.ty.resolved))
               w.wl(s"_${idObjc.field(f.ident)} = [${idObjc.local(f.ident)} copy];")
@@ -288,11 +317,11 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
       // Convenience initializer
       if(!r.ext.objc && !spec.objcDisableClassCtor) {
         val decl = s"+ (nonnull instancetype)${IdentStyle.camelLower(objcName)}$firstInitializerArg"
-        writeAlignedObjcCall(w, decl, r.fields, "", f => (idObjc.field(f.ident), s"(${marshal.paramType(f.ty)})${idObjc.local(f.ident)}"))
+        writeAlignedObjcCall(w, decl, superFields ++ r.fields, "", f => (idObjc.field(f.ident), s"(${marshal.paramType(f.ty)})${idObjc.local(f.ident)}"))
         w.wl
         w.braced {
           val call = s"return [[self alloc] init$firstInitializerArg"
-          writeAlignedObjcCall(w, call, r.fields, "", f => (idObjc.field(f.ident), s"${idObjc.local(f.ident)}"))
+          writeAlignedObjcCall(w, call, superFields++r.fields, "", f => (idObjc.field(f.ident), s"${idObjc.local(f.ident)}"))
           w.wl("];")
         }
         w.wl
@@ -309,7 +338,7 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
           w.wl(s"$self *typedOther = ($self *)other;")
           val skipFirst = SkipFirst()
           w.w(s"return ").nestedN(2) {
-            for (f <- r.fields) {
+            for (f <- superFields ++ r.fields) {
               skipFirst { w.wl(" &&") }
               f.ty.resolved.base match {
                 case MBinary => w.w(s"[self.${idObjc.field(f.ident)} isEqualToData:typedOther.${idObjc.field(f.ident)}]")
@@ -353,7 +382,7 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
         w.braced {
           w.w(s"return ").nestedN(2) {
             w.w(s"NSStringFromClass([self class]).hash")
-            for (f <- r.fields) {
+          for (f <- superFields ++ r.fields) {
               w.wl(" ^")
               f.ty.resolved.base match {
                 case MOptional =>
@@ -436,10 +465,10 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
         w.w(s"return ").nestedN(2) {
           w.w("[NSString stringWithFormat:@\"<%@ %p")
 
-          for (f <- r.fields) w.w(s" ${idObjc.field(f.ident)}:%@")
+          for (f <- superFields ++ r.fields) w.w(s" ${idObjc.field(f.ident)}:%@")
           w.w(">\", self.class, (void *)self")
 
-          for (f <- r.fields) {
+          for (f <- superFields ++ r.fields) {
             w.w(", ")
             f.ty.resolved.base match {
               case MOptional => w.w(s"self.${idObjc.field(f.ident)}")

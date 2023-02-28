@@ -192,6 +192,7 @@ class TsGenerator(spec: Spec) extends Generator(spec) {
       generateTsConstants(w, ident, r.consts);
     }
   }
+
   private def generateInterface(origin: String, ident: Ident, doc: Doc, typeParams: Seq[TypeParam], i: Interface, w: IndentWriter) {
     w.wl
     writeDoc(w, doc)
@@ -297,6 +298,6 @@ class TsGenerator(spec: Spec) extends Generator(spec) {
     })
   }
   override def generateEnum(origin: String, ident: Ident, doc: Doc, e: Enum) {}
-  override def generateRecord(origin: String, ident: Ident, doc: Doc, params: Seq[TypeParam], r: Record) {}
+  override def generateRecord(origin: String, ident: Ident, doc: Doc, params: Seq[TypeParam], r: Record, idl: Seq[TypeDecl]) {}
   override def generateInterface(origin: String, ident: Ident, doc: Doc, typeParams: Seq[TypeParam], i: Interface) {}
 }

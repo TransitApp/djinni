@@ -231,7 +231,7 @@ class YamlGenerator(spec: Spec) extends Generator(spec) {
     // unused
   }
 
-  override def generateRecord(origin: String, ident: Ident, doc: Doc, params: Seq[TypeParam], r: Record) {
+  override def generateRecord(origin: String, ident: Ident, doc: Doc, params: Seq[TypeParam], r: Record, idl: Seq[TypeDecl]) {
     // unused
   }
 }

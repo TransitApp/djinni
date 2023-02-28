@@ -22,7 +22,7 @@ import djinni.ast._
 import djinni.generatorTools._
 import djinni.meta._
 
-class JavaMarshal(spec: Spec, kotlin: Boolean) extends Marshal(spec) {
+class KotlinMarshal(spec: Spec, kotlin: Boolean) extends Marshal(spec) {
 
   val javaNullableAnnotation = spec.javaNullableAnnotation.map(pkg => '@' + pkg.split("\\.").last)
   val javaNonnullAnnotation = spec.javaNonnullAnnotation.map(pkg => '@' + pkg.split("\\.").last)
@@ -147,7 +147,7 @@ class JavaMarshal(spec: Spec, kotlin: Boolean) extends Marshal(spec) {
   private def withPackage(packageName: Option[String], t: String) = packageName.fold(t)(_ + "." + t)
 
   protected override def extendsRecordFormat(name: String): String = {
-    return s" extends ${name}"
+    return s" : ${name}"
   }
 
  }

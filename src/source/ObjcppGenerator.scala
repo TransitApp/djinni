@@ -337,7 +337,7 @@ class ObjcppGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
     })
   }
 
-  override def generateRecord(origin: String, ident: Ident, doc: Doc, params: Seq[TypeParam], r: Record) {
+  override def generateRecord(origin: String, ident: Ident, doc: Doc, params: Seq[TypeParam], r: Record, idl: Seq[TypeDecl]) {
     val refs = new ObjcRefs()
     for (c <- r.consts)
       refs.find(c.ty)
@@ -384,21 +384,27 @@ class ObjcppGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
 
     writeObjcFile(privateBodyName(objcName), origin, refs.body, w => {
       wrapNamespace(w, spec.objcppNamespace, w => {
+
+        val (superFields, firstInitializerArg) = getSuperRecord(idl, r) match {
+          case None => (Seq.empty, if(r.fields.isEmpty) "" else IdentStyle.camelUpper("with_" + r.fields.head.ident.name))
+          case Some(value) => (value.fields, if(r.fields.isEmpty) "" else IdentStyle.camelUpper("with_" + value.fields.head.ident.name))
+        }
+
         w.wl(s"auto $helperClass::toCpp(ObjcType obj) -> CppType")
         w.braced {
           w.wl("assert(obj);")
           if(r.fields.isEmpty) w.wl("(void)obj; // Suppress warnings in relase builds for empty records")
           val call = "return CppType("
-          writeAlignedCall(w, "return {", r.fields, "}", f => objcppMarshal.toCpp(f.ty, "obj." + idObjc.field(f.ident)))
+          writeAlignedCall(w, "return {", superFields++r.fields, "}", f => objcppMarshal.toCpp(f.ty, "obj." + idObjc.field(f.ident)))
           w.wl(";")
         }
         w.wl
         w.wl(s"auto $helperClass::fromCpp(const CppType& cpp) -> ObjcType")
         w.braced {
           if(r.fields.isEmpty) w.wl("(void)cpp; // Suppress warnings in relase builds for empty records")
-          val first = if(r.fields.isEmpty) "" else IdentStyle.camelUpper("with_" + r.fields.head.ident.name)
-          val call = s"return [[$noBaseSelf alloc] init$first"
-          writeAlignedObjcCall(w, call, r.fields, "]", f => (idObjc.field(f.ident), s"(${objcppMarshal.fromCpp(f.ty, cppMarshal.maybeMove("cpp." + idCpp.field(f.ident), f.ty))})"))
+          // val first = if(r.fields.isEmpty) "" else IdentStyle.camelUpper("with_" + r.fields.head.ident.name)
+          val call = s"return [[$noBaseSelf alloc] init$firstInitializerArg"
+          writeAlignedObjcCall(w, call, superFields++r.fields, "]", f => (idObjc.field(f.ident), s"(${objcppMarshal.fromCpp(f.ty, "cpp." + idCpp.field(f.ident))})"))
           w.wl(";")
         }
       })
