@@ -2,6 +2,10 @@ item_list = record {
     items: list<string>;
 }
 
+child_item = record extends item_list {
+    parent: string;
+}
+
 sort_order = enum {
     ascending;
     descending;

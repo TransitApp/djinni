@@ -3,21 +3,20 @@
 
 #pragma once
 
+#include "item_list.hpp"
 #include <string>
 #include <utility>
-#include <vector>
 
 namespace textsort {
 
-struct ItemList {
-    std::vector<std::string> items;
-
-    virtual ~ItemList(){};
+struct ChildItem : public ItemList {
+    std::string parent;
 
     //NOLINTNEXTLINE(google-explicit-constructor)
-    ItemList(std::vector<std::string> items_)
-    : items(std::move(items_))
-    {}
+    ChildItem(std::vector<std::string> items_,
+              std::string parent_)
+    : 
+    ItemList( items_), parent(std::move(parent_)){}
 };
 
 } // namespace textsort

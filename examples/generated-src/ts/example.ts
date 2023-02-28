@@ -6,6 +6,10 @@ export interface /*record*/ ItemList {
     items: Array<string>;
 }
 
+export interface /*record*/ ChildItem {
+    parent: string;
+}
+
 export enum SortOrder {
     ASCENDING = 0,
     DESCENDING = 1,

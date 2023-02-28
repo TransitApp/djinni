@@ -10,7 +10,9 @@ namespace djinni_generated {
 auto ItemList::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::List<::djinni::String>::toCpp(obj.items)};
+    ::textsort::ItemList model;
+    model.items = ::djinni::List<::djinni::String>::toCpp(obj.items);
+    return model;
 }
 
 auto ItemList::fromCpp(const CppType& cpp) -> ObjcType

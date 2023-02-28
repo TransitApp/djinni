@@ -6,7 +6,7 @@
 @interface TXSItemList : NSObject
 - (nonnull instancetype)init NS_UNAVAILABLE;
 + (nonnull instancetype)new NS_UNAVAILABLE;
-- (nonnull instancetype)initWithItems:(nonnull NSArray<NSString *> *)items NS_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)initWithItems:(nonnull NSArray<NSString *> *)items;
 + (nonnull instancetype)itemListWithItems:(nonnull NSArray<NSString *> *)items;
 
 @property (nonatomic, readonly, nonnull) NSArray<NSString *> * items;
