@@ -263,6 +263,11 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
           w.wl(s"friend bool operator>=(const $actualSelf& lhs, const $actualSelf& rhs);")
         }
 
+        if (isRecordInherited) {
+          w.wl
+          w.wl(s"virtual ~$actualSelf(){};")
+        }
+
         // Constructor.
         if(r.fields.nonEmpty && spec.cppStructConstructor) {
           w.wl
