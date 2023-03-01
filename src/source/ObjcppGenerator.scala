@@ -387,7 +387,7 @@ class ObjcppGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
 
         val (superFields, firstInitializerArg) = getSuperRecord(idl, r) match {
           case None => (Seq.empty, if(r.fields.isEmpty) "" else IdentStyle.camelUpper("with_" + r.fields.head.ident.name))
-          case Some(value) => (value.fields, if(r.fields.isEmpty) "" else IdentStyle.camelUpper("with_" + value.fields.head.ident.name))
+          case Some(value) => (value.fields, if(value.fields.isEmpty) "" else IdentStyle.camelUpper("with_" + value.fields.head.ident.name))
         }
 
         w.wl(s"auto $helperClass::toCpp(ObjcType obj) -> CppType")

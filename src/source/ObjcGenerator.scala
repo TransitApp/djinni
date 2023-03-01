@@ -209,7 +209,7 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
       }
       case Some(value) => {
         ((if (r.ext.objc) spec.objcExtendedRecordIncludePrefix else spec.objcIncludePrefix) + marshal.typename(value.ident, value.record),
-        if(r.fields.isEmpty) "" else IdentStyle.camelUpper("with_" + value.fields.head.ident.name)
+        if(value.fields.isEmpty) "" else IdentStyle.camelUpper("with_" + value.fields.head.ident.name)
         )
       }
     }
