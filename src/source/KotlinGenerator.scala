@@ -326,6 +326,9 @@ class KotlinGenerator(spec: Spec) extends Generator(spec) {
           }
           w.w(")")
         }
+        else if (superRecord != None) {
+          w.w("()")
+        }
       }
 
 

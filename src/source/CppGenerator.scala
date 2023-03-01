@@ -218,7 +218,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
       case Some(value) => value.fields
     }
 
-    val (cppName, cppFinal) = if (r.ext.cpp) (ident.name + "_base", "") else if (!isRecordInherited && superFields.isEmpty) (ident.name, " final") else (ident.name, "")
+    val (cppName, cppFinal) = if (r.ext.cpp) (ident.name + "_base", "") else if (!isRecordInherited && superRecord == None) (ident.name, " final") else (ident.name, "")
     val actualSelf = marshal.typename(cppName, r)
 
     // Requiring the extended class
