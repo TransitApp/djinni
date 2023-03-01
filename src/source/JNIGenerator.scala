@@ -191,12 +191,16 @@ class JNIGenerator(spec: Spec) extends Generator(spec) {
           w.wl("(void)j; // Suppress warnings in release builds for empty records")
         else
           w.wl(s"const auto& data = ::djinni::JniClass<$jniHelper>::get();")
-        writeAlignedCall(w, "return {", fields, "}", f => {
+        
+        w.wl(s"$cppSelf model;")
+        for (f <- fields) {
           val fieldId = "data.field_" + idJava.field(f.ident)
           val jniFieldAccess = toJniCall(f.ty, (jt: String) => s"jniEnv->Get${jt}Field(j, $fieldId)")
-          jniMarshal.toCpp(f.ty, jniFieldAccess)
-        })
-        w.wl(";")
+  
+          w.wl(s"model.${idJava.field(f.ident)} = "+jniMarshal.toCpp(f.ty, jniFieldAccess)+";")
+        }
+
+        w.wl("return model;")
       }
     }
     writeJniFiles(origin, params.nonEmpty, ident, refs, writeJniPrototype, writeJniBody)
