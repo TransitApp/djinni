@@ -390,21 +390,27 @@ class ObjcppGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
           case Some(value) => (value.fields, if(value.fields.isEmpty) "" else IdentStyle.camelUpper("with_" + value.fields.head.ident.name))
         }
 
+        val fields = superFields ++ r.fields
+
         w.wl(s"auto $helperClass::toCpp(ObjcType obj) -> CppType")
         w.braced {
           w.wl("assert(obj);")
-          if(r.fields.isEmpty) w.wl("(void)obj; // Suppress warnings in relase builds for empty records")
-          val call = "return CppType("
-          writeAlignedCall(w, "return {", superFields++r.fields, "}", f => objcppMarshal.toCpp(f.ty, "obj." + idObjc.field(f.ident)))
-          w.wl(";")
+          if(fields.isEmpty) w.wl("(void)obj; // Suppress warnings in relase builds for empty records")
+
+          w.wl(s"$cppSelf model;")
+          for (f <- fields) {  
+            w.wl(s"model.${idJava.field(f.ident)} = "+objcppMarshal.toCpp(f.ty, "obj." + idObjc.field(f.ident))+";")
+          }
+
+          w.wl("return model;")
         }
         w.wl
         w.wl(s"auto $helperClass::fromCpp(const CppType& cpp) -> ObjcType")
         w.braced {
-          if(r.fields.isEmpty) w.wl("(void)cpp; // Suppress warnings in relase builds for empty records")
+          if(fields.isEmpty) w.wl("(void)cpp; // Suppress warnings in relase builds for empty records")
           // val first = if(r.fields.isEmpty) "" else IdentStyle.camelUpper("with_" + r.fields.head.ident.name)
           val call = s"return [[$noBaseSelf alloc] init$firstInitializerArg"
-          writeAlignedObjcCall(w, call, superFields++r.fields, "]", f => (idObjc.field(f.ident), s"(${objcppMarshal.fromCpp(f.ty, "cpp." + idCpp.field(f.ident))})"))
+          writeAlignedObjcCall(w, call, fields, "]", f => (idObjc.field(f.ident), s"(${objcppMarshal.fromCpp(f.ty, "cpp." + idCpp.field(f.ident))})"))
           w.wl(";")
         }
       })
