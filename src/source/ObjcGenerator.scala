@@ -223,6 +223,8 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
         }
       }
 
+      val isRecordInherited = isInherited(idl, ident.name)
+
       writeDoc(w, doc)
 
       if (r.derivingTypes.contains(DerivingType.NSCopying)) {
@@ -236,7 +238,7 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
         val decl = s"$sign (nonnull instancetype)$prefix$firstInitializerArg"
         writeAlignedObjcCall(w, decl, superFields++r.fields, "", f => (idObjc.field(f.ident), s"(${marshal.paramType(f.ty)})${idObjc.local(f.ident)}"))
 
-        if (prefix == "init") {
+        if (!isRecordInherited && prefix == "init") {
           w.wl(" NS_DESIGNATED_INITIALIZER;")
         } else {
           w.wl(";")
