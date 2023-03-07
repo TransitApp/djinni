@@ -3,15 +3,15 @@
 
 package com.dropbox.textsort
 
-import java.util.ArrayList
-
-internal open class ItemList(
-    val items: ArrayList<String>
-) {
+internal data class ChildItem(
+    val _items: ArrayList<String>,
+    val parent: String
+) : ItemList(_items) {
 
     override fun toString(): String  {
-        return "ItemList {" +
+        return "ChildItem {" +
                 "items=" + items +
+                "," + "parent=" + parent +
         "}"
     }
 
