@@ -294,9 +294,21 @@ object YamlGenerator {
   private def getOptionalField(td: ExternTypeDecl, key: String, subKey: String) = {
     try {
       nested(td, key)(subKey).toString
-    } catch {
+    } catch { 
       case e: java.util.NoSuchElementException => {
-        println(s"Warning: in ${td.origin}, missing field $key/$subKey")
+        val shouldDisplayLog = key match {
+            case "cpp"  => true
+            case "java"  => true
+            case "objc"  => true
+            // deactivate logs for ts and wasm
+            case "ts"  => false
+            case "wasm"  => false
+            case _  => true  
+        }
+
+        if (shouldDisplayLog) {
+          println(s"Warning: in ${td.origin}, missing field $key/$subKey")
+        }
         "[unspecified]"
       }
     }
