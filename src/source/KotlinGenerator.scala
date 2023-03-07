@@ -30,7 +30,7 @@ class KotlinGenerator(spec: Spec) extends Generator(spec) {
 
   val javaAnnotationHeader = spec.javaAnnotation.map(pkg => '@' + pkg.split("\\.").last)
   val javaClassAccessModifierString = JavaAccessModifier.getKotlinCodeGenerationString(spec.javaClassAccessModifier)
-  val marshal = new KotlinMarshal(spec, true)
+  val marshal = new JavaMarshal(spec, true)
 
   class JavaRefs() {
     var java = mutable.TreeSet[String]()

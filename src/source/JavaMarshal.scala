@@ -147,7 +147,12 @@ class JavaMarshal(spec: Spec, kotlin: Boolean) extends Marshal(spec) {
   private def withPackage(packageName: Option[String], t: String) = packageName.fold(t)(_ + "." + t)
 
   protected override def extendsRecordFormat(name: String): String = {
-    return s" extends ${name}"
+    if (kotlin) {
+      return s" : ${name}"
+    }
+    else {
+      return s" extends ${name}"
+    }
   }
 
  }
