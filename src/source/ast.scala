@@ -75,7 +75,7 @@ object Enum {
   case class Option(ident: Ident, doc: Doc, specialFlag: scala.Option[SpecialFlag])
 }
 
-case class Record(ext: Ext, fields: Seq[Field], consts: Seq[Const], derivingTypes: Set[DerivingType]) extends TypeDef
+case class Record(ext: Ext, fields: Seq[Field], consts: Seq[Const], derivingTypes: Set[DerivingType], baseRecord: scala.Option[String]) extends TypeDef
 object Record {
   object DerivingType extends Enumeration {
     type DerivingType = Value
@@ -89,6 +89,8 @@ object Interface {
 }
 
 case class Field(ident: Ident, ty: TypeRef, defaultValue: String, doc: Doc)
+
+case class SuperRecord(ident: Ident, record: Record, fields: Seq[Field])
 
 case class ProtobufMessage(cpp: ProtobufMessage.Cpp, java: ProtobufMessage.Java, objc: Option[ProtobufMessage.Objc], ts: Option[ProtobufMessage.Ts]) extends TypeDef
 object ProtobufMessage {

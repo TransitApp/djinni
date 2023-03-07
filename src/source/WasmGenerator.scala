@@ -449,7 +449,7 @@ class WasmGenerator(spec: Spec) extends Generator(spec) {
     spec.cppNamespace.replaceAll("::", Matcher.quoteReplacement(sep)) + sep + name
   }
 
-  override def generateRecord(origin: String, ident: Ident, doc: Doc, params: Seq[TypeParam], r: Record) {
+  override def generateRecord(origin: String, ident: Ident, doc: Doc, params: Seq[TypeParam], r: Record, idl: Seq[TypeDecl]) {
     val refs = new WasmRefs(ident.name)
     r.fields.foreach(f => refs.find(f.ty))
     r.consts.foreach(c => refs.find(c.ty))

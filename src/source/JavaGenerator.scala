@@ -252,12 +252,18 @@ class JavaGenerator(spec: Spec) extends Generator(spec) {
     })
   }
 
-  override def generateRecord(origin: String, ident: Ident, doc: Doc, params: Seq[TypeParam], r: Record) {
+  override def generateRecord(origin: String, ident: Ident, doc: Doc, params: Seq[TypeParam], r: Record, idl: Seq[TypeDecl]) {
     val refs = new JavaRefs()
     r.fields.foreach(f => refs.find(f.ty))
 
     val javaName = if (r.ext.java) (ident.name + "_base") else ident.name
     val javaFinal = if (!r.ext.java && spec.javaUseFinalForRecord) "final " else ""
+    
+    val superRecord = getSuperRecord(idl, r)
+    val superFields: Seq[Field] = superRecord match {
+      case None => Seq.empty
+      case Some(value) => value.fields
+    }
 
     writeJavaFile(javaName, origin, refs.java, w => {
       writeDoc(w, doc)
@@ -265,12 +271,13 @@ class JavaGenerator(spec: Spec) extends Generator(spec) {
       val self = marshal.typename(javaName, r)
 
       val interfaces = scala.collection.mutable.ArrayBuffer[String]()
-      if (r.derivingTypes.contains(DerivingType.Ord))
-          interfaces += s"Comparable<$self>"
-      if (spec.javaImplementAndroidOsParcelable && r.derivingTypes.contains(DerivingType.AndroidParcelable))
-          interfaces += "android.os.Parcelable"
+      if (r.derivingTypes.contains(DerivingType.Ord)) interfaces += s"Comparable<$self>"
+      if (r.derivingTypes.contains(DerivingType.AndroidParcelable)) interfaces += "android.os.Parcelable"
+     
       val implementsSection = if (interfaces.isEmpty) "" else " implements " + interfaces.mkString(", ")
-      w.w(s"${javaClassAccessModifierString}${javaFinal}class ${self + javaTypeParams(params)}$implementsSection").braced {
+      val extendsClass = marshal.extendsRecord(idl, r)
+      
+      w.w(s"${javaClassAccessModifierString}${javaFinal}class ${self + javaTypeParams(params)}$extendsClass$implementsSection").braced {
         w.wl
         generateJavaConstants(w, r.consts)
         // Field definitions.
@@ -283,7 +290,7 @@ class JavaGenerator(spec: Spec) extends Generator(spec) {
         w.wl
         w.wl(s"public $self(").nestedN(2) {
           val skipFirst = SkipFirst()
-          for (f <- r.fields) {
+          for (f <- superFields++r.fields) {
             skipFirst { w.wl(",") }
             marshal.nullityAnnotation(f.ty).map(annotation => w.w(annotation + " "))
             w.w(marshal.paramType(f.ty) + " " + idJava.local(f.ident))
@@ -292,13 +299,22 @@ class JavaGenerator(spec: Spec) extends Generator(spec) {
         }
         w.nested {
           for (f <- r.fields) {
+            if (superFields.nonEmpty) {
+            w.w("super(")
+            val skipFirst = SkipFirst()
+            for (f <- superFields) {
+              skipFirst { w.w(",") }
+              w.w(s"${idJava.local(f.ident)}")
+            }
+            w.wl(");")
+          }
             w.wl(s"this.${idJava.field(f.ident)} = ${idJava.local(f.ident)};")
           }
         }
         w.wl("}")
 
         // Accessors
-        for (f <- r.fields) {
+        for (f <- (superFields ++ r.fields)) {
           w.wl
           writeDoc(w, f.doc)
           marshal.nullityAnnotation(f.ty).foreach(w.wl)
@@ -358,7 +374,7 @@ class JavaGenerator(spec: Spec) extends Generator(spec) {
             w.wl("int hashCode = 17;")
             // Also pick an arbitrary prime to use as the multiplier.
             val multiplier = "31"
-            for (f <- r.fields) {
+            for (f <- (superFields ++ r.fields)) {
               val fieldHashCode = f.ty.resolved.base match {
                 case MBinary | MArray => s"java.util.Arrays.hashCode(${idJava.field(f.ident)})"
                 case MList | MSet | MMap | MString | MDate => s"${idJava.field(f.ident)}.hashCode()"
@@ -391,8 +407,9 @@ class JavaGenerator(spec: Spec) extends Generator(spec) {
         w.w("public String toString()").braced {
           w.w(s"return ").nestedN(2) {
             w.wl(s""""${self}{" +""")
-            for (i <- 0 to r.fields.length-1) {
-              val name = idJava.field(r.fields(i).ident)
+            val fields = superFields ++ r.fields
+            for (i <- 0 to (fields).length-1) {
+              val name = idJava.field(fields(i).ident)
               val comma = if (i > 0) """"," + """ else ""
               w.wl(s"""${comma}"${name}=" + ${name} +""")
             }
@@ -401,8 +418,9 @@ class JavaGenerator(spec: Spec) extends Generator(spec) {
         }
         w.wl
 
-        if (spec.javaImplementAndroidOsParcelable && r.derivingTypes.contains(DerivingType.AndroidParcelable))
-          writeParcelable(w, self, r);
+        if (r.derivingTypes.contains(DerivingType.AndroidParcelable)) {
+          writeParcelable(w, self, r, superFields);
+        }
 
         if (r.derivingTypes.contains(DerivingType.Ord)) {
           def primitiveCompare(ident: Ident) {
@@ -422,7 +440,7 @@ class JavaGenerator(spec: Spec) extends Generator(spec) {
           val nonnullAnnotation = javaNonnullAnnotation.map(_ + " ").getOrElse("")
           w.w(s"public int compareTo($nonnullAnnotation$self other) ").braced {
             w.wl("int tempResult;")
-            for (f <- r.fields) {
+            for (f <- (superFields ++ r.fields)) {
               f.ty.resolved.base match {
                 case MString | MDate => w.wl(s"tempResult = this.${idJava.field(f.ident)}.compareTo(other.${idJava.field(f.ident)});")
                 case t: MPrimitive => primitiveCompare(f.ident)
@@ -453,7 +471,7 @@ class JavaGenerator(spec: Spec) extends Generator(spec) {
   def javaTypeParams(params: Seq[TypeParam]): String =
     if (params.isEmpty) "" else params.map(p => idJava.typeParam(p.ident)).mkString("<", ", ", ">")
 
-  def writeParcelable(w: IndentWriter, self: String, r: Record) = {
+  def writeParcelable(w: IndentWriter, self: String, r: Record, superFields: Seq[Field]) = {
     // Generates the methods and the constructor to implement the interface android.os.Parcelable
 
     // CREATOR
@@ -529,7 +547,7 @@ class JavaGenerator(spec: Spec) extends Generator(spec) {
     }
     w.wl
     w.w(s"public $self(android.os.Parcel in)").braced {
-      for (f <- r.fields)
+      for (f <- (superFields++r.fields))
         deserializeField(f, f.ty.resolved.base, false)
     }
 
@@ -594,7 +612,7 @@ class JavaGenerator(spec: Spec) extends Generator(spec) {
     w.wl
     w.wl("@Override")
     w.w("public void writeToParcel(android.os.Parcel out, int flags)").braced {
-      for (f <- r.fields)
+      for (f <- (superFields ++ r.fields))
         serializeField(f, f.ty.resolved.base, false)
     }
     w.wl

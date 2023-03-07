@@ -27,6 +27,7 @@ import djinni.writer.IndentWriter
 import scala.language.implicitConversions
 import scala.collection.mutable
 import scala.util.matching.Regex
+import scala.annotation.tailrec
 
 package object generatorTools {
 
@@ -438,11 +439,16 @@ abstract class Generator(spec: Spec)
   def generate(idl: Seq[TypeDecl]) {
     val decls = idl.collect { case itd: InternTypeDecl => itd }
     for (td <- decls) td.body match {
-      case e: Enum =>
+      case e: Enum =>  {
         assert(td.params.isEmpty)
         generateEnum(td.origin, td.ident, td.doc, e)
-      case r: Record => generateRecord(td.origin, td.ident, td.doc, td.params, r)
-      case i: Interface => generateInterface(td.origin, td.ident, td.doc, td.params, i)
+      }
+      case r: Record => {
+        generateRecord(td.origin, td.ident, td.doc, td.params, r, idl)
+      }
+      case i: Interface => {
+        generateInterface(td.origin, td.ident, td.doc, td.params, i)
+      }
       case p: ProtobufMessage => // never need to generate files for protobuf types
     }
     generateModule(decls.filter(td => td.body.isInstanceOf[Interface]))
@@ -450,8 +456,61 @@ abstract class Generator(spec: Spec)
 
   def generateModule(decls: Seq[InternTypeDecl]) {}
   def generateEnum(origin: String, ident: Ident, doc: Doc, e: Enum)
-  def generateRecord(origin: String, ident: Ident, doc: Doc, params: Seq[TypeParam], r: Record)
+  def generateRecord(origin: String, ident: Ident, doc: Doc, params: Seq[TypeParam], r: Record, idl: Seq[TypeDecl])
   def generateInterface(origin: String, ident: Ident, doc: Doc, typeParams: Seq[TypeParam], i: Interface)
+
+  def collectSuperFields(idl: Seq[TypeDecl], _r: Record): Seq[Field] = {
+    @tailrec
+    def superFieldsAccumulator(r: Record, fields: Seq[Field]) : Seq[Field] = {
+      r.baseRecord match {
+        case None => r.fields ++ fields
+        case Some(value) => {
+          val baseRecord = getSuperRecord(idl, r).get
+          superFieldsAccumulator(baseRecord.record, r.fields)
+        }
+      }
+    }
+    superFieldsAccumulator(_r, Seq.empty)
+  }
+
+  def getSuperRecord(idl: Seq[TypeDecl], r: Record): Option[SuperRecord] = {
+    r.baseRecord match {
+      case None => None
+      case Some(value) => {
+        idl.find(td => td.ident.name == value) match {
+          case Some(superDec) => superDec.body match {
+            case superRecord: Record => {
+              val superFields = collectSuperFields(idl, superRecord)
+              return Some(SuperRecord(superDec.ident, superRecord, superFields))
+            }
+            case _ => throw new AssertionError("Unreachable. The parser throws an exception when extending a non-interface type.")
+          }
+          case _ => throw new AssertionError("Unreachable. The parser throws an exception when extending an interface that doesn't exist.")
+        }
+      }
+    }
+  }
+
+  def isInherited(idl: Seq[TypeDecl], name: String) : Boolean = {
+          val filtered = idl.filter(td => td.ident.name != name) 
+          for (element <- filtered) {
+            element.body match {
+              case myRecord: Record => {
+                myRecord.baseRecord match {
+                  case None => None
+                  case Some(value) => {
+                    if (value == name) {
+                      return true
+                    }
+                  }
+                }              
+              }
+              case _ => None
+            }
+          }
+
+      return false
+  }
 
   // --------------------------------------------------------------------------
   // Render type expression

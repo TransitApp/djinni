@@ -29,7 +29,7 @@ class JavaMarshal(spec: Spec, kotlin: Boolean) extends Marshal(spec) {
   val voidReturnType = if (kotlin) "" else "void"
 
   override def typename(tm: MExpr): String = toJavaType(tm, None)
-  def typename(name: String, ty: TypeDef): String = idJava.ty(name)
+  override def typename(name: String, ty: TypeDef): String = idJava.ty(name)
 
   override def fqTypename(tm: MExpr): String = toJavaType(tm, spec.javaPackage)
   def fqTypename(name: String, ty: TypeDef): String = withPackage(spec.javaPackage, idJava.ty(name))
@@ -145,5 +145,14 @@ class JavaMarshal(spec: Spec, kotlin: Boolean) extends Marshal(spec) {
   }
 
   private def withPackage(packageName: Option[String], t: String) = packageName.fold(t)(_ + "." + t)
+
+  protected override def extendsRecordFormat(name: String): String = {
+    if (kotlin) {
+      return s" : ${name}"
+    }
+    else {
+      return s" extends ${name}"
+    }
+  }
 
  }

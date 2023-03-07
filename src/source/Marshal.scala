@@ -10,6 +10,7 @@ import scala.language.implicitConversions
 // This means the C++ Marshal generates only C++ types and includes, but not JNI or ObjC++.
 // As a consequence a typical code generator needs two Marshals: one for C++ and one for the destination, e.g. JNI.
 abstract class Marshal(spec: Spec) {
+  def typename(name: String, ty: TypeDef): String
   // Typename string to be used to declare a type or template parameter, without namespace or package, except for extern types which are always fully qualified.
   def typename(tm: MExpr): String
   def typename(ty: TypeRef): String = typename(ty.resolved)
@@ -48,4 +49,25 @@ abstract class Marshal(spec: Spec) {
     }
 
   protected def withCppNs(t: String) = withNs(Some(spec.cppNamespace), t)
+
+  protected def extendsRecordFormat(name: String): String = ""
+
+  def extendsRecord(idl: Seq[TypeDecl], record: Record): String = {
+    record.baseRecord match {
+      case None => ""
+      case Some(value) => {
+        idl.find(td => td.ident.name == value) match {
+          case Some(superDec) => superDec.body match {
+            case br: Record => {
+              val name = typename(superDec.ident, br)
+              return extendsRecordFormat(name)
+            }
+            case _ => throw new AssertionError("Unreachable. The parser throws an exception when extending a non-interface type.")
+          }
+          case _ => throw new AssertionError("Unreachable. The parser throws an exception when extending an interface that doesn't exist.")
+        }
+      }
+    }
+  }
+
 }

@@ -27,7 +27,7 @@ class ObjcppMarshal(spec: Spec) extends Marshal(spec) {
   private val objcMarshal = new ObjcMarshal(spec)
 
   override def typename(tm: MExpr): String = throw new AssertionError("not applicable")
-  def typename(name: String, ty: TypeDef): String = throw new AssertionError("not applicable")
+  override def typename(name: String, ty: TypeDef): String = throw new AssertionError("not applicable")
 
   override def fqTypename(tm: MExpr): String = throw new AssertionError("not applicable")
   def fqTypename(name: String, ty: TypeDef): String = throw new AssertionError("not applicable")

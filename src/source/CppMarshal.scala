@@ -31,7 +31,7 @@ class CppMarshal(spec: Spec) extends Marshal(spec) {
   override def typename(tm: MExpr): String = toCppType(tm, None, Seq())
   def typename(tm: MExpr, scopeSymbols: Seq[String]): String = toCppType(tm, None, scopeSymbols)
   def typename(ty: TypeRef, scopeSymbols: Seq[String]): String = typename(ty.resolved, scopeSymbols)
-  def typename(name: String, ty: TypeDef): String = ty match {
+  override def typename(name: String, ty: TypeDef): String = ty match {
     case e: Enum => idCpp.enumType(name)
     case i: Interface => idCpp.ty(name)
     case r: Record => idCpp.ty(name)
@@ -285,4 +285,8 @@ class CppMarshal(spec: Spec) extends Marshal(spec) {
   }
 
   def maybeMove(expr: String, ty: TypeRef):String = maybeMove(expr, ty.resolved)
+
+  protected override def extendsRecordFormat(name: String): String = {
+    return s" : public ${name}"
+  }
 }

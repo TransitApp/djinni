@@ -248,12 +248,18 @@ class KotlinGenerator(spec: Spec) extends Generator(spec) {
     })
   }
 
-  override def generateRecord(origin: String, ident: Ident, doc: Doc, params: Seq[TypeParam], r: Record) {
+  override def generateRecord(origin: String, ident: Ident, doc: Doc, params: Seq[TypeParam], r: Record, idl: Seq[TypeDecl]) {
     val refs = new JavaRefs()
     r.fields.foreach(f => refs.find(f.ty))
 
+    val isRecordInherited = isInherited(idl, ident.name)
     val javaName = if (r.ext.java) (ident.name + "_base") else ident.name
     val javaFinal = if (!r.ext.java && spec.javaUseFinalForRecord) "val " else "var "
+    val superRecord = getSuperRecord(idl, r)
+    val superFields: Seq[Field] = superRecord match {
+      case None => Seq.empty
+      case Some(value) => value.fields
+    }
 
     writeJavaFile(javaName, origin, refs.java, w => {
       writeDoc(w, doc)
@@ -263,26 +269,69 @@ class KotlinGenerator(spec: Spec) extends Generator(spec) {
       val interfaces = scala.collection.mutable.ArrayBuffer[String]()
       if (r.derivingTypes.contains(DerivingType.Ord))
           interfaces += s"Comparable<$self>"
-      if (spec.javaImplementAndroidOsParcelable && r.derivingTypes.contains(DerivingType.AndroidParcelable)) {
+      if (r.derivingTypes.contains(DerivingType.AndroidParcelable)) {
           interfaces += "android.os.Parcelable"
           w.wl("@kotlinx.android.parcel.Parcelize")
       }
-      val classOrDataClassDesc = if (r.fields.nonEmpty) "data class" else "class"
+
+      val classOrDataClassDesc = if (r.fields.nonEmpty && !isRecordInherited) "data class" else "open class"
       val implementsSection = if (interfaces.isEmpty) "" else " : " + interfaces.mkString(", ")
       w.w(s"${javaClassAccessModifierString}$classOrDataClassDesc ${self + javaTypeParams(params)}")
       if (r.fields.nonEmpty) {
         w.wl("(")
         // Field definitions.
-        val skipFirst = SkipFirst()
+        var skipFirst = SkipFirst()
+        for (f <- superFields) {
+          skipFirst {
+            w.wl(",")
+          }
+          
+          if (isRecordInherited) {
+            w.w(s"    ${idJava.field(f.ident)}: ${marshal.fieldType(f.ty)}")
+          }
+          else {
+            w.w(s"    val _${idJava.field(f.ident)}: ${marshal.fieldType(f.ty)}")
+          }
+        }
+
+        if (superFields.isEmpty) {
+          skipFirst = SkipFirst()
+        }
+        
         for (f <- r.fields) {
           skipFirst {
             w.wl(",")
           }
           w.w(s"    val ${idJava.field(f.ident)}: ${marshal.fieldType(f.ty)}")
         }
+
         w.wl
-        w.w(")")
+        val extendsClass = marshal.extendsRecord(idl, r)
+        w.w(s")$extendsClass$implementsSection")
+
+        if (superFields.nonEmpty) {
+          w.w("(")
+          skipFirst = SkipFirst()
+          for (f <- superFields) {
+            skipFirst {
+              w.w(", ")
+            }
+
+            if (isRecordInherited) {
+              w.w(s"${idJava.field(f.ident)}")
+            }
+            else {
+              w.w(s"_${idJava.field(f.ident)}")
+            }
+          }
+          w.w(")")
+        }
+        else if (superRecord != None) {
+          w.w("()")
+        }
       }
+
+
       w.w(s"$implementsSection").braced {
         generateJavaConstants(w, r.consts)
 
@@ -294,7 +343,7 @@ class KotlinGenerator(spec: Spec) extends Generator(spec) {
             w.wl
             w.wl(s"other as $self")
             w.wl
-            for (f <- r.fields) {
+            for (f <- superFields++r.fields) {
               f.ty.resolved.base match {
                 case MBinary | MArray => w.w(s"if (!${idJava.field(f.ident)}.contentEquals(other.${idJava.field(f.ident)})) return false")
                 case MList | MSet | MMap | MString | MDate | MOptional => w.wl(s"if (${idJava.field(f.ident)} != other.${idJava.field(f.ident)}) return false")
@@ -317,7 +366,7 @@ class KotlinGenerator(spec: Spec) extends Generator(spec) {
             w.wl("var hashCode = 17;")
             // Also pick an arbitrary prime to use as the multiplier.
             val multiplier = "31"
-            for (f <- r.fields) {
+            for (f <- superFields++r.fields) {
               val fieldHashCode = f.ty.resolved.base match {
                 case MBinary | MArray => s"${idJava.field(f.ident)}.contentHashCode()"
                 case MList | MSet | MMap | MString | MDate => s"${idJava.field(f.ident)}.hashCode()"
@@ -346,12 +395,15 @@ class KotlinGenerator(spec: Spec) extends Generator(spec) {
         w.w("override fun toString(): String ").braced {
           w.w(s"return ").nestedN(2) {
             w.wl(s""""${self} {" +""")
-            for (i <- 0 to r.fields.length-1) {
-              val name = idJava.field(r.fields(i).ident)
+            var i: Int = 0
+            for (f <- (superFields ++ r.fields)) {
+              val name = idJava.field(f.ident)
               val comma = if (i > 0) """"," + """ else ""
               w.wl(s"""${comma}"${name}=" + ${name} +""")
+              i+=1
             }
           }
+          
           w.wl(s""""}"""")
         }
         w.wl
@@ -372,7 +424,7 @@ class KotlinGenerator(spec: Spec) extends Generator(spec) {
           w.wl
           w.w(s"override fun compareTo(other: $self): Int ").braced {
             w.wl("var tempResult: Int")
-            for (f <- r.fields) {
+            for (f <- (superFields ++ r.fields)) {
               f.ty.resolved.base match {
                 case MString | MDate => w.wl(s"tempResult = this.${idJava.field(f.ident)}.compareTo(other.${idJava.field(f.ident)});")
                 case t: MPrimitive => primitiveCompare(f.ident)
@@ -399,6 +451,7 @@ class KotlinGenerator(spec: Spec) extends Generator(spec) {
       }
     })
   }
+
 
   def javaTypeParams(params: Seq[TypeParam]): String =
     if (params.isEmpty) "" else params.map(p => idJava.typeParam(p.ident)).mkString("<", ", ", ">")

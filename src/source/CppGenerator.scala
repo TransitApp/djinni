@@ -195,20 +195,38 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     }
   }
 
-  override def generateRecord(origin: String, ident: Ident, doc: Doc, params: Seq[TypeParam], r: Record) {
+  override def generateRecord(origin: String, ident: Ident, doc: Doc, params: Seq[TypeParam], r: Record, idl: Seq[TypeDecl]) {
     val refs = new CppRefs(ident.name)
     r.fields.foreach(f => refs.find(f.ty, false))
     r.consts.foreach(c => refs.find(c.ty, false))
     refs.hpp.add("#include <utility>") // Add for std::move
 
     val self = marshal.typename(ident, r)
-    val (cppName, cppFinal) = if (r.ext.cpp) (ident.name + "_base", "") else (ident.name, " final")
+    val isRecordInherited = isInherited(idl, ident.name)
+
+    val superRecord = getSuperRecord(idl, r)
+    
+    superRecord match {
+      case None => {}
+      case Some(value) => {
+        refs.hpp.add("#include "+q(spec.cppExtendedRecordIncludePrefix + spec.cppFileIdentStyle(value.ident) + "." + spec.cppHeaderExt))
+      }
+    }
+    
+    val superFields: Seq[Field] = superRecord match {
+      case None => Seq.empty
+      case Some(value) => value.fields
+    }
+
+    val (cppName, cppFinal) = if (r.ext.cpp) (ident.name + "_base", "") else if (!isRecordInherited && superRecord == None) (ident.name, " final") else (ident.name, "")
     val actualSelf = marshal.typename(cppName, r)
 
     // Requiring the extended class
     if (r.ext.cpp) {
       refs.cpp.add("#include "+q(spec.cppExtendedRecordIncludePrefix + spec.cppFileIdentStyle(ident) + "." + spec.cppHeaderExt))
     }
+
+
 
     // C++ Header
     def writeCppPrototype(w: IndentWriter) {
@@ -218,8 +236,9 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         w.wl
       }
       writeDoc(w, doc)
+      
       writeCppTypeParams(w, params)
-      w.w("struct " + actualSelf + cppFinal).bracedSemi {
+      w.w("struct " + actualSelf + marshal.extendsRecord(idl, r) + cppFinal).bracedSemi {
         generateHppConstants(w, r.consts)
         // Field definitions.
         for (f <- r.fields) {
@@ -244,16 +263,31 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
           w.wl(s"friend bool operator>=(const $actualSelf& lhs, const $actualSelf& rhs);")
         }
 
+        if (isRecordInherited) {
+          w.wl
+          w.wl(s"virtual ~$actualSelf(){};")
+        }
+
         // Constructor.
         if(r.fields.nonEmpty && spec.cppStructConstructor) {
           w.wl
           if (r.fields.size == 1) {
             w.wl("//NOLINTNEXTLINE(google-explicit-constructor)")
           }
-          writeAlignedCall(w, actualSelf + "(", r.fields, ")", f => marshal.fieldType(f.ty) + " " + idCpp.local(f.ident) + "_")
+          writeAlignedCall(w, actualSelf + "(", superFields ++ r.fields, ")", f => marshal.fieldType(f.ty) + " " + idCpp.local(f.ident) + "_")
           w.wl
           val init = (f: Field) => idCpp.field(f.ident) + "(std::move(" + idCpp.local(f.ident) + "_))"
-          w.wl(": " + init(r.fields.head))
+          
+          superRecord match {
+            case None => w.wl(": " + init(r.fields.head))
+            case Some(value) => {
+              w.wl(": ")
+              val superRecordName = marshal.typename(value.ident, value.record)
+              writeAlignedCall(w, superRecordName + "(", superFields, ")", f => " " + idCpp.local(f.ident) + "_")
+              w.w(", " + init(r.fields.head))
+            }
+          }    
+
           r.fields.tail.map(f => ", " + init(f)).foreach(w.wl)
           w.wl("{}")
         }
@@ -279,11 +313,13 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
       writeCppFile(cppName, origin, refs.cpp, w => {
         generateCppConstants(w, r.consts, actualSelf)
 
+        val fields = superFields ++ r.fields
+
         if (r.derivingTypes.contains(DerivingType.Eq)) {
           w.wl
           w.w(s"bool operator==(const $actualSelf& lhs, const $actualSelf& rhs)").braced {
-            if(!r.fields.isEmpty) {
-              writeAlignedCall(w, "return ", r.fields, " &&", "", f => s"lhs.${idCpp.field(f.ident)} == rhs.${idCpp.field(f.ident)}")
+            if(!fields.isEmpty) {
+              writeAlignedCall(w, "return ", fields, " &&", "", f => s"lhs.${idCpp.field(f.ident)} == rhs.${idCpp.field(f.ident)}")
               w.wl(";")
             } else {
              w.wl("return true;")
@@ -297,7 +333,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         if (r.derivingTypes.contains(DerivingType.Ord)) {
           w.wl
           w.w(s"bool operator<(const $actualSelf& lhs, const $actualSelf& rhs)").braced {
-            for(f <- r.fields) {
+            for(f <- fields) {
               w.w(s"if (lhs.${idCpp.field(f.ident)} < rhs.${idCpp.field(f.ident)})").braced {
                 w.wl("return true;")
               }
