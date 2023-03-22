@@ -286,12 +286,8 @@ class KotlinGenerator(spec: Spec) extends Generator(spec) {
             w.wl(",")
           }
           
-          if (isRecordInherited) {
-            w.w(s"    ${idJava.field(f.ident)}: ${marshal.fieldType(f.ty)}")
-          }
-          else {
-            w.w(s"    val _${idJava.field(f.ident)}: ${marshal.fieldType(f.ty)}")
-          }
+           w.w(s"    override val ${idJava.field(f.ident)}: ${marshal.fieldType(f.ty)}")
+        
         }
 
         if (superFields.isEmpty) {
@@ -302,7 +298,13 @@ class KotlinGenerator(spec: Spec) extends Generator(spec) {
           skipFirst {
             w.wl(",")
           }
-          w.w(s"    val ${idJava.field(f.ident)}: ${marshal.fieldType(f.ty)}")
+
+          if (isRecordInherited) {
+            w.w(s"    open val ${idJava.field(f.ident)}: ${marshal.fieldType(f.ty)}")
+          }
+          else {
+            w.w(s"    val ${idJava.field(f.ident)}: ${marshal.fieldType(f.ty)}")
+          }
         }
 
         w.wl
@@ -317,12 +319,8 @@ class KotlinGenerator(spec: Spec) extends Generator(spec) {
               w.w(", ")
             }
 
-            if (isRecordInherited) {
-              w.w(s"${idJava.field(f.ident)}")
-            }
-            else {
-              w.w(s"_${idJava.field(f.ident)}")
-            }
+            w.w(s"${idJava.field(f.ident)}")
+
           }
           w.w(")")
         }
