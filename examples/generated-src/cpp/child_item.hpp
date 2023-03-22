@@ -12,6 +12,8 @@ namespace textsort {
 struct ChildItem : public ItemList {
     std::string parent;
 
+    virtual ~ChildItem(){};
+
     //NOLINTNEXTLINE(google-explicit-constructor)
     ChildItem(std::vector<std::string> items_,
               std::string parent_)

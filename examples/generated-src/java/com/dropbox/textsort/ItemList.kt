@@ -6,7 +6,7 @@ package com.dropbox.textsort
 import java.util.ArrayList
 
 internal open class ItemList(
-    val items: ArrayList<String>
+    open val items: ArrayList<String>
 ) {
 
     override fun toString(): String  {
