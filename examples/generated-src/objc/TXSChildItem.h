@@ -8,7 +8,7 @@
 - (nonnull instancetype)init NS_UNAVAILABLE;
 + (nonnull instancetype)new NS_UNAVAILABLE;
 - (nonnull instancetype)initWithItems:(nonnull NSArray<NSString *> *)items
-                               parent:(nonnull NSString *)parent NS_DESIGNATED_INITIALIZER;
+                               parent:(nonnull NSString *)parent;
 + (nonnull instancetype)childItemWithItems:(nonnull NSArray<NSString *> *)items
                                     parent:(nonnull NSString *)parent;
 

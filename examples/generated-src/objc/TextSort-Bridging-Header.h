@@ -14,6 +14,7 @@ FOUNDATION_EXPORT const unsigned char TextSortBridgingHeaderVersionString[];
 
 #import "TXSItemList.h"
 #import "TXSChildItem.h"
+#import "TXSSubChildItem.h"
 #import "TXSSortOrder.h"
 #import "TXSSortItems.h"
 #import "TXSTextboxListener.h"

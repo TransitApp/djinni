@@ -6,6 +6,10 @@ child_item = record extends item_list {
     parent: string;
 }
 
+sub_child_item = record extends child_item {
+    index: i32;
+}
+
 sort_order = enum {
     ascending;
     descending;

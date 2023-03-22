@@ -3,15 +3,17 @@
 
 package com.dropbox.textsort
 
-internal open class ChildItem(
+internal data class SubChildItem(
     override val items: ArrayList<String>,
-    open val parent: String
-) : ItemList(items) {
+    override val parent: String,
+    val index: Int
+) : ChildItem(items, parent) {
 
     override fun toString(): String  {
-        return "ChildItem {" +
+        return "SubChildItem {" +
                 "items=" + items +
                 "," + "parent=" + parent +
+                "," + "index=" + index +
         "}"
     }
 
