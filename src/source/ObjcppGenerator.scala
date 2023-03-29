@@ -338,10 +338,17 @@ class ObjcppGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
   }
 
   override def generateRecord(origin: String, ident: Ident, doc: Doc, params: Seq[TypeParam], r: Record, idl: Seq[TypeDecl]) {
+    val (superFields, firstInitializerArg) = getSuperRecord(idl, r) match {
+      case None => (Seq.empty, if(r.fields.isEmpty) "" else IdentStyle.camelUpper("with_" + r.fields.head.ident.name))
+      case Some(value) => (value.fields, if(value.fields.isEmpty) "" else IdentStyle.camelUpper("with_" + value.fields.head.ident.name))
+    }
+
+    val fields = superFields ++ r.fields
+
     val refs = new ObjcRefs()
     for (c <- r.consts)
       refs.find(c.ty)
-    for (f <- r.fields)
+    for (f <- fields)
       refs.find(f.ty)
 
     val objcName = ident.name + (if (r.ext.objc) "_base" else "")
@@ -384,13 +391,6 @@ class ObjcppGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
 
     writeObjcFile(privateBodyName(objcName), origin, refs.body, w => {
       wrapNamespace(w, spec.objcppNamespace, w => {
-
-        val (superFields, firstInitializerArg) = getSuperRecord(idl, r) match {
-          case None => (Seq.empty, if(r.fields.isEmpty) "" else IdentStyle.camelUpper("with_" + r.fields.head.ident.name))
-          case Some(value) => (value.fields, if(value.fields.isEmpty) "" else IdentStyle.camelUpper("with_" + value.fields.head.ident.name))
-        }
-
-        val fields = superFields ++ r.fields
 
         w.wl(s"auto $helperClass::toCpp(ObjcType obj) -> CppType")
         w.braced {
