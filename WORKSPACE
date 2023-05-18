@@ -12,7 +12,6 @@ http_archive(
     ],
 )
 
-# See https://github.com/bazelbuild/rules_scala/releases for up to date version information.
 rules_scala_version = "c711b4d1f0d1cc386c63ef748c9df14d2f3a187e"
 http_archive(
     name = "io_bazel_rules_scala",
@@ -23,22 +22,12 @@ http_archive(
 )
 
 load("@io_bazel_rules_scala//:scala_config.bzl", "scala_config")
-# Stores Scala version and other configuration
-# 2.12 is a default version, other versions can be use by passing them explicitly:
-# scala_config(scala_version = "2.11.12")
-# Scala 3 requires extras...
-#   3.2 should be supported on master. Please note that Scala artifacts for version (3.2.2) are not defined in
-#   Rules Scala, they need to be provided by your WORKSPACE. You can use external loader like
-#   https://github.com/bazelbuild/rules_jvm_external
 scala_config(scala_version = "2.11.12")
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "rules_scala_setup", "rules_scala_toolchain_deps_repositories")
 
-# loads other rules Rules Scala depends on 
 rules_scala_setup()
 
-# Loads Maven deps like Scala compiler and standard libs. On production projects you should consider 
-# defining a custom deps toolchains to use your project libs instead 
 rules_scala_toolchain_deps_repositories(fetch_sources = True)
 
 load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
@@ -47,11 +36,6 @@ rules_proto_toolchains()
 
 load("@io_bazel_rules_scala//scala:toolchains.bzl", "scala_register_toolchains")
 scala_register_toolchains()
-
-# optional: setup ScalaTest toolchain and dependencies
-load("@io_bazel_rules_scala//testing:scalatest.bzl", "scalatest_repositories", "scalatest_toolchain")
-scalatest_repositories()
-scalatest_toolchain()
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
@@ -90,12 +74,12 @@ maven_install(
 
 # --- Everything below is only used for examples and tests
 
-# android_sdk_repository fails to find build_tools if we don't explicitly set a version.
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 android_sdk_repository(name = "androidsdk", build_tools_version = "32.0.0")
 RULES_ANDROID_NDK_COMMIT= "81ec8b79dc50ee97e336a25724fdbb28e33b8d41"
 RULES_ANDROID_NDK_SHA = "b29409496439cdcdb50a8e161c4953ca78a548e16d3ee729a1b5cd719ffdacbf"
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 http_archive(
     name = "rules_android_ndk",
     url = "https://github.com/bazelbuild/rules_android_ndk/archive/%s.zip" % RULES_ANDROID_NDK_COMMIT,
@@ -104,8 +88,6 @@ http_archive(
 )
 load("@rules_android_ndk//:rules.bzl", "android_ndk_repository")
 android_ndk_repository(name = "androidndk")
-
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 build_bazel_rules_apple_version = "1.0.1"
 http_archive(
