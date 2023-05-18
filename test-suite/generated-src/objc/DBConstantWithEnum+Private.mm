@@ -11,7 +11,8 @@ auto ConstantWithEnum::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
     (void)obj; // Suppress warnings in relase builds for empty records
-    return {};
+    ::testsuite::ConstantWithEnum model;
+    return model;
 }
 
 auto ConstantWithEnum::fromCpp(const CppType& cpp) -> ObjcType

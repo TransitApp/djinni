@@ -10,8 +10,10 @@ namespace djinni_generated {
 auto ConstantRecord::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::I32::toCpp(obj.someInteger),
-            ::djinni::String::toCpp(obj.someString)};
+    ::testsuite::ConstantRecord model;
+    model.mSomeInteger = ::djinni::I32::toCpp(obj.someInteger);
+    model.mSomeString = ::djinni::String::toCpp(obj.someString);
+    return model;
 }
 
 auto ConstantRecord::fromCpp(const CppType& cpp) -> ObjcType

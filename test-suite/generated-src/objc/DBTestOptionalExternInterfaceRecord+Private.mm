@@ -11,7 +11,9 @@ namespace djinni_generated {
 auto TestOptionalExternInterfaceRecord::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::Optional<std::experimental::optional, ::djinni_generated::SampleInterface>::toCpp(obj.sampleInterface)};
+    ::TestOptionalExternInterfaceRecord model;
+    model.mSampleInterface = ::djinni::Optional<std::experimental::optional, ::djinni_generated::SampleInterface>::toCpp(obj.sampleInterface);
+    return model;
 }
 
 auto TestOptionalExternInterfaceRecord::fromCpp(const CppType& cpp) -> ObjcType

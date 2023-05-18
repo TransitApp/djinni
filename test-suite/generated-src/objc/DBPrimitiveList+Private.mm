@@ -10,7 +10,9 @@ namespace djinni_generated {
 auto PrimitiveList::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::List<::djinni::I64>::toCpp(obj.list)};
+    ::testsuite::PrimitiveList model;
+    model.mList = ::djinni::List<::djinni::I64>::toCpp(obj.list);
+    return model;
 }
 
 auto PrimitiveList::fromCpp(const CppType& cpp) -> ObjcType

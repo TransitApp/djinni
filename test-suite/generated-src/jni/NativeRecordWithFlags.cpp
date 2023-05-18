@@ -22,7 +22,9 @@ auto NativeRecordWithFlags::toCpp(JNIEnv* jniEnv, JniType j) -> CppType {
     ::djinni::JniLocalScope jscope(jniEnv, 2);
     assert(j != nullptr);
     const auto& data = ::djinni::JniClass<NativeRecordWithFlags>::get();
-    return {::djinni_generated::NativeAccessFlags::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_mAccess))};
+    ::testsuite::RecordWithFlags model;
+    model.mAccess = ::djinni_generated::NativeAccessFlags::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_mAccess));
+    return model;
 }
 
 } // namespace djinni_generated

@@ -10,7 +10,9 @@ namespace djinni_generated {
 auto SupportCopying::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::I32::toCpp(obj.x)};
+    ::testsuite::SupportCopying model;
+    model.mX = ::djinni::I32::toCpp(obj.x);
+    return model;
 }
 
 auto SupportCopying::fromCpp(const CppType& cpp) -> ObjcType

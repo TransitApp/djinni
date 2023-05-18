@@ -10,14 +10,16 @@ namespace djinni_generated {
 auto RecordWithDerivings::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::I8::toCpp(obj.eight),
-            ::djinni::I16::toCpp(obj.sixteen),
-            ::djinni::I32::toCpp(obj.thirtytwo),
-            ::djinni::I64::toCpp(obj.sixtyfour),
-            ::djinni::F32::toCpp(obj.fthirtytwo),
-            ::djinni::F64::toCpp(obj.fsixtyfour),
-            ::djinni::Date::toCpp(obj.d),
-            ::djinni::String::toCpp(obj.s)};
+    ::testsuite::RecordWithDerivings model;
+    model.mEight = ::djinni::I8::toCpp(obj.eight);
+    model.mSixteen = ::djinni::I16::toCpp(obj.sixteen);
+    model.mThirtytwo = ::djinni::I32::toCpp(obj.thirtytwo);
+    model.mSixtyfour = ::djinni::I64::toCpp(obj.sixtyfour);
+    model.mFthirtytwo = ::djinni::F32::toCpp(obj.fthirtytwo);
+    model.mFsixtyfour = ::djinni::F64::toCpp(obj.fsixtyfour);
+    model.mD = ::djinni::Date::toCpp(obj.d);
+    model.mS = ::djinni::String::toCpp(obj.s);
+    return model;
 }
 
 auto RecordWithDerivings::fromCpp(const CppType& cpp) -> ObjcType

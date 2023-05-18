@@ -22,7 +22,9 @@ auto NativeRecordUsingExtendedRecord::toCpp(JNIEnv* jniEnv, JniType j) -> CppTyp
     ::djinni::JniLocalScope jscope(jniEnv, 2);
     assert(j != nullptr);
     const auto& data = ::djinni::JniClass<NativeRecordUsingExtendedRecord>::get();
-    return {::djinni_generated::NativeExtendedRecord::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_mEr))};
+    ::testsuite::RecordUsingExtendedRecord model;
+    model.mEr = ::djinni_generated::NativeExtendedRecord::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_mEr));
+    return model;
 }
 
 } // namespace djinni_generated

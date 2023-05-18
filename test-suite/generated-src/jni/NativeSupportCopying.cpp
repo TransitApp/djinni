@@ -22,7 +22,9 @@ auto NativeSupportCopying::toCpp(JNIEnv* jniEnv, JniType j) -> CppType {
     ::djinni::JniLocalScope jscope(jniEnv, 2);
     assert(j != nullptr);
     const auto& data = ::djinni::JniClass<NativeSupportCopying>::get();
-    return {::djinni::I32::toCpp(jniEnv, jniEnv->GetIntField(j, data.field_mX))};
+    ::testsuite::SupportCopying model;
+    model.mX = ::djinni::I32::toCpp(jniEnv, jniEnv->GetIntField(j, data.field_mX));
+    return model;
 }
 
 } // namespace djinni_generated

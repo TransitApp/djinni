@@ -23,7 +23,9 @@ auto NativeNestedOutcome::toCpp(JNIEnv* jniEnv, JniType j) -> CppType {
     ::djinni::JniLocalScope jscope(jniEnv, 2);
     assert(j != nullptr);
     const auto& data = ::djinni::JniClass<NativeNestedOutcome>::get();
-    return {::djinni::Outcome<::djinni::I32, ::djinni::String>::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_mO))};
+    ::testsuite::NestedOutcome model;
+    model.mO = ::djinni::Outcome<::djinni::I32, ::djinni::String>::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_mO));
+    return model;
 }
 
 } // namespace djinni_generated

@@ -10,7 +10,9 @@ namespace djinni_generated {
 auto NestedCollection::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::List<::djinni::Set<::djinni::String>>::toCpp(obj.setList)};
+    ::testsuite::NestedCollection model;
+    model.mSetList = ::djinni::List<::djinni::Set<::djinni::String>>::toCpp(obj.setList);
+    return model;
 }
 
 auto NestedCollection::fromCpp(const CppType& cpp) -> ObjcType

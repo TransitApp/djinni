@@ -10,7 +10,9 @@ namespace djinni_generated {
 auto VarnameRecord::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::I8::toCpp(obj.Field)};
+    ::testsuite::VarnameRecord model;
+    model.mField = ::djinni::I8::toCpp(obj.Field);
+    return model;
 }
 
 auto VarnameRecord::fromCpp(const CppType& cpp) -> ObjcType

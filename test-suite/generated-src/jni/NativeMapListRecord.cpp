@@ -22,7 +22,9 @@ auto NativeMapListRecord::toCpp(JNIEnv* jniEnv, JniType j) -> CppType {
     ::djinni::JniLocalScope jscope(jniEnv, 2);
     assert(j != nullptr);
     const auto& data = ::djinni::JniClass<NativeMapListRecord>::get();
-    return {::djinni::List<::djinni::Map<::djinni::String, ::djinni::I64>>::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_mMapList))};
+    ::testsuite::MapListRecord model;
+    model.mMapList = ::djinni::List<::djinni::Map<::djinni::String, ::djinni::I64>>::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_mMapList));
+    return model;
 }
 
 } // namespace djinni_generated

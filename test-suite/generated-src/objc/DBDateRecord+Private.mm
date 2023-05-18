@@ -10,7 +10,9 @@ namespace djinni_generated {
 auto DateRecord::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::Date::toCpp(obj.createdAt)};
+    ::testsuite::DateRecord model;
+    model.mCreatedAt = ::djinni::Date::toCpp(obj.createdAt);
+    return model;
 }
 
 auto DateRecord::fromCpp(const CppType& cpp) -> ObjcType

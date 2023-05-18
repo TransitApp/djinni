@@ -10,7 +10,9 @@ namespace djinni_generated {
 auto RecordWithEmbeddedCppProto::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::ProtobufPassthrough<::djinni::test2::PersistingState>::toCpp(obj.state)};
+    ::testsuite::RecordWithEmbeddedCppProto model;
+    model.mState = ::djinni::ProtobufPassthrough<::djinni::test2::PersistingState>::toCpp(obj.state);
+    return model;
 }
 
 auto RecordWithEmbeddedCppProto::fromCpp(const CppType& cpp) -> ObjcType

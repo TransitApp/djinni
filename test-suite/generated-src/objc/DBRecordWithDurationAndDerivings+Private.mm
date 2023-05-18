@@ -11,7 +11,9 @@ namespace djinni_generated {
 auto RecordWithDurationAndDerivings::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::Duration<::djinni::F64, ::djinni::Duration_ns>::toCpp(obj.dt)};
+    ::testsuite::RecordWithDurationAndDerivings model;
+    model.mDt = ::djinni::Duration<::djinni::F64, ::djinni::Duration_ns>::toCpp(obj.dt);
+    return model;
 }
 
 auto RecordWithDurationAndDerivings::fromCpp(const CppType& cpp) -> ObjcType

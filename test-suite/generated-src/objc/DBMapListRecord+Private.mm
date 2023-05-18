@@ -10,7 +10,9 @@ namespace djinni_generated {
 auto MapListRecord::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::List<::djinni::Map<::djinni::String, ::djinni::I64>>::toCpp(obj.mapList)};
+    ::testsuite::MapListRecord model;
+    model.mMapList = ::djinni::List<::djinni::Map<::djinni::String, ::djinni::I64>>::toCpp(obj.mapList);
+    return model;
 }
 
 auto MapListRecord::fromCpp(const CppType& cpp) -> ObjcType

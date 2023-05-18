@@ -11,8 +11,10 @@ namespace djinni_generated {
 auto ExternRecordWithDerivings::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni_generated::RecordWithDerivings::toCpp(obj.member),
-            ::djinni::Enum<::testsuite::color, DBColor>::toCpp(obj.e)};
+    ::ExternRecordWithDerivings model;
+    model.mMember = ::djinni_generated::RecordWithDerivings::toCpp(obj.member);
+    model.mE = ::djinni::Enum<::testsuite::color, DBColor>::toCpp(obj.e);
+    return model;
 }
 
 auto ExternRecordWithDerivings::fromCpp(const CppType& cpp) -> ObjcType

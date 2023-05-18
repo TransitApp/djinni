@@ -22,7 +22,9 @@ auto NativeMapDateRecord::toCpp(JNIEnv* jniEnv, JniType j) -> CppType {
     ::djinni::JniLocalScope jscope(jniEnv, 2);
     assert(j != nullptr);
     const auto& data = ::djinni::JniClass<NativeMapDateRecord>::get();
-    return {::djinni::Map<::djinni::String, ::djinni::Date>::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_mDatesById))};
+    ::testsuite::MapDateRecord model;
+    model.mDatesById = ::djinni::Map<::djinni::String, ::djinni::Date>::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_mDatesById));
+    return model;
 }
 
 } // namespace djinni_generated
