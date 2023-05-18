@@ -10,20 +10,22 @@ namespace djinni_generated {
 auto AssortedPrimitives::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::Bool::toCpp(obj.b),
-            ::djinni::I8::toCpp(obj.eight),
-            ::djinni::I16::toCpp(obj.sixteen),
-            ::djinni::I32::toCpp(obj.thirtytwo),
-            ::djinni::I64::toCpp(obj.sixtyfour),
-            ::djinni::F32::toCpp(obj.fthirtytwo),
-            ::djinni::F64::toCpp(obj.fsixtyfour),
-            ::djinni::Optional<std::experimental::optional, ::djinni::Bool>::toCpp(obj.oB),
-            ::djinni::Optional<std::experimental::optional, ::djinni::I8>::toCpp(obj.oEight),
-            ::djinni::Optional<std::experimental::optional, ::djinni::I16>::toCpp(obj.oSixteen),
-            ::djinni::Optional<std::experimental::optional, ::djinni::I32>::toCpp(obj.oThirtytwo),
-            ::djinni::Optional<std::experimental::optional, ::djinni::I64>::toCpp(obj.oSixtyfour),
-            ::djinni::Optional<std::experimental::optional, ::djinni::F32>::toCpp(obj.oFthirtytwo),
-            ::djinni::Optional<std::experimental::optional, ::djinni::F64>::toCpp(obj.oFsixtyfour)};
+    ::testsuite::AssortedPrimitives model;
+    model.mB = ::djinni::Bool::toCpp(obj.b);
+    model.mEight = ::djinni::I8::toCpp(obj.eight);
+    model.mSixteen = ::djinni::I16::toCpp(obj.sixteen);
+    model.mThirtytwo = ::djinni::I32::toCpp(obj.thirtytwo);
+    model.mSixtyfour = ::djinni::I64::toCpp(obj.sixtyfour);
+    model.mFthirtytwo = ::djinni::F32::toCpp(obj.fthirtytwo);
+    model.mFsixtyfour = ::djinni::F64::toCpp(obj.fsixtyfour);
+    model.mOB = ::djinni::Optional<std::experimental::optional, ::djinni::Bool>::toCpp(obj.oB);
+    model.mOEight = ::djinni::Optional<std::experimental::optional, ::djinni::I8>::toCpp(obj.oEight);
+    model.mOSixteen = ::djinni::Optional<std::experimental::optional, ::djinni::I16>::toCpp(obj.oSixteen);
+    model.mOThirtytwo = ::djinni::Optional<std::experimental::optional, ::djinni::I32>::toCpp(obj.oThirtytwo);
+    model.mOSixtyfour = ::djinni::Optional<std::experimental::optional, ::djinni::I64>::toCpp(obj.oSixtyfour);
+    model.mOFthirtytwo = ::djinni::Optional<std::experimental::optional, ::djinni::F32>::toCpp(obj.oFthirtytwo);
+    model.mOFsixtyfour = ::djinni::Optional<std::experimental::optional, ::djinni::F64>::toCpp(obj.oFsixtyfour);
+    return model;
 }
 
 auto AssortedPrimitives::fromCpp(const CppType& cpp) -> ObjcType

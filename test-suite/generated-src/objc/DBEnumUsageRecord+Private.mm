@@ -11,11 +11,13 @@ namespace djinni_generated {
 auto EnumUsageRecord::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::Enum<::testsuite::color, DBColor>::toCpp(obj.e),
-            ::djinni::Optional<std::experimental::optional, ::djinni::Enum<::testsuite::color, DBColor>>::toCpp(obj.o),
-            ::djinni::List<::djinni::Enum<::testsuite::color, DBColor>>::toCpp(obj.l),
-            ::djinni::Set<::djinni::Enum<::testsuite::color, DBColor>>::toCpp(obj.s),
-            ::djinni::Map<::djinni::Enum<::testsuite::color, DBColor>, ::djinni::Enum<::testsuite::color, DBColor>>::toCpp(obj.m)};
+    ::testsuite::EnumUsageRecord model;
+    model.mE = ::djinni::Enum<::testsuite::color, DBColor>::toCpp(obj.e);
+    model.mO = ::djinni::Optional<std::experimental::optional, ::djinni::Enum<::testsuite::color, DBColor>>::toCpp(obj.o);
+    model.mL = ::djinni::List<::djinni::Enum<::testsuite::color, DBColor>>::toCpp(obj.l);
+    model.mS = ::djinni::Set<::djinni::Enum<::testsuite::color, DBColor>>::toCpp(obj.s);
+    model.mM = ::djinni::Map<::djinni::Enum<::testsuite::color, DBColor>, ::djinni::Enum<::testsuite::color, DBColor>>::toCpp(obj.m);
+    return model;
 }
 
 auto EnumUsageRecord::fromCpp(const CppType& cpp) -> ObjcType

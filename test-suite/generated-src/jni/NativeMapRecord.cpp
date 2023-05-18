@@ -23,8 +23,10 @@ auto NativeMapRecord::toCpp(JNIEnv* jniEnv, JniType j) -> CppType {
     ::djinni::JniLocalScope jscope(jniEnv, 3);
     assert(j != nullptr);
     const auto& data = ::djinni::JniClass<NativeMapRecord>::get();
-    return {::djinni::Map<::djinni::String, ::djinni::I64>::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_mMap)),
-            ::djinni::Map<::djinni::I32, ::djinni::I32>::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_mImap))};
+    ::testsuite::MapRecord model;
+    model.mMap = ::djinni::Map<::djinni::String, ::djinni::I64>::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_mMap));
+    model.mImap = ::djinni::Map<::djinni::I32, ::djinni::I32>::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_mImap));
+    return model;
 }
 
 } // namespace djinni_generated

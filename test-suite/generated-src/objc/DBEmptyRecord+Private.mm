@@ -10,7 +10,8 @@ auto EmptyRecord::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
     (void)obj; // Suppress warnings in relase builds for empty records
-    return {};
+    ::testsuite::EmptyRecord model;
+    return model;
 }
 
 auto EmptyRecord::fromCpp(const CppType& cpp) -> ObjcType

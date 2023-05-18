@@ -23,8 +23,10 @@ auto NativeConstantRecord::toCpp(JNIEnv* jniEnv, JniType j) -> CppType {
     ::djinni::JniLocalScope jscope(jniEnv, 3);
     assert(j != nullptr);
     const auto& data = ::djinni::JniClass<NativeConstantRecord>::get();
-    return {::djinni::I32::toCpp(jniEnv, jniEnv->GetIntField(j, data.field_mSomeInteger)),
-            ::djinni::String::toCpp(jniEnv, (jstring)jniEnv->GetObjectField(j, data.field_mSomeString))};
+    ::testsuite::ConstantRecord model;
+    model.mSomeInteger = ::djinni::I32::toCpp(jniEnv, jniEnv->GetIntField(j, data.field_mSomeInteger));
+    model.mSomeString = ::djinni::String::toCpp(jniEnv, (jstring)jniEnv->GetObjectField(j, data.field_mSomeString));
+    return model;
 }
 
 } // namespace djinni_generated

@@ -21,7 +21,8 @@ auto NativeConstants::toCpp(JNIEnv* jniEnv, JniType j) -> CppType {
     ::djinni::JniLocalScope jscope(jniEnv, 1);
     assert(j != nullptr);
     (void)j; // Suppress warnings in release builds for empty records
-    return {};
+    ::testsuite::Constants model;
+    return model;
 }
 
 } // namespace djinni_generated

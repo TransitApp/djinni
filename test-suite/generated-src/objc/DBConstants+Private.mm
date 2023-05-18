@@ -12,7 +12,8 @@ auto Constants::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
     (void)obj; // Suppress warnings in relase builds for empty records
-    return {};
+    ::testsuite::Constants model;
+    return model;
 }
 
 auto Constants::fromCpp(const CppType& cpp) -> ObjcType

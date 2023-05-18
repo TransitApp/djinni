@@ -22,7 +22,9 @@ auto NativeNestedCollection::toCpp(JNIEnv* jniEnv, JniType j) -> CppType {
     ::djinni::JniLocalScope jscope(jniEnv, 2);
     assert(j != nullptr);
     const auto& data = ::djinni::JniClass<NativeNestedCollection>::get();
-    return {::djinni::List<::djinni::Set<::djinni::String>>::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_mSetList))};
+    ::testsuite::NestedCollection model;
+    model.mSetList = ::djinni::List<::djinni::Set<::djinni::String>>::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_mSetList));
+    return model;
 }
 
 } // namespace djinni_generated

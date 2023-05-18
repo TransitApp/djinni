@@ -11,7 +11,9 @@ namespace djinni_generated {
 auto RecordWithEmbeddedProto::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::Protobuf<::djinni::test::Person, DJTestPerson>::toCpp(obj.person)};
+    ::testsuite::RecordWithEmbeddedProto model;
+    model.mPerson = ::djinni::Protobuf<::djinni::test::Person, DJTestPerson>::toCpp(obj.person);
+    return model;
 }
 
 auto RecordWithEmbeddedProto::fromCpp(const CppType& cpp) -> ObjcType

@@ -10,8 +10,10 @@ namespace djinni_generated {
 auto Vec2::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::I32::toCpp(obj.x),
-            ::djinni::I32::toCpp(obj.y)};
+    ::testsuite::Vec2 model;
+    model.mX = ::djinni::I32::toCpp(obj.x);
+    model.mY = ::djinni::I32::toCpp(obj.y);
+    return model;
 }
 
 auto Vec2::fromCpp(const CppType& cpp) -> ObjcType

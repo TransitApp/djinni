@@ -23,7 +23,9 @@ auto NativeTestOptionalExternInterfaceRecord::toCpp(JNIEnv* jniEnv, JniType j) -
     ::djinni::JniLocalScope jscope(jniEnv, 2);
     assert(j != nullptr);
     const auto& data = ::djinni::JniClass<NativeTestOptionalExternInterfaceRecord>::get();
-    return {::djinni::Optional<std::experimental::optional, ::djinni_generated::NativeSampleInterface>::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_mSampleInterface))};
+    ::TestOptionalExternInterfaceRecord model;
+    model.mSampleInterface = ::djinni::Optional<std::experimental::optional, ::djinni_generated::NativeSampleInterface>::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_mSampleInterface));
+    return model;
 }
 
 } // namespace djinni_generated

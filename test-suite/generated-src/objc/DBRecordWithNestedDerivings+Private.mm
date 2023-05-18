@@ -11,8 +11,10 @@ namespace djinni_generated {
 auto RecordWithNestedDerivings::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::I32::toCpp(obj.key),
-            ::djinni_generated::RecordWithDerivings::toCpp(obj.rec)};
+    ::testsuite::RecordWithNestedDerivings model;
+    model.mKey = ::djinni::I32::toCpp(obj.key);
+    model.mRec = ::djinni_generated::RecordWithDerivings::toCpp(obj.rec);
+    return model;
 }
 
 auto RecordWithNestedDerivings::fromCpp(const CppType& cpp) -> ObjcType

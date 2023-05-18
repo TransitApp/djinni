@@ -10,7 +10,9 @@ namespace djinni_generated {
 auto WcharTestRec::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::WString::toCpp(obj.s)};
+    ::testsuite::WcharTestRec model;
+    model.mS = ::djinni::WString::toCpp(obj.s);
+    return model;
 }
 
 auto WcharTestRec::fromCpp(const CppType& cpp) -> ObjcType

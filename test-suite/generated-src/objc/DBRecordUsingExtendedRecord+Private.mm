@@ -10,7 +10,9 @@ namespace djinni_generated {
 auto RecordUsingExtendedRecord::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni_generated::ExtendedRecord::toCpp(obj.er)};
+    ::testsuite::RecordUsingExtendedRecord model;
+    model.mEr = ::djinni_generated::ExtendedRecord::toCpp(obj.er);
+    return model;
 }
 
 auto RecordUsingExtendedRecord::fromCpp(const CppType& cpp) -> ObjcType

@@ -10,8 +10,10 @@ namespace djinni_generated {
 auto SetRecord::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::Set<::djinni::String>::toCpp(obj.set),
-            ::djinni::Set<::djinni::I32>::toCpp(obj.iset)};
+    ::testsuite::SetRecord model;
+    model.mSet = ::djinni::Set<::djinni::String>::toCpp(obj.set);
+    model.mIset = ::djinni::Set<::djinni::I32>::toCpp(obj.iset);
+    return model;
 }
 
 auto SetRecord::fromCpp(const CppType& cpp) -> ObjcType

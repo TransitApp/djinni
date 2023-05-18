@@ -22,7 +22,9 @@ auto NativeWcharTestRec::toCpp(JNIEnv* jniEnv, JniType j) -> CppType {
     ::djinni::JniLocalScope jscope(jniEnv, 2);
     assert(j != nullptr);
     const auto& data = ::djinni::JniClass<NativeWcharTestRec>::get();
-    return {::djinni::WString::toCpp(jniEnv, (jstring)jniEnv->GetObjectField(j, data.field_mS))};
+    ::testsuite::WcharTestRec model;
+    model.mS = ::djinni::WString::toCpp(jniEnv, (jstring)jniEnv->GetObjectField(j, data.field_mS));
+    return model;
 }
 
 } // namespace djinni_generated

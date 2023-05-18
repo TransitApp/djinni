@@ -10,7 +10,9 @@ namespace djinni_generated {
 auto ExtendedRecord::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::Bool::toCpp(obj.foo)};
+    ::testsuite::ExtendedRecord model;
+    model.mFoo = ::djinni::Bool::toCpp(obj.foo);
+    return model;
 }
 
 auto ExtendedRecord::fromCpp(const CppType& cpp) -> ObjcType

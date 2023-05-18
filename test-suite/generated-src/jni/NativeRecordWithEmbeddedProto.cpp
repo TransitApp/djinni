@@ -22,7 +22,9 @@ auto NativeRecordWithEmbeddedProto::toCpp(JNIEnv* jniEnv, JniType j) -> CppType 
     ::djinni::JniLocalScope jscope(jniEnv, 2);
     assert(j != nullptr);
     const auto& data = ::djinni::JniClass<NativeRecordWithEmbeddedProto>::get();
-    return {::djinni::Protobuf<::djinni::test::Person, ::djinni::JavaClassName<'d','j','i','n','n','i','/','t','e','s','t','/','T','e','s','t','$','P','e','r','s','o','n'>>::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_mPerson))};
+    ::testsuite::RecordWithEmbeddedProto model;
+    model.mPerson = ::djinni::Protobuf<::djinni::test::Person, ::djinni::JavaClassName<'d','j','i','n','n','i','/','t','e','s','t','/','T','e','s','t','$','P','e','r','s','o','n'>>::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_mPerson));
+    return model;
 }
 
 } // namespace djinni_generated

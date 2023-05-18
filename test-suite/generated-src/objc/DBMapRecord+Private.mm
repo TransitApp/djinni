@@ -10,8 +10,10 @@ namespace djinni_generated {
 auto MapRecord::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::Map<::djinni::String, ::djinni::I64>::toCpp(obj.map),
-            ::djinni::Map<::djinni::I32, ::djinni::I32>::toCpp(obj.imap)};
+    ::testsuite::MapRecord model;
+    model.mMap = ::djinni::Map<::djinni::String, ::djinni::I64>::toCpp(obj.map);
+    model.mImap = ::djinni::Map<::djinni::I32, ::djinni::I32>::toCpp(obj.imap);
+    return model;
 }
 
 auto MapRecord::fromCpp(const CppType& cpp) -> ObjcType

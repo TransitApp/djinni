@@ -10,7 +10,9 @@ namespace djinni_generated {
 auto RecordWithFlags::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::Enum<::testsuite::access_flags, DBAccessFlags>::toCpp(obj.access)};
+    ::testsuite::RecordWithFlags model;
+    model.mAccess = ::djinni::Enum<::testsuite::access_flags, DBAccessFlags>::toCpp(obj.access);
+    return model;
 }
 
 auto RecordWithFlags::fromCpp(const CppType& cpp) -> ObjcType

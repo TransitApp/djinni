@@ -22,7 +22,9 @@ auto NativeDateRecord::toCpp(JNIEnv* jniEnv, JniType j) -> CppType {
     ::djinni::JniLocalScope jscope(jniEnv, 2);
     assert(j != nullptr);
     const auto& data = ::djinni::JniClass<NativeDateRecord>::get();
-    return {::djinni::Date::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_mCreatedAt))};
+    ::testsuite::DateRecord model;
+    model.mCreatedAt = ::djinni::Date::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_mCreatedAt));
+    return model;
 }
 
 } // namespace djinni_generated

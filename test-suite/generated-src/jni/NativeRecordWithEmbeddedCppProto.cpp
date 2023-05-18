@@ -22,7 +22,9 @@ auto NativeRecordWithEmbeddedCppProto::toCpp(JNIEnv* jniEnv, JniType j) -> CppTy
     ::djinni::JniLocalScope jscope(jniEnv, 2);
     assert(j != nullptr);
     const auto& data = ::djinni::JniClass<NativeRecordWithEmbeddedCppProto>::get();
-    return {::djinni::Protobuf<::djinni::test2::PersistingState, ::djinni::JavaClassName<'d','j','i','n','n','i','/','t','e','s','t','2','/','T','e','s','t','2','$','P','e','r','s','i','s','t','i','n','g','S','t','a','t','e'>>::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_mState))};
+    ::testsuite::RecordWithEmbeddedCppProto model;
+    model.mState = ::djinni::Protobuf<::djinni::test2::PersistingState, ::djinni::JavaClassName<'d','j','i','n','n','i','/','t','e','s','t','2','/','T','e','s','t','2','$','P','e','r','s','i','s','t','i','n','g','S','t','a','t','e'>>::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_mState));
+    return model;
 }
 
 } // namespace djinni_generated

@@ -11,7 +11,9 @@ namespace djinni_generated {
 auto NestedOutcome::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::Outcome<::djinni::I32, ::djinni::String>::toCpp(obj.o)};
+    ::testsuite::NestedOutcome model;
+    model.mO = ::djinni::Outcome<::djinni::I32, ::djinni::String>::toCpp(obj.o);
+    return model;
 }
 
 auto NestedOutcome::fromCpp(const CppType& cpp) -> ObjcType

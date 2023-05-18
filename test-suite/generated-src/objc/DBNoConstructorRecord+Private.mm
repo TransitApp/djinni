@@ -10,8 +10,10 @@ namespace djinni_generated {
 auto NoConstructorRecord::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::I32::toCpp(obj.FirstValue),
-            ::djinni::String::toCpp(obj.secondValue)};
+    ::testsuite::NoConstructorRecord model;
+    model.mFirstValue = ::djinni::I32::toCpp(obj.FirstValue);
+    model.mSecondValue = ::djinni::String::toCpp(obj.secondValue);
+    return model;
 }
 
 auto NoConstructorRecord::fromCpp(const CppType& cpp) -> ObjcType
