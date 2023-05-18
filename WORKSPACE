@@ -30,7 +30,7 @@ load("@io_bazel_rules_scala//:scala_config.bzl", "scala_config")
 #   3.2 should be supported on master. Please note that Scala artifacts for version (3.2.2) are not defined in
 #   Rules Scala, they need to be provided by your WORKSPACE. You can use external loader like
 #   https://github.com/bazelbuild/rules_jvm_external
-scala_config()
+scala_config(scala_version = "2.11.12")
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "rules_scala_setup", "rules_scala_toolchain_deps_repositories")
 
