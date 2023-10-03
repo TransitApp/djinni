@@ -4,7 +4,7 @@
 package com.dropbox.djinni.test
 
 enum class TestIdentEnumNative {
-    SNAKE_ENUM,
+    SnakeEnum,
     /** Should become CapsEnum in objective-c, but stay the same in Java/C++ */
-    CAPS_ENUM,
+    CAPSENUM,
 }

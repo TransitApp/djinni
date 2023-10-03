@@ -6,7 +6,7 @@ package com.dropbox.djinni.test
 /** Record containing enum constant */
 open class ConstantWithEnum {
     companion object {
-        val CONST_ENUM: ConstantEnum = ConstantEnum.SOME_VALUE
+        val CONST_ENUM: ConstantEnum = ConstantEnum.SomeValue
     }
 
     override fun toString(): String  {

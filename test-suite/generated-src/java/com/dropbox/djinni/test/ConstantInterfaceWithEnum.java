@@ -11,7 +11,7 @@ import javax.annotation.Nonnull;
 /** Interface containing enum constant */
 public abstract class ConstantInterfaceWithEnum {
     @Nonnull
-    public static final ConstantEnum CONST_ENUM = ConstantEnum.SOME_VALUE;
+    public static final ConstantEnum CONST_ENUM = ConstantEnum.SomeValue;
 
 
     public static final class CppProxy extends ConstantInterfaceWithEnum

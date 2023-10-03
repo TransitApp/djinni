@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 public class ConstantWithEnum {
 
     @Nonnull
-    public static final ConstantEnum CONST_ENUM = ConstantEnum.SOME_VALUE;
+    public static final ConstantEnum CONST_ENUM = ConstantEnum.SomeValue;
 
 
     public ConstantWithEnum(
