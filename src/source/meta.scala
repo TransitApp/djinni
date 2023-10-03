@@ -43,7 +43,8 @@ object MExtern {
     typename: String,
     header: String,
     byValue: Boolean, // Whether to pass struct by value in C++ (e.g. std::chrono::duration). Only used for "record" types.
-    moveOnly: Boolean
+    moveOnly: Boolean,
+    sharedPtr: Boolean // Whether to use std::shared_ptr Only used for "record" types.
   )
   case class Objc(
     typename: String,

@@ -139,7 +139,8 @@ class YamlGenerator(spec: Spec) extends Generator(spec) {
   private def cpp(td: TypeDecl) = Map[String, Any](
     "typename" -> QuotedString(cppMarshal.fqTypename(td.ident, td.body)),
     "header" -> QuotedString(cppMarshal.include(td.ident)),
-    "byValue" -> cppMarshal.byValue(td)
+    "byValue" -> cppMarshal.byValue(td),
+    "isSharedPtr" -> true
   )
 
   private def objc(td: TypeDecl) = {
@@ -246,7 +247,8 @@ object YamlGenerator {
       nested(td, "cpp")("typename").toString,
       nested(td, "cpp")("header").toString,
       nested(td, "cpp")("byValue").asInstanceOf[Boolean],
-      getOptionalField(td, "cpp", "moveOnly", false)),
+      getOptionalField(td, "cpp", "moveOnly", false),
+      getOptionalField(td, "cpp", "isSharedPtr", false)),
     MExtern.Objc(
       nested(td, "objc")("typename").toString,
       nested(td, "objc")("header").toString,

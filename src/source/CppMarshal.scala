@@ -118,7 +118,14 @@ class CppMarshal(spec: Spec) extends Marshal(spec) {
       // Do not forward declare extern types, they might be in arbitrary namespaces.
       // This isn't a problem as extern types cannot cause dependency cycles with types being generated here
       case DInterface => List(ImportRef("<memory>"), ImportRef(e.cpp.header))
-      case _ => List(ImportRef(resolveExtCppHdr(e.cpp.header)))
+      case _ => {
+        if (e.cpp.sharedPtr) {
+          List(ImportRef("<memory>"), ImportRef(resolveExtCppHdr(e.cpp.header)))
+        } 
+        else {
+          List(ImportRef(resolveExtCppHdr(e.cpp.header)))
+        }
+      }
     }
     case p: MProtobuf =>
       List(ImportRef(p.body.cpp.header))
@@ -193,7 +200,14 @@ class CppMarshal(spec: Spec) extends Marshal(spec) {
         }
       case e: MExtern => e.defType match {
         case DInterface => s"std::shared_ptr<${e.cpp.typename}>"
-        case _ => e.cpp.typename
+        case _ => {
+          if (e.cpp.sharedPtr) {
+            s"std::shared_ptr<${e.cpp.typename}>"
+          } 
+          else {
+            e.cpp.typename
+          }
+        }
       }
       case p: MParam => idCpp.typeParam(p.name)
       case p: MProtobuf => withNs(Some(p.body.cpp.ns), p.name)
@@ -274,6 +288,19 @@ class CppMarshal(spec: Spec) extends Marshal(spec) {
       case _ => false
     }
     case MOptional => moveOnly(tm.args.head)
+    case _ => false
+  }
+
+  def isSharedPtr(tm: MExpr): Boolean = tm.base match {
+    case d: MDef => d.defType match {
+      case DInterface => true
+      case _  => false
+    }
+    case e: MExtern => e.defType match {
+      case DInterface => true
+      case _ => e.cpp.sharedPtr
+    }
+    case MOptional => false
     case _ => false
   }
 
