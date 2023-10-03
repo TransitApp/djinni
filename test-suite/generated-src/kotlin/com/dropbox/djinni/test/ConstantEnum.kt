@@ -5,6 +5,6 @@ package com.dropbox.djinni.test
 
 /** enum for use in constants */
 enum class ConstantEnum {
-    SOME_VALUE,
-    SOME_OTHER_VALUE,
+    SomeValue,
+    SomeOtherValue,
 }

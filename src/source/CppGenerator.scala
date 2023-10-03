@@ -46,7 +46,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     }
     def find(m: Meta, forwardDeclareOnly : Boolean) = {
       for(r <- marshal.hppReferences(m, name, forwardDeclareOnly)) r match {
-        case ImportRef(arg) => hpp.add("#include " + arg)
+        case ImportRef(arg) => arg.split(",").foreach((part) => hpp.add("#include " + part.trim()))        
         case DeclRef(decl, Some(spec.cppNamespace)) => hppFwds.add(decl)
         case DeclRef(_, _) =>
       }
@@ -225,8 +225,6 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     if (r.ext.cpp) {
       refs.cpp.add("#include "+q(spec.cppExtendedRecordIncludePrefix + spec.cppFileIdentStyle(ident) + "." + spec.cppHeaderExt))
     }
-
-
 
     // C++ Header
     def writeCppPrototype(w: IndentWriter) {

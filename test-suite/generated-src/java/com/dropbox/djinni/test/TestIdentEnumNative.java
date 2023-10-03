@@ -7,8 +7,8 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 public enum TestIdentEnumNative {
-    SNAKE_ENUM,
+    SnakeEnum,
     /** Should become CapsEnum in objective-c, but stay the same in Java/C++ */
-    CAPS_ENUM,
+    CAPSENUM,
     ;
 }

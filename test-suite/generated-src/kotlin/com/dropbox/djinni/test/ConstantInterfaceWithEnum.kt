@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 /** Interface containing enum constant */
 abstract class ConstantInterfaceWithEnum {
     companion object {
-        val CONST_ENUM: ConstantEnum = ConstantEnum.SOME_VALUE
+        val CONST_ENUM: ConstantEnum = ConstantEnum.SomeValue
     }
 
     class CppProxy(private val nativeRef: Long) : ConstantInterfaceWithEnum() {

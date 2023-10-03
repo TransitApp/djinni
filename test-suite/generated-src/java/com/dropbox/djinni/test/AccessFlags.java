@@ -7,14 +7,14 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 public enum AccessFlags {
-    OWNER_READ,
-    OWNER_WRITE,
-    OWNER_EXECUTE,
-    GROUP_READ,
-    GROUP_WRITE,
-    GROUP_EXECUTE,
-    SYSTEM_READ,
-    SYSTEM_WRITE,
-    SYSTEM_EXECUTE,
+    OwnerRead,
+    OwnerWrite,
+    OwnerExecute,
+    GroupRead,
+    GroupWrite,
+    GroupExecute,
+    SystemRead,
+    SystemWrite,
+    SystemExecute,
     ;
 }

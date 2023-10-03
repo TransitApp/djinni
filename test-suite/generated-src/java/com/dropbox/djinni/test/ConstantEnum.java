@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 
 /** enum for use in constants */
 public enum ConstantEnum {
-    SOME_VALUE,
-    SOME_OTHER_VALUE,
+    SomeValue,
+    SomeOtherValue,
     ;
 }
