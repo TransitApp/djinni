@@ -365,7 +365,7 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
                 }
                 case e: MExtern => e.defType match {
                   case DRecord => if(e.objc.pointer) {
-                      w.w(s"[self.${idObjc.field(f.ident)} isEqual:typedOther.${idObjc.field(f.ident)}]")
+                      w.w(s"[self.${idObjc.field(f.ident)} ${e.objc.equal}:typedOther.${idObjc.field(f.ident)}]")                    
                     } else {
                       w.w(s"self.${idObjc.field(f.ident)} == typedOther.${idObjc.field(f.ident)}")
                     }

@@ -254,6 +254,7 @@ object YamlGenerator {
       nested(td, "objc")("pointer").asInstanceOf[Boolean],
       getOptionalField(td, "objc", "generic", false),
       nested(td, "objc")("hash").toString,
+      getOptionalField(td, "objc", "equal", "isEqual"),
       getOptionalField(td, "objc", "protocol", false)),
     MExtern.Objcpp(
       nested(td, "objcpp")("translator").toString,
