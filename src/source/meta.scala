@@ -52,7 +52,7 @@ object MExtern {
     pointer: Boolean, // True to construct pointer types and make it eligible for "nonnull" qualifier. Only used for "record" types.
     generic: Boolean, // Set to false to exclude type arguments from the ObjC class. This is should be true by default. Useful if template arguments are only used in C++.
     hash: String, // A well-formed expression to get the hash value. Must be a format string with a single "%s" placeholder. Only used for "record" types with "eq" deriving when needed.
-    equal: String, // Set equal operator. E.i: .isEqual for default operator
+    equal: String, // Set equal operator. E.i: .isEqual: for default operator
     protocol: Boolean
   )
   case class Objcpp(
