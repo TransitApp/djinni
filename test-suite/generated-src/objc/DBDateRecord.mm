@@ -25,7 +25,7 @@
         return NO;
     }
     DBDateRecord *typedOther = (DBDateRecord *)other;
-    return [self.createdAt isEqual:typedOther.createdAt];
+    return [self.createdAt isEqualToDate:typedOther.createdAt];
 }
 
 - (NSUInteger)hash
