@@ -1,30 +1,23 @@
-item_list = record {
-    items: list<string>;
+LevelA = record {
+    fieldA: string;
 }
 
-child_item = record extends item_list {
-    parent: string;
+LevelB = record extends LevelA {
+    fieldB: string;
 }
 
-sub_child_item = record extends child_item {
-    index: i32;
+LevelC = record extends LevelB {
+    fieldC: string;
 }
 
-sort_order = enum {
-    ascending;
-    descending;
-    random;
+LevelD = record extends LevelC {
+    fieldD: string;
 }
 
-sort_items = interface +c {
-    # For the iOS / Android demo
-    sort(order: sort_order, items: item_list);
-    static create_with_listener(listener: textbox_listener): sort_items;
-
-    # For the localhost / command-line demo
-    static run_sort(items: item_list): item_list;
+LevelE = record extends LevelD {
+    fieldE: string;
 }
 
-textbox_listener = interface +j +o +w {
-    update(items: item_list);
+LevelF = record extends LevelE {
+    fieldF: string;
 }
