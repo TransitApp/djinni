@@ -465,8 +465,8 @@ abstract class Generator(spec: Spec)
       r.baseRecord match {
         case None => r.fields ++ fields
         case Some(value) => {
-          val baseRecord = getSuperRecord(idl, r).get
-          superFieldsAccumulator(baseRecord.record, r.fields)
+          val superRecord = getSuperRecord(idl, r).get
+          superFieldsAccumulator(superRecord.record, r.fields ++ fields)
         }
       }
     }
