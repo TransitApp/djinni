@@ -19,14 +19,12 @@ temp_out="$base_dir/djinni-output-temp"
 
 in="$base_dir/example.djinni"
 
-cpp_out="$base_dir/generated-src/cpp"
-jni_out="$base_dir/generated-src/jni"
-objc_out="$base_dir/generated-src/objc"
-java_out="$base_dir/generated-src/java/com/dropbox/textsort"
-wasm_out="$base_dir/generated-src/wasm"
-ts_out="$base_dir/generated-src/ts"
+cpp_out="$base_dir/generated/cpp"
+jni_out="$base_dir/generated/android/jni"
+objc_out="$base_dir/generated/objc"
+java_out="$base_dir/generated/android/djinni/java/src"
 
-java_package="com.dropbox.textsort"
+java_package="djinni.java.src"
 
 gen_stamp="$temp_out/gen.stamp"
 
@@ -53,30 +51,26 @@ fi
 
 [ ! -e "$temp_out" ] || rm -r "$temp_out"
 "$base_dir/../src/run-assume-built" \
-    --kotlin-out "$temp_out/java" \
-    --java-package $java_package \
-    --java-class-access-modifier "package" \
-    --java-nullable-annotation "javax.annotation.CheckForNull" \
-    --java-nonnull-annotation "javax.annotation.Nonnull" \
-    --ident-java-field fooBar \
-    \
     --cpp-out "$temp_out/cpp" \
-    --cpp-namespace textsort \
-    --ident-cpp-enum-type foo_bar \
+    --cpp-namespace transitLib::viewModel \
+    --ident-cpp-file FooBarViewModel \
+    --ident-cpp-enum FooBar \
+    --cpp-struct-constructor false\
     \
+    --kotlin-out "$temp_out/java" \
+    --java-package djinni.java.src \
+    --java-annotation androidx.compose.runtime.Immutable \
+    --java-nullable-annotation androidx.annotation.Nullable \
+    \
+    --hpp-ext h \
     --jni-out "$temp_out/jni" \
     --ident-jni-class NativeFooBar \
     --ident-jni-file NativeFooBar \
     \
     --objc-out "$temp_out/objc" \
+    --ident-objc-type SPFooBarViewModel \
+    \
     --objcpp-out "$temp_out/objc" \
-    --objc-type-prefix TXS \
-    --objc-swift-bridging-header "TextSort-Bridging-Header" \
-    \
-    --wasm-out "$temp_out/wasm" \
-    --ts-out "$temp_out/ts" \
-    --ts-module "example" \
-    \
     --idl "$in"
 
 # Copy changes from "$temp_output" to final dir.
@@ -94,8 +88,6 @@ mirror "cpp" "$temp_out/cpp" "$cpp_out"
 mirror "java" "$temp_out/java" "$java_out"
 mirror "jni" "$temp_out/jni" "$jni_out"
 mirror "objc" "$temp_out/objc" "$objc_out"
-mirror "wasm" "$temp_out/wasm" "$wasm_out"
-mirror "ts" "$temp_out/ts" "$ts_out"
 
 date > "$gen_stamp"
 
