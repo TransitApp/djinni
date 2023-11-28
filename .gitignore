@@ -24,3 +24,4 @@ test-suite/djinni/vendor/third-party/proto/ts/*.js
 /project
 /target
 /.metals
+*.db
