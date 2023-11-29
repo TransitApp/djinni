@@ -21,3 +21,7 @@ LevelE = record extends LevelD {
 LevelF = record extends LevelE {
 
 }
+
+Container = record {
+  levels: list<LevelA>;
+}

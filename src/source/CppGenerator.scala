@@ -204,6 +204,13 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     val self = marshal.typename(ident, r)
     val isRecordInherited = isInherited(idl, ident.name)
 
+    if (isRecordInherited) {
+      val childrenRecords = getChildrenRecords(marshal, ident, idl, ident.name)
+      for (childRecord <- childrenRecords) {
+        println("Found child record: " + childRecord)
+      }
+    }
+
     val superRecord = getSuperRecord(idl, r)
     
     superRecord match {

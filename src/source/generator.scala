@@ -512,6 +512,64 @@ abstract class Generator(spec: Spec)
       return false
   }
 
+  def getChildrenRecords(marshal: Marshal, ident: Ident, idl: Seq[TypeDecl], _name: String) : Seq[Record] = {
+    println("")
+    println("getChildrenRecords for name "+_name)
+
+    def recursiveSearchForChildren(idl: Seq[TypeDecl], name: String, children: Seq[Record]) : Seq[Record] = {
+      // println("recursiveSearchForChildren for name "+name)
+      val filtered = idl.filter(td => td.ident.name != name) 
+      for (element <- filtered) {
+        // println("for loop for element "+element.ident.name)
+        element.body match {
+          case myRecord: Record => {
+            myRecord.baseRecord match {
+              case None => None
+              case Some(value) => {
+                if (value == name) {
+                idl.find(td => td.ident.name == element.ident.name) match {
+                        case Some(dec) => dec.body match {
+                          case record: Record => {
+                            // println("found child "+dec.ident.name)
+                            children :+ recursiveSearchForChildren(idl, dec.ident.name, children)
+                            children :+ myRecord
+                            return children
+                          }
+                          case _ => throw new AssertionError("Unreachable. The parser throws an exception when extending a non-interface type.")
+                        }
+                        case _ => throw new AssertionError("Unreachable. The parser throws an exception when extending an interface that doesn't exist.")
+                      }
+                  
+                  
+                }
+              }
+            }              
+          }
+          case _ => None
+        }
+      }
+      return children
+    }
+    
+    val childrenRecords = recursiveSearchForChildren(idl, _name, Seq.empty)
+    for (child <- childrenRecords) {
+      println("child "+getRecordName(idl, child))
+    }
+
+    return childrenRecords
+  }
+
+  def getRecordName(idl: Seq[TypeDecl], record : Record) : String = {
+    for (element <- idl) {
+      element.body match {
+        case myRecord: Record => {
+          return element.ident.name
+        }
+      }
+    }
+    return "not found"
+  }
+
   // --------------------------------------------------------------------------
   // Render type expression
 
