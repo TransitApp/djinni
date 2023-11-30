@@ -7,22 +7,26 @@
 @implementation SPContainerViewModel
 
 - (nonnull instancetype)initWithLevels:(nonnull NSArray<SPLevelAViewModel *> *)levels
+                                levelA:(nonnull SPLevelAViewModel *)levelA
 {
     if (self = [super init]) {
         _levels = [levels copy];
+        _levelA = levelA;
     }
     return self;
 }
 
 + (nonnull instancetype)ContainerWithLevels:(nonnull NSArray<SPLevelAViewModel *> *)levels
+                                     levelA:(nonnull SPLevelAViewModel *)levelA
 {
-    return [[self alloc] initWithLevels:levels];
+    return [[self alloc] initWithLevels:levels
+                                 levelA:levelA];
 }
 
 #ifndef DJINNI_DISABLE_DESCRIPTION_METHODS
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"<%@ %p levels:%@>", self.class, (void *)self, self.levels];
+    return [NSString stringWithFormat:@"<%@ %p levels:%@ levelA:%@>", self.class, (void *)self, self.levels, self.levelA];
 }
 
 #endif

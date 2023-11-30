@@ -25,8 +25,9 @@ private:
     friend ::djinni::JniClass<NativeContainer>;
 
     const ::djinni::GlobalRef<jclass> clazz { ::djinni::jniFindClass("djinni/java/src/Container") };
-    const jmethodID jconstructor { ::djinni::jniGetMethodID(clazz.get(), "<init>", "(Ljava/util/ArrayList;)V") };
+    const jmethodID jconstructor { ::djinni::jniGetMethodID(clazz.get(), "<init>", "(Ljava/util/ArrayList;Ldjinni/java/src/LevelA;)V") };
     const jfieldID field_levels { ::djinni::jniGetFieldID(clazz.get(), "levels", "Ljava/util/ArrayList;") };
+    const jfieldID field_levelA { ::djinni::jniGetFieldID(clazz.get(), "levelA", "Ldjinni/java/src/LevelA;") };
 };
 
 } // namespace djinni_generated

@@ -10,7 +10,8 @@
 namespace transitLib::viewModel {
 
 struct Container final {
-    std::vector<LevelA> levels;
+    std::vector<shared_ptr<LevelA>> levels;
+    shared_ptr<LevelA> levelA;
 };
 
 } // namespace transitLib::viewModel

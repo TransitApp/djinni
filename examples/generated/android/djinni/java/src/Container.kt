@@ -8,12 +8,14 @@ import java.util.ArrayList
 
 @Immutable
 data class Container(
-    val levels: ArrayList<LevelA>
+    val levels: ArrayList<LevelA>,
+    val levelA: LevelA
 ) {
 
     override fun toString(): String  {
         return "Container {" +
                 "levels=" + levels +
+                "," + "levelA=" + levelA +
         "}"
     }
 

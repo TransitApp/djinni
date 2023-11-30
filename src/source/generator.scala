@@ -531,9 +531,8 @@ abstract class Generator(spec: Spec)
                         case Some(dec) => dec.body match {
                           case record: Record => {
                             // println("found child "+dec.ident.name)
-                            children :+ recursiveSearchForChildren(idl, dec.ident.name, children)
-                            children :+ myRecord
-                            return children
+                            // println("record "+getRecordName(idl, myRecord))
+                            return recursiveSearchForChildren(idl, dec.ident.name, children :+ myRecord)
                           }
                           case _ => throw new AssertionError("Unreachable. The parser throws an exception when extending a non-interface type.")
                         }
@@ -548,10 +547,12 @@ abstract class Generator(spec: Spec)
           case _ => None
         }
       }
+
       return children
     }
     
     val childrenRecords = recursiveSearchForChildren(idl, _name, Seq.empty)
+    println("childrenRecords size "+childrenRecords.length)
     for (child <- childrenRecords) {
       println("child "+getRecordName(idl, child))
     }
@@ -563,7 +564,9 @@ abstract class Generator(spec: Spec)
     for (element <- idl) {
       element.body match {
         case myRecord: Record => {
-          return element.ident.name
+          if (myRecord == record) {
+            return element.ident.name
+          }
         }
       }
     }

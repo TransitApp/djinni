@@ -7,9 +7,13 @@
 @interface SPContainerViewModel : NSObject
 - (nonnull instancetype)init NS_UNAVAILABLE;
 + (nonnull instancetype)new NS_UNAVAILABLE;
-- (nonnull instancetype)initWithLevels:(nonnull NSArray<SPLevelAViewModel *> *)levels NS_DESIGNATED_INITIALIZER;
-+ (nonnull instancetype)ContainerWithLevels:(nonnull NSArray<SPLevelAViewModel *> *)levels;
+- (nonnull instancetype)initWithLevels:(nonnull NSArray<SPLevelAViewModel *> *)levels
+                                levelA:(nonnull SPLevelAViewModel *)levelA NS_DESIGNATED_INITIALIZER;
++ (nonnull instancetype)ContainerWithLevels:(nonnull NSArray<SPLevelAViewModel *> *)levels
+                                     levelA:(nonnull SPLevelAViewModel *)levelA;
 
 @property (nonatomic, readonly, nonnull) NSArray<SPLevelAViewModel *> * levels;
+
+@property (nonatomic, readonly, nonnull) SPLevelAViewModel * levelA;
 
 @end

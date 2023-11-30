@@ -14,17 +14,19 @@ NativeContainer::~NativeContainer() = default;
 auto NativeContainer::fromCpp(JNIEnv* jniEnv, const CppType& c) -> ::djinni::LocalRef<JniType> {
     const auto& data = ::djinni::JniClass<NativeContainer>::get();
     auto r = ::djinni::LocalRef<JniType>{jniEnv->NewObject(data.clazz.get(), data.jconstructor,
-                                                           ::djinni::get(::djinni::List<::djinni_generated::NativeLevelA>::fromCpp(jniEnv, c.levels)))};
+                                                           ::djinni::get(::djinni::List<::djinni_generated::NativeLevelA>::fromCpp(jniEnv, c.levels)),
+                                                           ::djinni::get(::djinni_generated::NativeLevelA::fromCpp(jniEnv, c.levelA)))};
     ::djinni::jniExceptionCheck(jniEnv);
     return r;
 }
 
 auto NativeContainer::toCpp(JNIEnv* jniEnv, JniType j) -> CppType {
-    ::djinni::JniLocalScope jscope(jniEnv, 2);
+    ::djinni::JniLocalScope jscope(jniEnv, 3);
     assert(j != nullptr);
     const auto& data = ::djinni::JniClass<NativeContainer>::get();
     ::transitLib::viewModel::Container model;
     model.levels = ::djinni::List<::djinni_generated::NativeLevelA>::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_levels));
+    model.levelA = ::djinni_generated::NativeLevelA::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_levelA));
     return model;
 }
 

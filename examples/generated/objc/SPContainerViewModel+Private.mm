@@ -13,12 +13,14 @@ auto Container::toCpp(ObjcType obj) -> CppType
     assert(obj);
     ::transitLib::viewModel::Container model;
     model.levels = ::djinni::List<::djinni_generated::LevelA>::toCpp(obj.levels);
+    model.levelA = ::djinni_generated::LevelA::toCpp(obj.levelA);
     return model;
 }
 
 auto Container::fromCpp(const CppType& cpp) -> ObjcType
 {
-    return [[SPContainerViewModel alloc] initWithLevels:(::djinni::List<::djinni_generated::LevelA>::fromCpp(cpp.levels))];
+    return [[SPContainerViewModel alloc] initWithLevels:(::djinni::List<::djinni_generated::LevelA>::fromCpp(cpp.levels))
+                                                 levelA:(::djinni_generated::LevelA::fromCpp(cpp.levelA))];
 }
 
 } // namespace djinni_generated
