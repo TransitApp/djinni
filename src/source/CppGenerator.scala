@@ -205,13 +205,6 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     val self = marshal.typename(ident, r)
     val isRecordInherited = isInherited(idl, ident.name)
 
-    if (isRecordInherited) {
-      val childrenRecords = getChildrenRecords(marshal, ident, idl, ident.name)
-      // for (childRecord <- childrenRecords) {
-      //   println("Found child record: " + getRecordName(childRecord) + " of parent: " + ident.name)
-      // }
-    }
-
     val superRecord = getSuperRecord(idl, r)
     
     superRecord match {
@@ -250,9 +243,6 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         for (f <- r.fields) {
           writeDoc(w, f.doc)
           val defaultValue = if (f.defaultValue.isEmpty) "" else " = " + f.defaultValue
-
-        
-          println("Field: " + f.ident.name + " of type: " + marshal.fieldType(f.ty))
 
           val rootTypePattern: Regex = "^(?:std::vector<)?(.+?)(?:>)?$".r
           var fullFieldType = marshal.fieldType(f.ty)

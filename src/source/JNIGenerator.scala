@@ -160,6 +160,22 @@ class JNIGenerator(spec: Spec) extends Generator(spec) {
 
       val fields = superFields ++ r.fields
 
+      // TODO - iterate over all fields, check wich ones are inherited, put them in a map
+      // iterate over the map, and generate code in .h and .cpp files to generate something like this:
+      // get`FieldName`FromCpp() in this method, iterate threw children and call their fromCpp() method
+      // start from the bottom of the list and do a dynamic cast to the child type
+      // if it fails, try the next one, and end with itself
+      // then in the method below call the get`FieldName`FromCpp() method and return the result
+
+      // HELP
+      // val isRecordInherited = isInherited(idl, ident.name)
+      // if (isRecordInherited) {
+      // val childrenRecords = getChildrenRecords(marshal, ident, idl, ident.name)
+      // for (childRecord <- childrenRecords) {
+      //   println("Found child record: " + getRecordName(childRecord) + " of parent: " + ident.name)
+      // }
+      // }
+
       writeJniTypeParams(w, params)
       w.w(s"auto $jniHelperWithParams::fromCpp(JNIEnv* jniEnv, const CppType& c) -> ::djinni::LocalRef<JniType>").braced{
         //w.wl(s"::${spec.jniNamespace}::JniLocalScope jscope(jniEnv, 10);")
