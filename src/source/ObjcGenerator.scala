@@ -393,7 +393,17 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
                       w.w(s"(NSUInteger)self.${idObjc.field(f.ident)}")
                     case _ => w.w(s"self.${idObjc.field(f.ident)}.hash")
                   }
-                case t: MPrimitive => w.w(s"(NSUInteger)self.${idObjc.field(f.ident)}")
+                case t: MPrimitive => {
+                  if (t.objcName == "float") {
+                    w.w(s"[NSNumber numberWithFloat:self.${idObjc.field(f.ident)}].hash")
+                  }
+                  else if (t.objcName == "double") {
+                    w.w(s"[NSNumber numberWithDouble:self.${idObjc.field(f.ident)}].hash")
+                  }
+                  else {
+                    w.w(s"(NSUInteger)self.${idObjc.field(f.ident)}")
+                  }
+                }
                 case df: MDef => df.defType match {
                   case DEnum => w.w(s"(NSUInteger)self.${idObjc.field(f.ident)}")
                   case _ => w.w(s"self.${idObjc.field(f.ident)}.hash")
