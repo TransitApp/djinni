@@ -101,8 +101,8 @@
             (NSUInteger)self.sixteen ^
             (NSUInteger)self.thirtytwo ^
             (NSUInteger)self.sixtyfour ^
-            (NSUInteger)self.fthirtytwo ^
-            (NSUInteger)self.fsixtyfour ^
+            [NSNumber numberWithFloat:self.fthirtytwo].hash ^
+            [NSNumber numberWithDouble:self.fsixtyfour].hash ^
             self.oB.hash ^
             self.oEight.hash ^
             self.oSixteen.hash ^

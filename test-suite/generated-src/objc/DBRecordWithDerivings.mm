@@ -70,8 +70,8 @@
             (NSUInteger)self.sixteen ^
             (NSUInteger)self.thirtytwo ^
             (NSUInteger)self.sixtyfour ^
-            (NSUInteger)self.fthirtytwo ^
-            (NSUInteger)self.fsixtyfour ^
+            [NSNumber numberWithFloat:self.fthirtytwo].hash ^
+            [NSNumber numberWithDouble:self.fsixtyfour].hash ^
             self.d.hash ^
             self.s.hash;
 }
