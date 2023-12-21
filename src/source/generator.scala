@@ -516,11 +516,10 @@ abstract class Generator(spec: Spec)
     println("")
     println("getChildrenRecords for name "+_name)
 
-    def recursiveSearchForChildren(idl: Seq[TypeDecl], name: String, children: Seq[Record]) : Seq[Record] = {
-      // println("recursiveSearchForChildren for name "+name)
+    def recursiveSearchForChildren(idl: Seq[TypeDecl], name: String) : Seq[Record] = {
+      var foundChildren : Seq[Record] = Seq.empty
       val filtered = idl.filter(td => td.ident.name != name) 
       for (element <- filtered) {
-        // println("for loop for element "+element.ident.name)
         element.body match {
           case myRecord: Record => {
             myRecord.baseRecord match {
@@ -530,9 +529,8 @@ abstract class Generator(spec: Spec)
                 idl.find(td => td.ident.name == element.ident.name) match {
                         case Some(dec) => dec.body match {
                           case record: Record => {
-                            // println("found child "+dec.ident.name)
-                            // println("record "+getRecordName(idl, myRecord))
-                            return recursiveSearchForChildren(idl, dec.ident.name, children :+ myRecord)
+                            foundChildren = foundChildren :+ record
+                            foundChildren = foundChildren ++ recursiveSearchForChildren(idl, dec.ident.name)
                           }
                           case _ => throw new AssertionError("Unreachable. The parser throws an exception when extending a non-interface type.")
                         }
@@ -547,17 +545,29 @@ abstract class Generator(spec: Spec)
           case _ => None
         }
       }
-
-      return children
+      return foundChildren
     }
     
-    val childrenRecords = recursiveSearchForChildren(idl, _name, Seq.empty)
-    println("childrenRecords size "+childrenRecords.length)
-    for (child <- childrenRecords) {
-      println("child "+getRecordName(idl, child))
-    }
+    val childrenRecords = recursiveSearchForChildren(idl, _name)
+    // println("childrenRecords size "+childrenRecords.length+" for "+_name)
+    // for (child <- childrenRecords) {
+    //   println("child "+getRecordName(idl, child))
+    // }
 
     return childrenRecords
+  }
+
+  def seqContainsRecord(idl: Seq[TypeDecl], seq: Seq[Record], record : Record) : Boolean = {
+    for (element <- seq) {
+      val elementName = getRecordName(idl, element)
+      val recordName = getRecordName(idl, record)
+              println("seqContainsRecord " + elementName + " " + recordName)
+
+      if (elementName == recordName) {
+        return true
+      }
+    }
+    return false
   }
 
   def getRecordName(idl: Seq[TypeDecl], record : Record) : String = {
