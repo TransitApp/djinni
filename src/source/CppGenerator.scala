@@ -252,16 +252,20 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
           writeDoc(w, f.doc)
           val defaultValue = if (f.defaultValue.isEmpty) "" else " = " + f.defaultValue
 
-          val rootTypePattern: Regex = "^(?:std::vector<)?(.+?)(?:>)?$".r
           var fullFieldType = marshal.fieldType(f.ty)
           var fieldType = fullFieldType
-          rootTypePattern.findFirstMatchIn(fieldType) match {
-          case Some(value) => fieldType = value.group(1)
-          case None => //nothing
+
+          if (fullFieldType.contains("vector")) {
+            val rootTypePattern: Regex = "^(?:std::vector<)?(.+?)(?:>)?$".r
+            rootTypePattern.findFirstMatchIn(fieldType) match {
+            case Some(value) => fieldType = value.group(1)
+            case None => //nothing
+            }
           }
+        
 
           val isFieldInherited = isInherited(idl, fieldType)
-          fullFieldType = if (isFieldInherited) fullFieldType.replace(fieldType,"shared_ptr<"+fieldType+">") else fieldType
+          fullFieldType = if (isFieldInherited) fullFieldType.replace(fieldType,"std::shared_ptr<"+fieldType+">") else fullFieldType
           w.wl(fullFieldType + " " + idCpp.field(f.ident) + defaultValue + ";")
         }
 

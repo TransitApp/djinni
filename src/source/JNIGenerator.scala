@@ -211,8 +211,14 @@ class JNIGenerator(spec: Spec) extends Generator(spec) {
                       w.wl(s"else if (auto myObject = dynamic_pointer_cast<"+cppChild+">(c)) {")
                     }
 
+                    val objectValue = if (isInherited(idl, childIdent)) {
+                      "myObject"
+                    } else {
+                      "*myObject"
+                    }
 
-                    w.wl(s"   r = $childJniHelperWithParams::fromCpp(jniEnv, *myObject);")
+
+                    w.wl(s"   r = $childJniHelperWithParams::fromCpp(jniEnv, $objectValue);")
                     w.wl("}")
                    
                 case _ =>
