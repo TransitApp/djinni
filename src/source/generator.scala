@@ -513,9 +513,6 @@ abstract class Generator(spec: Spec)
   }
 
   def getChildrenRecords(marshal: Marshal, ident: Ident, idl: Seq[TypeDecl], _name: String) : Seq[Record] = {
-    println("")
-    println("getChildrenRecords for name "+_name)
-
     def recursiveSearchForChildren(idl: Seq[TypeDecl], name: String) : Seq[Record] = {
       var foundChildren : Seq[Record] = Seq.empty
       val filtered = idl.filter(td => td.ident.name != name) 
@@ -557,19 +554,6 @@ abstract class Generator(spec: Spec)
     return childrenRecords
   }
 
-  def seqContainsRecord(idl: Seq[TypeDecl], seq: Seq[Record], record : Record) : Boolean = {
-    for (element <- seq) {
-      val elementName = getRecordName(idl, element)
-      val recordName = getRecordName(idl, record)
-              println("seqContainsRecord " + elementName + " " + recordName)
-
-      if (elementName == recordName) {
-        return true
-      }
-    }
-    return false
-  }
-
   def getRecordName(idl: Seq[TypeDecl], record : Record) : String = {
     for (element <- idl) {
       element.body match {
@@ -578,9 +562,25 @@ abstract class Generator(spec: Spec)
             return element.ident.name
           }
         }
+         case _ => return "not found"
       }
     }
     return "not found"
+  }
+
+  def getRecordIdent(idl: Seq[TypeDecl], record : Record) : Option[Ident] = {
+    for (element <- idl) {
+      element.body match {
+        case myRecord: Record => {
+          if (myRecord == record) {
+            return Some(element.ident)
+          }
+        }
+
+        case _ => None
+      }
+    }
+    return None
   }
 
   // --------------------------------------------------------------------------
