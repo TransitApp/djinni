@@ -351,6 +351,16 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
                   f.ty.resolved.args.head.base match {
                     case df: MDef if df.defType == DEnum =>
                       w.w(s"self.${idObjc.field(f.ident)} == typedOther.${idObjc.field(f.ident)}")
+                    case e: MExtern => e.defType match {
+                        case DRecord => if(e.objc.equal.nonEmpty) {
+                             w.w(s"((self.${idObjc.field(f.ident)} == nil && typedOther.${idObjc.field(f.ident)} == nil) || ")
+                             w.w(s"(self.${idObjc.field(f.ident)} != nil && [self.${idObjc.field(f.ident)} ${e.objc.equal}typedOther.${idObjc.field(f.ident)}]))")
+                          } else {
+                             w.w(s"((self.${idObjc.field(f.ident)} == nil && typedOther.${idObjc.field(f.ident)} == nil) || ")
+                             w.w(s"(self.${idObjc.field(f.ident)} != nil && [self.${idObjc.field(f.ident)} isEqual:typedOther.${idObjc.field(f.ident)}]))")
+                          }
+                        case _ => throw new AssertionError("Unreachable")
+                    }
                     case _ =>
                       w.w(s"((self.${idObjc.field(f.ident)} == nil && typedOther.${idObjc.field(f.ident)} == nil) || ")
                       w.w(s"(self.${idObjc.field(f.ident)} != nil && [self.${idObjc.field(f.ident)} isEqual:typedOther.${idObjc.field(f.ident)}]))")
