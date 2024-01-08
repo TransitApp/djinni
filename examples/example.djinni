@@ -6,6 +6,14 @@ LevelB = record extends LevelA {
     fieldB: string;
 }
 
+LevelB2 = record extends LevelB {
+    fieldB2: string;
+}
+
+LevelB2C = record extends LevelB2 {
+    fieldB2C: string;
+}
+
 LevelC = record extends LevelB {
     fieldC: string;
 }
@@ -16,6 +24,10 @@ LevelD = record extends LevelC {
 
 LevelE = record extends LevelD {
     fieldE: string;
+}
+
+LevelD2 = record extends LevelD {
+    fieldD2: string;
 }
 
 LevelF = record extends LevelE {

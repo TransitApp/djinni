@@ -12,10 +12,11 @@ NativeContainer::NativeContainer() = default;
 NativeContainer::~NativeContainer() = default;
 
 auto NativeContainer::fromCpp(JNIEnv* jniEnv, const CppType& c) -> ::djinni::LocalRef<JniType> {
+    ::djinni::LocalRef<JniType> r;
     const auto& data = ::djinni::JniClass<NativeContainer>::get();
-    auto r = ::djinni::LocalRef<JniType>{jniEnv->NewObject(data.clazz.get(), data.jconstructor,
-                                                           ::djinni::get(::djinni::List<::djinni_generated::NativeLevelA>::fromCpp(jniEnv, c.levels)),
-                                                           ::djinni::get(::djinni_generated::NativeLevelA::fromCpp(jniEnv, c.levelA)))};
+    r = ::djinni::LocalRef<JniType>{jniEnv->NewObject(data.clazz.get(), data.jconstructor,
+                                                      ::djinni::get(::djinni::List<::djinni_generated::NativeLevelA>::fromCpp(jniEnv, c.levels)),
+                                                      ::djinni::get(::djinni_generated::NativeLevelA::fromCpp(jniEnv, c.levelA)))};
     ::djinni::jniExceptionCheck(jniEnv);
     return r;
 }

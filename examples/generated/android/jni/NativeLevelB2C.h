@@ -3,33 +3,33 @@
 
 #pragma once
 
-#include "LevelDViewModel.h"
+#include "LevelB2CViewModel.h"
 #include "djinni_support.hpp"
 
 namespace djinni_generated {
 
-class NativeLevelD final {
+class NativeLevelB2C final {
 public:
-    using CppType = std::shared_ptr<::transitLib::viewModel::LevelD>;
+    using CppType = ::transitLib::viewModel::LevelB2C;
     using JniType = jobject;
 
-    using Boxed = NativeLevelD;
+    using Boxed = NativeLevelB2C;
 
-    ~NativeLevelD();
+    ~NativeLevelB2C();
 
     static CppType toCpp(JNIEnv* jniEnv, JniType j);
     static ::djinni::LocalRef<JniType> fromCpp(JNIEnv* jniEnv, const CppType& c);
 
 private:
-    NativeLevelD();
-    friend ::djinni::JniClass<NativeLevelD>;
+    NativeLevelB2C();
+    friend ::djinni::JniClass<NativeLevelB2C>;
 
-    const ::djinni::GlobalRef<jclass> clazz { ::djinni::jniFindClass("djinni/java/src/LevelD") };
+    const ::djinni::GlobalRef<jclass> clazz { ::djinni::jniFindClass("djinni/java/src/LevelB2C") };
     const jmethodID jconstructor { ::djinni::jniGetMethodID(clazz.get(), "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V") };
     const jfieldID field_fieldA { ::djinni::jniGetFieldID(clazz.get(), "fieldA", "Ljava/lang/String;") };
     const jfieldID field_fieldB { ::djinni::jniGetFieldID(clazz.get(), "fieldB", "Ljava/lang/String;") };
-    const jfieldID field_fieldC { ::djinni::jniGetFieldID(clazz.get(), "fieldC", "Ljava/lang/String;") };
-    const jfieldID field_fieldD { ::djinni::jniGetFieldID(clazz.get(), "fieldD", "Ljava/lang/String;") };
+    const jfieldID field_fieldB2 { ::djinni::jniGetFieldID(clazz.get(), "fieldB2", "Ljava/lang/String;") };
+    const jfieldID field_fieldB2C { ::djinni::jniGetFieldID(clazz.get(), "fieldB2C", "Ljava/lang/String;") };
 };
 
 } // namespace djinni_generated

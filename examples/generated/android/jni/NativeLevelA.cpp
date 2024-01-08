@@ -3,6 +3,14 @@
 
 #include "NativeLevelA.h"  // my header
 #include "Marshal.hpp"
+#include "NativeLevelB.h"
+#include "NativeLevelB2.h"
+#include "NativeLevelB2C.h"
+#include "NativeLevelC.h"
+#include "NativeLevelD.h"
+#include "NativeLevelD2.h"
+#include "NativeLevelE.h"
+#include "NativeLevelF.h"
 
 namespace djinni_generated {
 
@@ -11,10 +19,37 @@ NativeLevelA::NativeLevelA() = default;
 NativeLevelA::~NativeLevelA() = default;
 
 auto NativeLevelA::fromCpp(JNIEnv* jniEnv, const CppType& c) -> ::djinni::LocalRef<JniType> {
+    ::djinni::LocalRef<JniType> r;
+    if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelD2>(c)) {
+       r = NativeLevelD2::fromCpp(jniEnv, *myObject);
+    }
+    else if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelF>(c)) {
+       r = NativeLevelF::fromCpp(jniEnv, *myObject);
+    }
+    else if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelE>(c)) {
+       r = NativeLevelE::fromCpp(jniEnv, myObject);
+    }
+    else if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelD>(c)) {
+       r = NativeLevelD::fromCpp(jniEnv, myObject);
+    }
+    else if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelC>(c)) {
+       r = NativeLevelC::fromCpp(jniEnv, myObject);
+    }
+    else if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelB2C>(c)) {
+       r = NativeLevelB2C::fromCpp(jniEnv, *myObject);
+    }
+    else if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelB2>(c)) {
+       r = NativeLevelB2::fromCpp(jniEnv, myObject);
+    }
+    else if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelB>(c)) {
+       r = NativeLevelB::fromCpp(jniEnv, myObject);
+    }
+    else {
     const auto& data = ::djinni::JniClass<NativeLevelA>::get();
-    auto r = ::djinni::LocalRef<JniType>{jniEnv->NewObject(data.clazz.get(), data.jconstructor,
-                                                           ::djinni::get(::djinni::String::fromCpp(jniEnv, c.fieldA)))};
+    r = ::djinni::LocalRef<JniType>{jniEnv->NewObject(data.clazz.get(), data.jconstructor,
+                                                      ::djinni::get(::djinni::String::fromCpp(jniEnv, c->fieldA)))};
     ::djinni::jniExceptionCheck(jniEnv);
+    }
     return r;
 }
 
@@ -22,8 +57,8 @@ auto NativeLevelA::toCpp(JNIEnv* jniEnv, JniType j) -> CppType {
     ::djinni::JniLocalScope jscope(jniEnv, 2);
     assert(j != nullptr);
     const auto& data = ::djinni::JniClass<NativeLevelA>::get();
-    ::transitLib::viewModel::LevelA model;
-    model.fieldA = ::djinni::String::toCpp(jniEnv, (jstring)jniEnv->GetObjectField(j, data.field_fieldA));
+    std::shared_ptr<::transitLib::viewModel::LevelA> model;
+    model->fieldA = ::djinni::String::toCpp(jniEnv, (jstring)jniEnv->GetObjectField(j, data.field_fieldA));
     return model;
 }
 

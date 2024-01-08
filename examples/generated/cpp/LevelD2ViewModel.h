@@ -3,15 +3,14 @@
 
 #pragma once
 
-#include "LevelAViewModel.h"
+#include "LevelDViewModel.h"
+#include <string>
 #include <utility>
-#include <vector>
 
 namespace transitLib::viewModel {
 
-struct Container final {
-    std::vector<std::shared_ptr<LevelA>> levels;
-    std::shared_ptr<LevelA> levelA;
+struct LevelD2 : public LevelD {
+    std::string fieldD2;
 };
 
 } // namespace transitLib::viewModel
