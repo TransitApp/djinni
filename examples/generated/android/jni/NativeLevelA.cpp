@@ -22,35 +22,35 @@ auto NativeLevelA::fromCpp(JNIEnv* jniEnv, const CppType& c) -> ::djinni::LocalR
     ::djinni::LocalRef<JniType> r;
     if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelD2>(c))
     {
-           r = NativeLevelD2::fromCpp(jniEnv, *myObject);
+        r = NativeLevelD2::fromCpp(jniEnv, *myObject);
     }
     else if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelF>(c))
     {
-           r = NativeLevelF::fromCpp(jniEnv, *myObject);
+        r = NativeLevelF::fromCpp(jniEnv, *myObject);
     }
     else if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelE>(c))
     {
-           r = NativeLevelE::fromCpp(jniEnv, myObject);
+        r = NativeLevelE::fromCpp(jniEnv, myObject);
     }
     else if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelD>(c))
     {
-           r = NativeLevelD::fromCpp(jniEnv, myObject);
+        r = NativeLevelD::fromCpp(jniEnv, myObject);
     }
     else if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelC>(c))
     {
-           r = NativeLevelC::fromCpp(jniEnv, myObject);
+        r = NativeLevelC::fromCpp(jniEnv, myObject);
     }
     else if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelB2C>(c))
     {
-           r = NativeLevelB2C::fromCpp(jniEnv, *myObject);
+        r = NativeLevelB2C::fromCpp(jniEnv, *myObject);
     }
     else if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelB2>(c))
     {
-           r = NativeLevelB2::fromCpp(jniEnv, myObject);
+        r = NativeLevelB2::fromCpp(jniEnv, myObject);
     }
     else if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelB>(c))
     {
-           r = NativeLevelB::fromCpp(jniEnv, myObject);
+        r = NativeLevelB::fromCpp(jniEnv, myObject);
     }
     else {
         const auto& data = ::djinni::JniClass<NativeLevelA>::get();

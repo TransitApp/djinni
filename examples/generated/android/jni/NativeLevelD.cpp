@@ -17,15 +17,15 @@ auto NativeLevelD::fromCpp(JNIEnv* jniEnv, const CppType& c) -> ::djinni::LocalR
     ::djinni::LocalRef<JniType> r;
     if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelD2>(c))
     {
-           r = NativeLevelD2::fromCpp(jniEnv, *myObject);
+        r = NativeLevelD2::fromCpp(jniEnv, *myObject);
     }
     else if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelF>(c))
     {
-           r = NativeLevelF::fromCpp(jniEnv, *myObject);
+        r = NativeLevelF::fromCpp(jniEnv, *myObject);
     }
     else if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelE>(c))
     {
-           r = NativeLevelE::fromCpp(jniEnv, myObject);
+        r = NativeLevelE::fromCpp(jniEnv, myObject);
     }
     else {
         const auto& data = ::djinni::JniClass<NativeLevelD>::get();
