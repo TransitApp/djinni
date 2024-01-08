@@ -13,18 +13,19 @@ NativeLevelE::~NativeLevelE() = default;
 
 auto NativeLevelE::fromCpp(JNIEnv* jniEnv, const CppType& c) -> ::djinni::LocalRef<JniType> {
     ::djinni::LocalRef<JniType> r;
-    if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelF>(c)) {
-       r = NativeLevelF::fromCpp(jniEnv, *myObject);
+    if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelF>(c))
+    {
+           r = NativeLevelF::fromCpp(jniEnv, *myObject);
     }
     else {
-    const auto& data = ::djinni::JniClass<NativeLevelE>::get();
-    r = ::djinni::LocalRef<JniType>{jniEnv->NewObject(data.clazz.get(), data.jconstructor,
-                                                      ::djinni::get(::djinni::String::fromCpp(jniEnv, c->fieldA)),
-                                                      ::djinni::get(::djinni::String::fromCpp(jniEnv, c->fieldB)),
-                                                      ::djinni::get(::djinni::String::fromCpp(jniEnv, c->fieldC)),
-                                                      ::djinni::get(::djinni::String::fromCpp(jniEnv, c->fieldD)),
-                                                      ::djinni::get(::djinni::String::fromCpp(jniEnv, c->fieldE)))};
-    ::djinni::jniExceptionCheck(jniEnv);
+        const auto& data = ::djinni::JniClass<NativeLevelE>::get();
+        r = ::djinni::LocalRef<JniType>{jniEnv->NewObject(data.clazz.get(), data.jconstructor,
+                                                          ::djinni::get(::djinni::String::fromCpp(jniEnv, c->fieldA)),
+                                                          ::djinni::get(::djinni::String::fromCpp(jniEnv, c->fieldB)),
+                                                          ::djinni::get(::djinni::String::fromCpp(jniEnv, c->fieldC)),
+                                                          ::djinni::get(::djinni::String::fromCpp(jniEnv, c->fieldD)),
+                                                          ::djinni::get(::djinni::String::fromCpp(jniEnv, c->fieldE)))};
+        ::djinni::jniExceptionCheck(jniEnv);
     }
     return r;
 }

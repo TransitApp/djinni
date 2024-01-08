@@ -19,8 +19,11 @@ auto Container::toCpp(ObjcType obj) -> CppType
 
 auto Container::fromCpp(const CppType& cpp) -> ObjcType
 {
-    return [[SPContainerViewModel alloc] initWithLevels:(::djinni::List<::djinni_generated::LevelA>::fromCpp(cpp.levels))
-                                                 levelA:(::djinni_generated::LevelA::fromCpp(cpp.levelA))];
+    ::djinni::LocalRef<ObjcType> r;
+    r = [[SPContainerViewModel alloc] initWithLevels:(::djinni::List<::djinni_generated::LevelA>::fromCpp(cpp.levels))
+                                              levelA:(::djinni_generated::LevelA::fromCpp(cpp.levelA))];
+    return r;
+
 }
 
 } // namespace djinni_generated

@@ -23,9 +23,30 @@ auto LevelC::toCpp(ObjcType obj) -> CppType
 
 auto LevelC::fromCpp(const CppType& cpp) -> ObjcType
 {
-    return [[SPLevelCViewModel alloc] initWithFieldA:(::djinni::String::fromCpp(cpp.fieldA))
-                                              fieldB:(::djinni::String::fromCpp(cpp.fieldB))
-                                              fieldC:(::djinni::String::fromCpp(cpp.fieldC))];
+    ::djinni::LocalRef<ObjcType> r;
+    if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelD2>(cpp))
+    {
+        r = LevelD2::fromCpp(jniEnv, *myObject);
+    }
+    else if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelF>(cpp))
+    {
+        r = LevelF::fromCpp(jniEnv, *myObject);
+    }
+    else if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelE>(cpp))
+    {
+        r = LevelE::fromCpp(jniEnv, myObject);
+    }
+    else if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelD>(cpp))
+    {
+        r = LevelD::fromCpp(jniEnv, myObject);
+    }
+    else {
+        r = [[SPLevelCViewModel alloc] initWithFieldA:(::djinni::String::fromCpp(cpp.fieldA))
+                                               fieldB:(::djinni::String::fromCpp(cpp.fieldB))
+                                               fieldC:(::djinni::String::fromCpp(cpp.fieldC))];
+    }
+    return r;
+
 }
 
 } // namespace djinni_generated

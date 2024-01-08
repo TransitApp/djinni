@@ -13,16 +13,17 @@ NativeLevelB2::~NativeLevelB2() = default;
 
 auto NativeLevelB2::fromCpp(JNIEnv* jniEnv, const CppType& c) -> ::djinni::LocalRef<JniType> {
     ::djinni::LocalRef<JniType> r;
-    if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelB2C>(c)) {
-       r = NativeLevelB2C::fromCpp(jniEnv, *myObject);
+    if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelB2C>(c))
+    {
+           r = NativeLevelB2C::fromCpp(jniEnv, *myObject);
     }
     else {
-    const auto& data = ::djinni::JniClass<NativeLevelB2>::get();
-    r = ::djinni::LocalRef<JniType>{jniEnv->NewObject(data.clazz.get(), data.jconstructor,
-                                                      ::djinni::get(::djinni::String::fromCpp(jniEnv, c->fieldA)),
-                                                      ::djinni::get(::djinni::String::fromCpp(jniEnv, c->fieldB)),
-                                                      ::djinni::get(::djinni::String::fromCpp(jniEnv, c->fieldB2)))};
-    ::djinni::jniExceptionCheck(jniEnv);
+        const auto& data = ::djinni::JniClass<NativeLevelB2>::get();
+        r = ::djinni::LocalRef<JniType>{jniEnv->NewObject(data.clazz.get(), data.jconstructor,
+                                                          ::djinni::get(::djinni::String::fromCpp(jniEnv, c->fieldA)),
+                                                          ::djinni::get(::djinni::String::fromCpp(jniEnv, c->fieldB)),
+                                                          ::djinni::get(::djinni::String::fromCpp(jniEnv, c->fieldB2)))};
+        ::djinni::jniExceptionCheck(jniEnv);
     }
     return r;
 }

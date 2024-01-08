@@ -204,22 +204,22 @@ class JNIGenerator(spec: Spec) extends Generator(spec) {
                 val cppChild = cppMarshal.fqTypename(childIdent, childRecord) + cppTypeArgs(params)
 
                 if (index == 0) {
-                  w.wl(s"if (auto myObject = dynamic_pointer_cast<"+cppChild+">(c)) {")
+                  w.wl(s"if (auto myObject = dynamic_pointer_cast<"+cppChild+">(c))")
                 } 
                 else {
-                  w.wl(s"else if (auto myObject = dynamic_pointer_cast<"+cppChild+">(c)) {")
+                  w.wl(s"else if (auto myObject = dynamic_pointer_cast<"+cppChild+">(c))")
+                }
+                
+                w.braced {
+                  val objectValue = if (isInherited(idl, childIdent)) {
+                    "myObject"
+                  } else {
+                    "*myObject"
+                  }
+                  w.wl(s"r = $childJniHelperWithParams::fromCpp(jniEnv, $objectValue);")
                 }
 
-                val objectValue = if (isInherited(idl, childIdent)) {
-                  "myObject"
-                } else {
-                  "*myObject"
-                }
-
-
-                w.wl(s"   r = $childJniHelperWithParams::fromCpp(jniEnv, $objectValue);")
-                w.wl("}")
-                  
+                
               case _ =>
                 //nothing
             }
@@ -227,7 +227,9 @@ class JNIGenerator(spec: Spec) extends Generator(spec) {
 
             index += 1
           }
-            w.wl("else {")      
+          
+          w.wl("else {") 
+          w.increase()     
         }
 
         if(fields.isEmpty) w.wl("(void)c; // Suppress warnings in release builds for empty records")
@@ -249,6 +251,7 @@ class JNIGenerator(spec: Spec) extends Generator(spec) {
         w.wl(s"::djinni::jniExceptionCheck(jniEnv);")
 
         if (hasChildren) {
+          w.decrease()
           w.wl("}")
         }
         w.wl(s"return r;")

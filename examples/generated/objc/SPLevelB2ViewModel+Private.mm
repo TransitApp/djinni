@@ -20,9 +20,18 @@ auto LevelB2::toCpp(ObjcType obj) -> CppType
 
 auto LevelB2::fromCpp(const CppType& cpp) -> ObjcType
 {
-    return [[SPLevelB2ViewModel alloc] initWithFieldA:(::djinni::String::fromCpp(cpp.fieldA))
-                                               fieldB:(::djinni::String::fromCpp(cpp.fieldB))
-                                              fieldB2:(::djinni::String::fromCpp(cpp.fieldB2))];
+    ::djinni::LocalRef<ObjcType> r;
+    if (auto myObject = dynamic_pointer_cast<::transitLib::viewModel::LevelB2C>(cpp))
+    {
+        r = LevelB2C::fromCpp(jniEnv, *myObject);
+    }
+    else {
+        r = [[SPLevelB2ViewModel alloc] initWithFieldA:(::djinni::String::fromCpp(cpp.fieldA))
+                                                fieldB:(::djinni::String::fromCpp(cpp.fieldB))
+                                               fieldB2:(::djinni::String::fromCpp(cpp.fieldB2))];
+    }
+    return r;
+
 }
 
 } // namespace djinni_generated

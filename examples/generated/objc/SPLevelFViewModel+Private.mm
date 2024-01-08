@@ -21,11 +21,14 @@ auto LevelF::toCpp(ObjcType obj) -> CppType
 
 auto LevelF::fromCpp(const CppType& cpp) -> ObjcType
 {
-    return [[SPLevelFViewModel alloc] initWithFieldA:(::djinni::String::fromCpp(cpp.fieldA))
-                                              fieldB:(::djinni::String::fromCpp(cpp.fieldB))
-                                              fieldC:(::djinni::String::fromCpp(cpp.fieldC))
-                                              fieldD:(::djinni::String::fromCpp(cpp.fieldD))
-                                              fieldE:(::djinni::String::fromCpp(cpp.fieldE))];
+    ::djinni::LocalRef<ObjcType> r;
+    r = [[SPLevelFViewModel alloc] initWithFieldA:(::djinni::String::fromCpp(cpp.fieldA))
+                                           fieldB:(::djinni::String::fromCpp(cpp.fieldB))
+                                           fieldC:(::djinni::String::fromCpp(cpp.fieldC))
+                                           fieldD:(::djinni::String::fromCpp(cpp.fieldD))
+                                           fieldE:(::djinni::String::fromCpp(cpp.fieldE))];
+    return r;
+
 }
 
 } // namespace djinni_generated
