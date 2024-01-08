@@ -11,7 +11,6 @@
                                 fieldC:(nonnull NSString *)fieldC
                                 fieldD:(nonnull NSString *)fieldD
                                 fieldE:(nonnull NSString *)fieldE
-                                fieldF:(nonnull NSString *)fieldF
 {
     if (self = [super initWithFieldA:fieldA
                               fieldB:fieldB
@@ -19,7 +18,6 @@
                               fieldD:fieldD
                               fieldE:fieldE])
     {
-        _fieldF = [fieldF copy];
     }
     return self;
 }
@@ -29,20 +27,18 @@
                                   fieldC:(nonnull NSString *)fieldC
                                   fieldD:(nonnull NSString *)fieldD
                                   fieldE:(nonnull NSString *)fieldE
-                                  fieldF:(nonnull NSString *)fieldF
 {
     return [[self alloc] initWithFieldA:fieldA
                                  fieldB:fieldB
                                  fieldC:fieldC
                                  fieldD:fieldD
-                                 fieldE:fieldE
-                                 fieldF:fieldF];
+                                 fieldE:fieldE];
 }
 
 #ifndef DJINNI_DISABLE_DESCRIPTION_METHODS
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"<%@ %p fieldA:%@ fieldB:%@ fieldC:%@ fieldD:%@ fieldE:%@ fieldF:%@>", self.class, (void *)self, self.fieldA, self.fieldB, self.fieldC, self.fieldD, self.fieldE, self.fieldF];
+    return [NSString stringWithFormat:@"<%@ %p fieldA:%@ fieldB:%@ fieldC:%@ fieldD:%@ fieldE:%@>", self.class, (void *)self, self.fieldA, self.fieldB, self.fieldC, self.fieldD, self.fieldE];
 }
 
 #endif

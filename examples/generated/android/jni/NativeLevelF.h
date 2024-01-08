@@ -25,13 +25,12 @@ private:
     friend ::djinni::JniClass<NativeLevelF>;
 
     const ::djinni::GlobalRef<jclass> clazz { ::djinni::jniFindClass("djinni/java/src/LevelF") };
-    const jmethodID jconstructor { ::djinni::jniGetMethodID(clazz.get(), "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V") };
+    const jmethodID jconstructor { ::djinni::jniGetMethodID(clazz.get(), "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V") };
     const jfieldID field_fieldA { ::djinni::jniGetFieldID(clazz.get(), "fieldA", "Ljava/lang/String;") };
     const jfieldID field_fieldB { ::djinni::jniGetFieldID(clazz.get(), "fieldB", "Ljava/lang/String;") };
     const jfieldID field_fieldC { ::djinni::jniGetFieldID(clazz.get(), "fieldC", "Ljava/lang/String;") };
     const jfieldID field_fieldD { ::djinni::jniGetFieldID(clazz.get(), "fieldD", "Ljava/lang/String;") };
     const jfieldID field_fieldE { ::djinni::jniGetFieldID(clazz.get(), "fieldE", "Ljava/lang/String;") };
-    const jfieldID field_fieldF { ::djinni::jniGetFieldID(clazz.get(), "fieldF", "Ljava/lang/String;") };
 };
 
 } // namespace djinni_generated

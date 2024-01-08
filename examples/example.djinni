@@ -19,5 +19,5 @@ LevelE = record extends LevelD {
 }
 
 LevelF = record extends LevelE {
-    fieldF: string;
+
 }

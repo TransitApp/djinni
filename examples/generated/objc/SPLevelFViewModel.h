@@ -5,21 +5,15 @@
 
 #import "SPLevelEViewModel.h"
 @interface SPLevelFViewModel : SPLevelEViewModel
-- (nonnull instancetype)init NS_UNAVAILABLE;
-+ (nonnull instancetype)new NS_UNAVAILABLE;
 - (nonnull instancetype)initWithFieldA:(nonnull NSString *)fieldA
                                 fieldB:(nonnull NSString *)fieldB
                                 fieldC:(nonnull NSString *)fieldC
                                 fieldD:(nonnull NSString *)fieldD
-                                fieldE:(nonnull NSString *)fieldE
-                                fieldF:(nonnull NSString *)fieldF NS_DESIGNATED_INITIALIZER;
+                                fieldE:(nonnull NSString *)fieldE NS_DESIGNATED_INITIALIZER;
 + (nonnull instancetype)LevelFWithFieldA:(nonnull NSString *)fieldA
                                   fieldB:(nonnull NSString *)fieldB
                                   fieldC:(nonnull NSString *)fieldC
                                   fieldD:(nonnull NSString *)fieldD
-                                  fieldE:(nonnull NSString *)fieldE
-                                  fieldF:(nonnull NSString *)fieldF;
-
-@property (nonatomic, readonly, nonnull) NSString * fieldF;
+                                  fieldE:(nonnull NSString *)fieldE;
 
 @end
