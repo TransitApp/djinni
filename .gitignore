@@ -25,3 +25,5 @@ test-suite/djinni/vendor/third-party/proto/ts/*.js
 /target
 /.metals
 *.db
+src/source/.metals/*
+src/source/.scala-build/*
