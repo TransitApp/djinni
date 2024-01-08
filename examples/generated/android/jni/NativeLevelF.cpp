@@ -17,14 +17,13 @@ auto NativeLevelF::fromCpp(JNIEnv* jniEnv, const CppType& c) -> ::djinni::LocalR
                                                            ::djinni::get(::djinni::String::fromCpp(jniEnv, c.fieldB)),
                                                            ::djinni::get(::djinni::String::fromCpp(jniEnv, c.fieldC)),
                                                            ::djinni::get(::djinni::String::fromCpp(jniEnv, c.fieldD)),
-                                                           ::djinni::get(::djinni::String::fromCpp(jniEnv, c.fieldE)),
-                                                           ::djinni::get(::djinni::String::fromCpp(jniEnv, c.fieldF)))};
+                                                           ::djinni::get(::djinni::String::fromCpp(jniEnv, c.fieldE)))};
     ::djinni::jniExceptionCheck(jniEnv);
     return r;
 }
 
 auto NativeLevelF::toCpp(JNIEnv* jniEnv, JniType j) -> CppType {
-    ::djinni::JniLocalScope jscope(jniEnv, 7);
+    ::djinni::JniLocalScope jscope(jniEnv, 6);
     assert(j != nullptr);
     const auto& data = ::djinni::JniClass<NativeLevelF>::get();
     ::transitLib::viewModel::LevelF model;
@@ -33,7 +32,6 @@ auto NativeLevelF::toCpp(JNIEnv* jniEnv, JniType j) -> CppType {
     model.fieldC = ::djinni::String::toCpp(jniEnv, (jstring)jniEnv->GetObjectField(j, data.field_fieldC));
     model.fieldD = ::djinni::String::toCpp(jniEnv, (jstring)jniEnv->GetObjectField(j, data.field_fieldD));
     model.fieldE = ::djinni::String::toCpp(jniEnv, (jstring)jniEnv->GetObjectField(j, data.field_fieldE));
-    model.fieldF = ::djinni::String::toCpp(jniEnv, (jstring)jniEnv->GetObjectField(j, data.field_fieldF));
     return model;
 }
 

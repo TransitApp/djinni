@@ -16,7 +16,6 @@ auto LevelF::toCpp(ObjcType obj) -> CppType
     model.fieldC = ::djinni::String::toCpp(obj.fieldC);
     model.fieldD = ::djinni::String::toCpp(obj.fieldD);
     model.fieldE = ::djinni::String::toCpp(obj.fieldE);
-    model.fieldF = ::djinni::String::toCpp(obj.fieldF);
     return model;
 }
 
@@ -26,8 +25,7 @@ auto LevelF::fromCpp(const CppType& cpp) -> ObjcType
                                               fieldB:(::djinni::String::fromCpp(cpp.fieldB))
                                               fieldC:(::djinni::String::fromCpp(cpp.fieldC))
                                               fieldD:(::djinni::String::fromCpp(cpp.fieldD))
-                                              fieldE:(::djinni::String::fromCpp(cpp.fieldE))
-                                              fieldF:(::djinni::String::fromCpp(cpp.fieldF))];
+                                              fieldE:(::djinni::String::fromCpp(cpp.fieldE))];
 }
 
 } // namespace djinni_generated

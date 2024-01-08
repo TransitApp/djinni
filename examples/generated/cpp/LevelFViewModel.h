@@ -4,13 +4,11 @@
 #pragma once
 
 #include "LevelEViewModel.h"
-#include <string>
 #include <utility>
 
 namespace transitLib::viewModel {
 
 struct LevelF : public LevelE {
-    std::string fieldF;
 };
 
 } // namespace transitLib::viewModel

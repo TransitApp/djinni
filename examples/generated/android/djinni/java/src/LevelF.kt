@@ -11,8 +11,7 @@ data class LevelF(
     override val fieldB: String,
     override val fieldC: String,
     override val fieldD: String,
-    override val fieldE: String,
-    val fieldF: String
+    override val fieldE: String
 ) : LevelE(fieldA, fieldB, fieldC, fieldD, fieldE) {
 
     override fun toString(): String  {
@@ -22,7 +21,6 @@ data class LevelF(
                 "," + "fieldC=" + fieldC +
                 "," + "fieldD=" + fieldD +
                 "," + "fieldE=" + fieldE +
-                "," + "fieldF=" + fieldF +
         "}"
     }
 
