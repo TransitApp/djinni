@@ -286,6 +286,7 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
     })
 
     // Generate the implementation file for record
+    refs.body.add("#import \"DjinniUtils.h\"")
     writeObjcFile(bodyName(objcName), origin, refs.body, w => {
       if (r.consts.nonEmpty) generateObjcConstants(w, r.consts, noBaseSelf, ObjcConstantType.ConstVariable)
 
@@ -397,10 +398,14 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
           for (f <- superFields ++ r.fields) {
               w.wl(" ^")
               f.ty.resolved.base match {
+                case MList | MArray => w.w(s"self.${idObjc.field(f.ident)}.dynamicHash")
                 case MOptional =>
                   f.ty.resolved.args.head.base match {
                     case df: MDef if df.defType == DEnum =>
                       w.w(s"(NSUInteger)self.${idObjc.field(f.ident)}")
+                    case e: MExtern => e.defType match {
+                      case DRecord => w.w(e.objc.hash.format("self." + idObjc.field(f.ident)))
+                    }
                     case _ => w.w(s"self.${idObjc.field(f.ident)}.hash")
                   }
                 case t: MPrimitive => {
