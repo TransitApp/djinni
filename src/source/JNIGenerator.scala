@@ -114,17 +114,17 @@ class JNIGenerator(spec: Spec) extends Generator(spec) {
     fields.foreach(f => refs.find(f.ty))
 
     if (isRecordInherited && childrenRecords.nonEmpty) {  
-            for (childRecord <- childrenRecords) {
-              getRecordIdent(idl, childRecord) match {
-                case Some(childIdent) =>
-                    val childJniHelper = jniMarshal.helperClass(childIdent)
-                    val childJniHelperWithParams = childJniHelper + typeParamsSignature(params)
-                    refs.jniCpp.add(s"#include ${'"'}$childJniHelperWithParams.${spec.cppHeaderExt}${'"'}")
-                case _ =>
-                 //nothing
-              }
-            }
+      for (childRecord <- childrenRecords) {
+        getRecordIdent(idl, childRecord) match {
+          case Some(childIdent) =>
+              val childJniHelper = jniMarshal.helperClass(childIdent)
+              val childJniHelperWithParams = childJniHelper + typeParamsSignature(params)
+              refs.jniCpp.add(s"#include ${'"'}$childJniHelperWithParams.${spec.cppHeaderExt}${'"'}")
+          case _ =>
+            //nothing
+        }
       }
+    }
 
 
     val jniHelper = jniMarshal.helperClass(ident)
@@ -192,44 +192,42 @@ class JNIGenerator(spec: Spec) extends Generator(spec) {
         w.wl("::djinni::LocalRef<JniType> r;")
 
         var hasChildren = false
-        if (isRecordInherited) {  
-          if (childrenRecords.nonEmpty) {
-            hasChildren = true
-            var index = 0
-            for (childRecord <- childrenRecords) {
-              getRecordIdent(idl, childRecord) match {
-                case Some(childIdent) =>
-                    val childJniHelper = jniMarshal.helperClass(childIdent)
-                    val childJniHelperWithParams = childJniHelper + typeParamsSignature(params)
+        if (isRecordInherited && childrenRecords.nonEmpty) {
+          hasChildren = true
+          var index = 0
+          for (childRecord <- childrenRecords) {
+            getRecordIdent(idl, childRecord) match {
+              case Some(childIdent) =>
+                val childJniHelper = jniMarshal.helperClass(childIdent)
+                val childJniHelperWithParams = childJniHelper + typeParamsSignature(params)
 
-                    val cppChild = cppMarshal.fqTypename(childIdent, childRecord) + cppTypeArgs(params)
+                val cppChild = cppMarshal.fqTypename(childIdent, childRecord) + cppTypeArgs(params)
 
-                     if (index == 0) {
-                      w.wl(s"if (auto myObject = dynamic_pointer_cast<"+cppChild+">(c)) {")
-                    } 
-                    else {
-                      w.wl(s"else if (auto myObject = dynamic_pointer_cast<"+cppChild+">(c)) {")
-                    }
+                if (index == 0) {
+                  w.wl(s"if (auto myObject = dynamic_pointer_cast<"+cppChild+">(c)) {")
+                } 
+                else {
+                  w.wl(s"else if (auto myObject = dynamic_pointer_cast<"+cppChild+">(c)) {")
+                }
 
-                    val objectValue = if (isInherited(idl, childIdent)) {
-                      "myObject"
-                    } else {
-                      "*myObject"
-                    }
+                val objectValue = if (isInherited(idl, childIdent)) {
+                  "myObject"
+                } else {
+                  "*myObject"
+                }
 
 
-                    w.wl(s"   r = $childJniHelperWithParams::fromCpp(jniEnv, $objectValue);")
-                    w.wl("}")
-                   
-                case _ =>
-                 //nothing
-              }
-          
-
-              index += 1
+                w.wl(s"   r = $childJniHelperWithParams::fromCpp(jniEnv, $objectValue);")
+                w.wl("}")
+                  
+              case _ =>
+                //nothing
             }
-              w.wl("else {")
-          }      
+        
+
+            index += 1
+          }
+            w.wl("else {")      
         }
 
         if(fields.isEmpty) w.wl("(void)c; // Suppress warnings in release builds for empty records")

@@ -345,6 +345,9 @@ class ObjcppGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
 
     val fields = superFields ++ r.fields
 
+    val isRecordInherited = isInherited(idl, ident.name)
+    val childrenRecords = getChildrenRecords(objcMarshal, ident, idl, ident.name).reverse
+
     val refs = new ObjcRefs()
     for (c <- r.consts)
       refs.find(c.ty)
@@ -360,6 +363,20 @@ class ObjcppGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
 
     refs.body.add("#include <cassert>")
     refs.body.add("!#import " + q(spec.objcppIncludePrefix + objcppMarshal.privateHeaderName(objcName)))
+
+
+    if (isRecordInherited && childrenRecords.nonEmpty) {  
+      for (childRecord <- childrenRecords) {
+        getRecordIdent(idl, childRecord) match {
+          case Some(childIdent) =>
+              val childObjcHelper = objcppMarshal.helperClass(childIdent)
+              val objcChildName = childObjcHelper + (if (r.ext.objc) "_base" else "")
+              refs.body.add("!#import " + q(spec.objcppIncludePrefix + objcppMarshal.privateHeaderName(objcChildName)))
+          case _ =>
+            //nothing
+        }
+      }
+    }
 
     def checkMutable(tm: MExpr): Boolean = tm.base match {
       case MOptional => checkMutable(tm.args.head)
