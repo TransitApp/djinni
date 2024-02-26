@@ -12,7 +12,7 @@
 - (NSUInteger)dynamicHash {
     NSUInteger hash = 0;
     for (NSObject *obj in self) {
-        hash ^= obj.hash;
+        hash += obj.hash;
     }
     return hash;
 }
