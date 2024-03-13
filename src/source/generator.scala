@@ -512,6 +512,77 @@ abstract class Generator(spec: Spec)
       return false
   }
 
+  def getChildrenRecords(marshal: Marshal, ident: Ident, idl: Seq[TypeDecl], _name: String) : Seq[Record] = {
+    def recursiveSearchForChildren(idl: Seq[TypeDecl], name: String) : Seq[Record] = {
+      var foundChildren : Seq[Record] = Seq.empty
+      val filtered = idl.filter(td => td.ident.name != name) 
+      for (element <- filtered) {
+        element.body match {
+          case myRecord: Record => {
+            myRecord.baseRecord match {
+              case None => None
+              case Some(value) => {
+                if (value == name) {
+                idl.find(td => td.ident.name == element.ident.name) match {
+                        case Some(dec) => dec.body match {
+                          case record: Record => {
+                            foundChildren = foundChildren :+ record
+                            foundChildren = foundChildren ++ recursiveSearchForChildren(idl, dec.ident.name)
+                          }
+                          case _ => throw new AssertionError("Unreachable. The parser throws an exception when extending a non-interface type.")
+                        }
+                        case _ => throw new AssertionError("Unreachable. The parser throws an exception when extending an interface that doesn't exist.")
+                      }
+                  
+                  
+                }
+              }
+            }              
+          }
+          case _ => None
+        }
+      }
+      return foundChildren
+    }
+    
+    val childrenRecords = recursiveSearchForChildren(idl, _name)
+    // println("childrenRecords size "+childrenRecords.length+" for "+_name)
+    // for (child <- childrenRecords) {
+    //   println("child "+getRecordName(idl, child))
+    // }
+
+    return childrenRecords
+  }
+
+  def getRecordName(idl: Seq[TypeDecl], record : Record) : String = {
+    for (element <- idl) {
+      element.body match {
+        case myRecord: Record => {
+          if (myRecord == record) {
+            return element.ident.name
+          }
+        }
+         case _ => return "not found"
+      }
+    }
+    return "not found"
+  }
+
+  def getRecordIdent(idl: Seq[TypeDecl], record : Record) : Option[Ident] = {
+    for (element <- idl) {
+      element.body match {
+        case myRecord: Record => {
+          if (myRecord == record) {
+            return Some(element.ident)
+          }
+        }
+
+        case _ => None
+      }
+    }
+    return None
+  }
+
   // --------------------------------------------------------------------------
   // Render type expression
 

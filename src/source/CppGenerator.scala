@@ -23,6 +23,7 @@ import djinni.ast._
 import djinni.generatorTools._
 import djinni.meta._
 import djinni.writer.IndentWriter
+import scala.util.matching.Regex
 
 import scala.collection.mutable
 
@@ -204,6 +205,14 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     val self = marshal.typename(ident, r)
     val isRecordInherited = isInherited(idl, ident.name)
 
+    if (isRecordInherited) {  
+      val childrenRecords = getChildrenRecords(marshal, ident, idl, ident.name)
+      // for (childRecord <- childrenRecords) {
+      //   println("Found child record: " + getRecordName(childRecord) + " of parent: " + ident.name)
+      // }
+    }
+
+
     val superRecord = getSuperRecord(idl, r)
     
     superRecord match {
@@ -242,7 +251,22 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         for (f <- r.fields) {
           writeDoc(w, f.doc)
           val defaultValue = if (f.defaultValue.isEmpty) "" else " = " + f.defaultValue
-          w.wl(marshal.fieldType(f.ty) + " " + idCpp.field(f.ident) + defaultValue + ";")
+
+          var fullFieldType = marshal.fieldType(f.ty)
+          var fieldType = fullFieldType
+
+          if (fullFieldType.contains("vector")) {
+            val rootTypePattern: Regex = "^(?:std::vector<)?(.+?)(?:>)?$".r
+            rootTypePattern.findFirstMatchIn(fieldType) match {
+            case Some(value) => fieldType = value.group(1)
+            case None => //nothing
+            }
+          }
+        
+
+          val isFieldInherited = isInherited(idl, fieldType)
+          fullFieldType = if (isFieldInherited) fullFieldType.replace(fieldType,"std::shared_ptr<"+fieldType+">") else fullFieldType
+          w.wl(fullFieldType + " " + idCpp.field(f.ident) + defaultValue + ";")
         }
 
         if (r.derivingTypes.contains(DerivingType.Eq)) {

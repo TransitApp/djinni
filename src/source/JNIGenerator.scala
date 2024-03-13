@@ -44,6 +44,7 @@ class JNIGenerator(spec: Spec) extends Generator(spec) {
     val cppPrefix = cppPrefixOverride.getOrElse(spec.jniIncludeCppPrefix)
     jniHpp.add("#include " + q(cppPrefix + spec.cppFileIdentStyle(name) + "." + spec.cppHeaderExt))
     jniHpp.add("#include " + q(spec.jniBaseLibIncludePrefix + "djinni_support.hpp"))
+    
     spec.cppNnHeader match {
       case Some(nnHdr) => jniHpp.add("#include " + nnHdr)
       case _ =>
@@ -106,11 +107,33 @@ class JNIGenerator(spec: Spec) extends Generator(spec) {
 
     val fields = superFields ++ r.fields
 
+    val isRecordInherited = isInherited(idl, ident.name)
+    val childrenRecords = getChildrenRecords(jniMarshal, ident, idl, ident.name).reverse
+
     val refs = new JNIRefs(ident.name, prefixOverride)
     fields.foreach(f => refs.find(f.ty))
 
+    if (isRecordInherited && childrenRecords.nonEmpty) {  
+      for (childRecord <- childrenRecords) {
+        getRecordIdent(idl, childRecord) match {
+          case Some(childIdent) =>
+              val childJniHelper = jniMarshal.helperClass(childIdent)
+              val childJniHelperWithParams = childJniHelper + typeParamsSignature(params)
+              refs.jniCpp.add(s"#include ${'"'}$childJniHelperWithParams.${spec.cppHeaderExt}${'"'}")
+          case _ =>
+            //nothing
+        }
+      }
+    }
+
+
     val jniHelper = jniMarshal.helperClass(ident)
-    val cppSelf = cppMarshal.fqTypename(ident, r) + cppTypeArgs(params)
+    val accessor = if (isRecordInherited) "->" else "."
+
+    var cppSelf = cppMarshal.fqTypename(ident, r) + cppTypeArgs(params)
+    if (isRecordInherited) {
+      cppSelf = "std::shared_ptr<"+cppSelf+">"
+    }
 
     def writeJniPrototype(w: IndentWriter) {
       writeJniTypeParams(w, params)
@@ -149,6 +172,7 @@ class JNIGenerator(spec: Spec) extends Generator(spec) {
         case Some(value) => value.fields
       }
 
+
       val jniHelperWithParams = jniHelper + typeParamsSignature(params)
       // Defining ctor/dtor in the cpp file reduces build times
       writeJniTypeParams(w, params)
@@ -159,20 +183,65 @@ class JNIGenerator(spec: Spec) extends Generator(spec) {
       w.wl
 
       val fields = superFields ++ r.fields
-
+      
       writeJniTypeParams(w, params)
       w.w(s"auto $jniHelperWithParams::fromCpp(JNIEnv* jniEnv, const CppType& c) -> ::djinni::LocalRef<JniType>").braced{
         //w.wl(s"::${spec.jniNamespace}::JniLocalScope jscope(jniEnv, 10);")
+
+
+        w.wl("::djinni::LocalRef<JniType> r;")
+
+        var hasChildren = false
+        if (isRecordInherited && childrenRecords.nonEmpty) {
+          hasChildren = true
+          var index = 0
+          for (childRecord <- childrenRecords) {
+            getRecordIdent(idl, childRecord) match {
+              case Some(childIdent) =>
+                val childJniHelper = jniMarshal.helperClass(childIdent)
+                val childJniHelperWithParams = childJniHelper + typeParamsSignature(params)
+
+                val cppChild = cppMarshal.fqTypename(childIdent, childRecord) + cppTypeArgs(params)
+
+                if (index == 0) {
+                  w.wl(s"if (auto myObject = dynamic_pointer_cast<"+cppChild+">(c))")
+                } 
+                else {
+                  w.wl(s"else if (auto myObject = dynamic_pointer_cast<"+cppChild+">(c))")
+                }
+                
+                w.braced {
+                  val objectValue = if (isInherited(idl, childIdent)) {
+                    "myObject"
+                  } else {
+                    "*myObject"
+                  }
+                  w.wl(s"r = $childJniHelperWithParams::fromCpp(jniEnv, $objectValue);")
+                }
+
+                
+              case _ =>
+                //nothing
+            }
+        
+
+            index += 1
+          }
+          
+          w.wl("else {") 
+          w.increase()     
+        }
+
         if(fields.isEmpty) w.wl("(void)c; // Suppress warnings in release builds for empty records")
         w.wl(s"const auto& data = ::djinni::JniClass<$jniHelper>::get();")
-        val call = "auto r = ::djinni::LocalRef<JniType>{jniEnv->NewObject("
+        val call = "r = ::djinni::LocalRef<JniType>{jniEnv->NewObject("
         w.w(call + "data.clazz.get(), data.jconstructor")
         if(fields.nonEmpty) {
           w.wl(",")
           writeAlignedCall(w, " " * call.length(), fields, ")}", f => {
             val name = idCpp.field(f.ident)
             val param = jniMarshal.fromCpp(f.ty,
-              cppMarshal.maybeMove(s"c.$name", f.ty))
+              cppMarshal.maybeMove(s"c$accessor$name", f.ty))
             s"::djinni::get($param)"
           })
         }
@@ -180,6 +249,11 @@ class JNIGenerator(spec: Spec) extends Generator(spec) {
           w.w(")}")
         w.wl(";")
         w.wl(s"::djinni::jniExceptionCheck(jniEnv);")
+
+        if (hasChildren) {
+          w.decrease()
+          w.wl("}")
+        }
         w.wl(s"return r;")
       }
       w.wl
@@ -197,7 +271,7 @@ class JNIGenerator(spec: Spec) extends Generator(spec) {
           val fieldId = "data.field_" + idJava.field(f.ident)
           val jniFieldAccess = toJniCall(f.ty, (jt: String) => s"jniEnv->Get${jt}Field(j, $fieldId)")
   
-          w.wl(s"model.${idJava.field(f.ident)} = "+jniMarshal.toCpp(f.ty, jniFieldAccess)+";")
+          w.wl(s"model$accessor${idJava.field(f.ident)} = "+jniMarshal.toCpp(f.ty, jniFieldAccess)+";")
         }
 
         w.wl("return model;")
@@ -478,7 +552,7 @@ class JNIGenerator(spec: Spec) extends Generator(spec) {
     val moduleNameJava = spec.javaIdentStyle.ty(spec.moduleName + "Module")
 
     val includes = s"#include ${q(spec.jniBaseLibIncludePrefix + "djinni_support.hpp")}" :: decls.map(td => s"#include ${q(spec.jniFileIdentStyle(td.ident) + "." + spec.cppHeaderExt)}").toList
-
+    
     writeJniHppFile(moduleName, "MODULE", List.empty, List.empty, w => {
     })
     writeJniCppFile(moduleName, "MODULE", includes, w => {

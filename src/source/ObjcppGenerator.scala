@@ -345,6 +345,9 @@ class ObjcppGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
 
     val fields = superFields ++ r.fields
 
+    val isRecordInherited = isInherited(idl, ident.name)
+    val childrenRecords = getChildrenRecords(objcMarshal, ident, idl, ident.name).reverse
+
     val refs = new ObjcRefs()
     for (c <- r.consts)
       refs.find(c.ty)
@@ -360,6 +363,20 @@ class ObjcppGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
 
     refs.body.add("#include <cassert>")
     refs.body.add("!#import " + q(spec.objcppIncludePrefix + objcppMarshal.privateHeaderName(objcName)))
+
+
+    if (isRecordInherited && childrenRecords.nonEmpty) {  
+      for (childRecord <- childrenRecords) {
+        getRecordIdent(idl, childRecord) match {
+          case Some(childIdent) =>
+              val childObjcHelper = objcppMarshal.helperClass(childIdent)
+              val objcChildName = childObjcHelper + (if (r.ext.objc) "_base" else "")
+              refs.body.add("!#import " + q(spec.objcppIncludePrefix + objcppMarshal.privateHeaderName(objcChildName)))
+          case _ =>
+            //nothing
+        }
+      }
+    }
 
     def checkMutable(tm: MExpr): Boolean = tm.base match {
       case MOptional => checkMutable(tm.args.head)
@@ -409,9 +426,59 @@ class ObjcppGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
         w.braced {
           if(fields.isEmpty) w.wl("(void)cpp; // Suppress warnings in relase builds for empty records")
           // val first = if(r.fields.isEmpty) "" else IdentStyle.camelUpper("with_" + r.fields.head.ident.name)
-          val call = s"return [[$noBaseSelf alloc] init$firstInitializerArg"
+           w.wl(s"::djinni::LocalRef<ObjcType> r;")
+
+           var hasChildren = false
+        if (isRecordInherited && childrenRecords.nonEmpty) {
+          hasChildren = true
+          var index = 0
+          for (childRecord <- childrenRecords) {
+            getRecordIdent(idl, childRecord) match {
+              case Some(childIdent) =>
+                val childObjcHelper = objcppMarshal.helperClass(childIdent)
+
+                val cppChild = cppMarshal.fqTypename(childIdent, childRecord) + cppTypeArgs(params)
+
+                if (index == 0) {
+                  w.wl(s"if (auto myObject = dynamic_pointer_cast<"+cppChild+">(cpp))")
+                } 
+                else {
+                  w.wl(s"else if (auto myObject = dynamic_pointer_cast<"+cppChild+">(cpp))")
+                }
+                
+                w.braced {
+                  val objectValue = if (isInherited(idl, childIdent)) {
+                    "myObject"
+                  } else {
+                    "*myObject"
+                  }
+                  w.wl(s"r = $childObjcHelper::fromCpp(jniEnv, $objectValue);")
+                }
+
+                
+              case _ =>
+                //nothing
+            }
+        
+
+            index += 1
+          }
+          
+          w.wl("else {") 
+          w.increase()     
+        }
+          
+          val call = s"r = [[$noBaseSelf alloc] init$firstInitializerArg"
           writeAlignedObjcCall(w, call, fields, "]", f => (idObjc.field(f.ident), s"(${objcppMarshal.fromCpp(f.ty, "cpp." + idCpp.field(f.ident))})"))
           w.wl(";")
+
+          if (hasChildren) {
+            w.decrease()
+            w.wl("}")
+          }
+          
+          w.wl(s"return r;")
+          w.wl
         }
       })
     })
@@ -438,4 +505,7 @@ class ObjcppGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
       f(w)
     })
   }
+
+    def cppTypeArgs(params: Seq[TypeParam]): String =
+    if (params.isEmpty) "" else params.map(p => idCpp.typeParam(p.ident)).mkString("<", ", ", ">")
 }
