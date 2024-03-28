@@ -7,7 +7,7 @@
 #include <string>
 #include <utility>
 
-namespace transitLib::viewModel {
+namespace transitLib::vm {
 
 struct LevelC : public LevelB {
     std::string fieldC;
@@ -15,4 +15,4 @@ struct LevelC : public LevelB {
     virtual ~LevelC(){};
 };
 
-} // namespace transitLib::viewModel
+} // namespace transitLib::vm

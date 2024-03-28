@@ -10,7 +10,7 @@ namespace djinni_generated {
 auto LevelD::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    ::transitLib::viewModel::LevelD model;
+    ::transitLib::vm::LevelD model;
     model.fieldA = ::djinni::String::toCpp(obj.fieldA);
     model.fieldB = ::djinni::String::toCpp(obj.fieldB);
     model.fieldC = ::djinni::String::toCpp(obj.fieldC);

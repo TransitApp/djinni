@@ -52,7 +52,7 @@ fi
 [ ! -e "$temp_out" ] || rm -r "$temp_out"
 "$base_dir/../src/run-assume-built" \
     --cpp-out "$temp_out/cpp" \
-    --cpp-namespace transitLib::viewModel \
+    --cpp-namespace transitLib::vm \
     --ident-cpp-file FooBarViewModel \
     --ident-cpp-enum FooBar \
     --cpp-struct-constructor false\

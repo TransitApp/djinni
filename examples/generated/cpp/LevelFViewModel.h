@@ -6,9 +6,9 @@
 #include "LevelEViewModel.h"
 #include <utility>
 
-namespace transitLib::viewModel {
+namespace transitLib::vm {
 
 struct LevelF : public LevelE {
 };
 
-} // namespace transitLib::viewModel
+} // namespace transitLib::vm

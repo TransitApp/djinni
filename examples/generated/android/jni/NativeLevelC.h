@@ -10,7 +10,7 @@ namespace djinni_generated {
 
 class NativeLevelC final {
 public:
-    using CppType = ::transitLib::viewModel::LevelC;
+    using CppType = ::transitLib::vm::LevelC;
     using JniType = jobject;
 
     using Boxed = NativeLevelC;
