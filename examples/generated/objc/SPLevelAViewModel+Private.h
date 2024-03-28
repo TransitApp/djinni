@@ -12,7 +12,7 @@ namespace djinni_generated {
 
 struct LevelA
 {
-    using CppType = ::transitLib::viewModel::LevelA;
+    using CppType = ::transitLib::vm::LevelA;
     using ObjcType = SPLevelAViewModel*;
 
     using Boxed = LevelA;

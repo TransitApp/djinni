@@ -22,7 +22,7 @@ auto NativeLevelA::toCpp(JNIEnv* jniEnv, JniType j) -> CppType {
     ::djinni::JniLocalScope jscope(jniEnv, 2);
     assert(j != nullptr);
     const auto& data = ::djinni::JniClass<NativeLevelA>::get();
-    ::transitLib::viewModel::LevelA model;
+    ::transitLib::vm::LevelA model;
     model.fieldA = ::djinni::String::toCpp(jniEnv, (jstring)jniEnv->GetObjectField(j, data.field_fieldA));
     return model;
 }
