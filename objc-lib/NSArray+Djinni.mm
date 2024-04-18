@@ -11,8 +11,9 @@
 
 - (NSUInteger)dynamicHash {
     NSUInteger hash = 0;
-    for (NSObject *obj in self) {
-        hash += obj.hash;
+    for (id obj in self) {
+        auto objHash = [obj hash];
+        hash ^= objHash;
     }
     return hash;
 }

@@ -10,7 +10,6 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface NSArray <ObjectType>(Djinni)
-;
 
 @property (nonatomic, readonly) NSUInteger dynamicHash;
 
