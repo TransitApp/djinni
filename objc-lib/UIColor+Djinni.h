@@ -12,7 +12,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface UIColor (Djinni)
 
 - (NSUInteger)dynamicHash;
-- (BOOL)isEqualToColor:(UIColor *)color;
 
 @end
 
