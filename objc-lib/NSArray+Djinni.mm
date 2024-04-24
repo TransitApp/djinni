@@ -6,7 +6,6 @@
 //
 
 #import "NSArray+Djinni.h"
-#import "UIColor+Djinni.h"
 
 @implementation NSArray (Djinni)
 
@@ -15,16 +14,16 @@
  */
 #define NSUINT_BIT (CHAR_BIT * sizeof(NSUInteger))
 #define NSUINTROTATE(val, howmuch) ((((NSUInteger)val) << howmuch) | (((NSUInteger)val) >> (NSUINT_BIT - howmuch)))
-
 - (NSUInteger)dynamicHash {
-    NSUInteger hash = 0;
-    for (NSUInteger i = 0; i < self.count; i++) {
+    NSUInteger combinedHash = 0;
+    NSUInteger count = self.count;
+    for (NSUInteger i = 0; i < count; i++) {
         id obj = self[i];
-        NSUInteger objHash = [obj isKindOfClass:[UIColor class]] ? [obj dynamicHash] : [obj hash];
-        hash ^= (i % 2 == 0) ? objHash : NSUINTROTATE(objHash, NSUINT_BIT / 2);
+        NSUInteger objHash = [obj respondsToSelector:@selector(dynamicHash)] ? [obj dynamicHash] : [obj hash];
+        NSUInteger rotationAmount = NSUINT_BIT / (i + 1);
+        combinedHash ^= NSUINTROTATE(objHash, rotationAmount);
     }
-    return hash;
+    return combinedHash;
 }
-
 @end
 
