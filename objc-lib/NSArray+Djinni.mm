@@ -10,12 +10,14 @@
 @implementation NSArray (Djinni)
 
 - (NSUInteger)dynamicHash {
-    NSUInteger hash = 0;
+    NSUInteger result = 1;
+    NSUInteger prime = 31;
     for (id obj in self) {
-        auto objHash = [obj hash];
-        hash ^= objHash;
+        NSUInteger objHash = [obj respondsToSelector:@selector(dynamicHash)] ? [obj dynamicHash] : [obj hash];
+        result = prime * result + objHash;
     }
-    return hash;
+    return result;
 }
 
 @end
+
