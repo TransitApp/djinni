@@ -31,8 +31,9 @@
 
 - (NSUInteger)hash
 {
-    return NSStringFromClass([self class]).hash ^
-            ((NSUInteger)self.createdAt.timeIntervalSinceReferenceDate);
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + ((NSUInteger)self.createdAt.timeIntervalSinceReferenceDate);
+    return hashCode;
 }
 
 - (NSComparisonResult)compare:(DBDateRecord *)other

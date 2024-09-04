@@ -31,8 +31,9 @@
 
 - (NSUInteger)hash
 {
-    return NSStringFromClass([self class]).hash ^
-            ((NSUInteger)self.dt);
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + ((NSUInteger)self.dt);
+    return hashCode;
 }
 
 - (NSComparisonResult)compare:(DBRecordWithDurationAndDerivings *)other
