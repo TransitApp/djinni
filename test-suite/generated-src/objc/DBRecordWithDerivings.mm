@@ -66,15 +66,16 @@
 
 - (NSUInteger)hash
 {
-    return NSStringFromClass([self class]).hash ^
-            (NSUInteger)self.eight ^
-            (NSUInteger)self.sixteen ^
-            (NSUInteger)self.thirtytwo ^
-            (NSUInteger)self.sixtyfour ^
-            [NSNumber numberWithFloat:self.fthirtytwo].hash ^
-            [NSNumber numberWithDouble:self.fsixtyfour].hash ^
-            self.d.hash ^
-            self.s.hash;
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + (NSUInteger)self.eight;
+    hashCode = hashCode * 31 + (NSUInteger)self.sixteen;
+    hashCode = hashCode * 31 + (NSUInteger)self.thirtytwo;
+    hashCode = hashCode * 31 + (NSUInteger)self.sixtyfour;
+    hashCode = hashCode * 31 + [NSNumber numberWithFloat:self.fthirtytwo].hash;
+    hashCode = hashCode * 31 + [NSNumber numberWithDouble:self.fsixtyfour].hash;
+    hashCode = hashCode * 31 + self.d.hash;
+    hashCode = hashCode * 31 + self.s.hash;
+    return hashCode;
 }
 
 - (NSComparisonResult)compare:(DBRecordWithDerivings *)other

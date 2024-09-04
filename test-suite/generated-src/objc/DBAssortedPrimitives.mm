@@ -96,21 +96,22 @@
 
 - (NSUInteger)hash
 {
-    return NSStringFromClass([self class]).hash ^
-            (NSUInteger)self.b ^
-            (NSUInteger)self.eight ^
-            (NSUInteger)self.sixteen ^
-            (NSUInteger)self.thirtytwo ^
-            (NSUInteger)self.sixtyfour ^
-            [NSNumber numberWithFloat:self.fthirtytwo].hash ^
-            [NSNumber numberWithDouble:self.fsixtyfour].hash ^
-            self.oB.hash ^
-            self.oEight.hash ^
-            self.oSixteen.hash ^
-            self.oThirtytwo.hash ^
-            self.oSixtyfour.hash ^
-            self.oFthirtytwo.hash ^
-            self.oFsixtyfour.hash;
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + (NSUInteger)self.b;
+    hashCode = hashCode * 31 + (NSUInteger)self.eight;
+    hashCode = hashCode * 31 + (NSUInteger)self.sixteen;
+    hashCode = hashCode * 31 + (NSUInteger)self.thirtytwo;
+    hashCode = hashCode * 31 + (NSUInteger)self.sixtyfour;
+    hashCode = hashCode * 31 + [NSNumber numberWithFloat:self.fthirtytwo].hash;
+    hashCode = hashCode * 31 + [NSNumber numberWithDouble:self.fsixtyfour].hash;
+    hashCode = hashCode * 31 + self.oB.hash;
+    hashCode = hashCode * 31 + self.oEight.hash;
+    hashCode = hashCode * 31 + self.oSixteen.hash;
+    hashCode = hashCode * 31 + self.oThirtytwo.hash;
+    hashCode = hashCode * 31 + self.oSixtyfour.hash;
+    hashCode = hashCode * 31 + self.oFthirtytwo.hash;
+    hashCode = hashCode * 31 + self.oFsixtyfour.hash;
+    return hashCode;
 }
 
 #ifndef DJINNI_DISABLE_DESCRIPTION_METHODS
