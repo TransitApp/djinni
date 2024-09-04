@@ -36,9 +36,10 @@
 
 - (NSUInteger)hash
 {
-    return NSStringFromClass([self class]).hash ^
-            (NSUInteger)self.x ^
-            (NSUInteger)self.y;
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + (NSUInteger)self.x;
+    hashCode = hashCode * 31 + (NSUInteger)self.y;
+    return hashCode;
 }
 
 #ifndef DJINNI_DISABLE_DESCRIPTION_METHODS

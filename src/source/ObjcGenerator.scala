@@ -393,46 +393,45 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
 
         w.wl("- (NSUInteger)hash")
         w.braced {
-          w.w(s"return ").nestedN(2) {
-            w.w(s"NSStringFromClass([self class]).hash")
-          for (f <- superFields ++ r.fields) {
-              w.wl(" ^")
-              f.ty.resolved.base match {
-                case MList | MArray => w.w(s"self.${idObjc.field(f.ident)}.dynamicHash")
+          w.wl("NSUInteger hashCode = 17;")
+          val multiplier = "31"            
+          for (f <- superFields ++ r.fields) {              
+              val fieldHashCode = f.ty.resolved.base match {
+                case MList | MArray => s"self.${idObjc.field(f.ident)}.dynamicHash"
                 case MOptional =>
                   f.ty.resolved.args.head.base match {
                     case df: MDef if df.defType == DEnum =>
-                      w.w(s"(NSUInteger)self.${idObjc.field(f.ident)}")
+                      s"(NSUInteger)self.${idObjc.field(f.ident)}"
                     case e: MExtern => e.defType match {
-                      case DRecord => w.w(e.objc.hash.format("self." + idObjc.field(f.ident)))
+                      case DRecord => e.objc.hash.format("self." + idObjc.field(f.ident))
                     }
-                    case _ => w.w(s"self.${idObjc.field(f.ident)}.hash")
+                    case _ => s"self.${idObjc.field(f.ident)}.hash"
                   }
                 case t: MPrimitive => {
                   if (t.objcName == "float") {
-                    w.w(s"[NSNumber numberWithFloat:self.${idObjc.field(f.ident)}].hash")
+                    s"[NSNumber numberWithFloat:self.${idObjc.field(f.ident)}].hash"
                   }
                   else if (t.objcName == "double") {
-                    w.w(s"[NSNumber numberWithDouble:self.${idObjc.field(f.ident)}].hash")
+                    s"[NSNumber numberWithDouble:self.${idObjc.field(f.ident)}].hash"
                   }
                   else {
-                    w.w(s"(NSUInteger)self.${idObjc.field(f.ident)}")
+                    s"(NSUInteger)self.${idObjc.field(f.ident)}"
                   }
                 }
                 case df: MDef => df.defType match {
-                  case DEnum => w.w(s"(NSUInteger)self.${idObjc.field(f.ident)}")
-                  case _ => w.w(s"self.${idObjc.field(f.ident)}.hash")
+                  case DEnum => s"(NSUInteger)self.${idObjc.field(f.ident)}"
+                  case _ => s"self.${idObjc.field(f.ident)}.hash"
                 }
                 case e: MExtern => e.defType match {
-                  case DEnum => w.w(s"(NSUInteger)self.${idObjc.field(f.ident)}")
-                  case DRecord => w.w("(" + e.objc.hash.format("self." + idObjc.field(f.ident)) + ")")
+                  case DEnum => s"(NSUInteger)self.${idObjc.field(f.ident)}"
+                  case DRecord => "(" + e.objc.hash.format("self." + idObjc.field(f.ident)) + ")"
                   case _ => throw new AssertionError("Unreachable")
                 }
-                case _ => w.w(s"self.${idObjc.field(f.ident)}.hash")
+                case _ => s"self.${idObjc.field(f.ident)}.hash"
               }
-            }
+              w.wl(s"hashCode = hashCode * $multiplier + $fieldHashCode;")
           }
-          w.wl(";")
+          w.wl("return hashCode;")
         }
         w.wl
       }
