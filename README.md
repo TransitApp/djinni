@@ -17,6 +17,14 @@ Since we needed some changes we created a fork based on our needs. This fork is 
 
 # Djinni
 
+## Errors
+
+If you ever get this error
+
+`clang: error: unknown argument: '-fno-canonical-system-headers'`
+
+Please run `bazel clean --expunge` at the root where the `WORKSPACE` file is located
+
 ## Modifications
 
  - Added Kotlin support
