@@ -400,6 +400,7 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
                 case MList | MArray => s"self.${idObjc.field(f.ident)}.dynamicHash"
                 case MOptional =>
                   f.ty.resolved.args.head.base match {
+                    case MList | MArray => s"self.${idObjc.field(f.ident)}.dynamicHash"
                     case df: MDef if df.defType == DEnum =>
                       s"(NSUInteger)self.${idObjc.field(f.ident)}"
                     case e: MExtern => e.defType match {
