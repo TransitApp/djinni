@@ -97,7 +97,6 @@ class KotlinGenerator(spec: Spec) extends Generator(spec) {
       w.w("companion object").braced {
         for (c <- consts) {
           writeDoc(w, c.doc)
-          javaAnnotationHeader.foreach(w.wl)
           w.w(s"val ${idJava.const(c.ident)}: ${marshal.fieldType(c.ty)} = ")
           writeJavaConst(w, c.ty, c.value)
           w.wl
