@@ -12,6 +12,21 @@ http_archive(
     ],
 )
 
+# Use local zlib implementation
+new_local_repository(
+    name = "zlib",
+    path = "/usr",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+cc_library(
+    name = "zlib",
+    srcs = [],
+    linkopts = ["-lz"],
+    hdrs = [],
+)
+"""
+)
+
 rules_scala_version = "c711b4d1f0d1cc386c63ef748c9df14d2f3a187e"
 http_archive(
     name = "io_bazel_rules_scala",
