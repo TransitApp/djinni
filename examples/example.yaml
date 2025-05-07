@@ -7,9 +7,9 @@
 name: mylib_record1
 # Specifies what kind of type this is.
 # Supports the same syntax as is used to declare types in .djinni files.
-# Examples: 'interface +c', 'record deriving(eq, or)', 'enum', 'flags', 'interface +j +o'
+# Examples: 'interface +c', 'record deriving(or)', 'enum', 'flags', 'interface +j +o'
 # This determines how Djinni integrates this type into function parameters, fields or return types and operators.
-typedef: 'record +c deriving(eq, ord)'
+typedef: 'record +c deriving(ord)'
 # The (potentially empty) list of required type parameters.
 params: [type_param1, type_param2]
 # This string is stripped from the value specified under "name" to ensure Djinni is referencing the correct typename in code.
@@ -35,7 +35,7 @@ objc:
   boxed: 'MLBRecord1'
   # Specifies whether the unboxed type is a pointer.
   pointer: true
-  # If the type is a "record" and has "eq" deriving then this string must not be empty.
+  # If the type is a "record" then this string must not be empty.
   # It declares a well-formed expression with a single "%s" format placeholder replaced with the variable for which the hash code is needed
   hash: '%s.hash'
 objcpp:
@@ -56,7 +56,7 @@ java:
   # This is useful when templates are only used in C++ (e.g. std::chrono::duration<rep, period> versus java.time.Duration)
   # This should be true by default (even if your type has no parameters) and only set to false if required
   generic: true
-  # If the type is a "record" and has "eq" deriving then this string must not be empty.
+  # If the type is a "record" then this string must not be empty.
   # It declares a well-formed expression with a single "%s" format placeholder replaced with the variable for which the hash code is needed
   hash: '%s.hashCode()'
 jni:

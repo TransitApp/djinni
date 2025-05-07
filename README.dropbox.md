@@ -70,7 +70,7 @@ Djinni's input is an interface description file. Here's an example:
     another_record = record {
         key1: i32;
         key2: string;
-    } deriving (eq, ord)
+    } deriving (ord)
 
     # This interface will be implemented in C++ and can be called from any language.
     my_cpp_interface = interface +c {
@@ -307,7 +307,7 @@ Such a YAML file looks as follows:
 ```yml
 ---
 name: mylib_record1
-typedef: 'record +c deriving(eq, ord)'
+typedef: 'record +c deriving(ord)'
 params: []
 prefix: 'mylib'
 cpp:
