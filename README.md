@@ -70,7 +70,7 @@ Then, in a YAML file, define something like this:
 ```
 ---
 name: VehicleListItems
-typedef: 'record deriving(eq)'
+typedef: 'record deriving(od)'
 params: []
 prefix: ''
 cpp:

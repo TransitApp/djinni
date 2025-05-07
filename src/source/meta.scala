@@ -51,7 +51,7 @@ object MExtern {
     boxed: String, // Fully qualified Objective-C typename, must be an object. Only used for "record" types.
     pointer: Boolean, // True to construct pointer types and make it eligible for "nonnull" qualifier. Only used for "record" types.
     generic: Boolean, // Set to false to exclude type arguments from the ObjC class. This is should be true by default. Useful if template arguments are only used in C++.
-    hash: String, // A well-formed expression to get the hash value. Must be a format string with a single "%s" placeholder. Only used for "record" types with "eq" deriving when needed.
+    hash: String, // A well-formed expression to get the hash value. Must be a format string with a single "%s" placeholder. Only used for "record".
     equal: String, // Set equal operator. E.i: .isEqual: for default operator
     protocol: Boolean
   )
@@ -64,7 +64,7 @@ object MExtern {
     boxed: String, // Java typename used if boxing is required, must be an object.
     reference: Boolean, // True if the unboxed type is an object reference and qualifies for any kind of "nonnull" annotation in Java. Only used for "record" types.
     generic: Boolean, // Set to false to exclude type arguments from the Java class. This is should be true by default. Useful if template arguments are only used in C++.
-    hash: String, // A well-formed expression to get the hash value. Must be a format string with a single "%s" placeholder. Only used for "record" types types with "eq" deriving when needed.
+    hash: String, // A well-formed expression to get the hash value. Must be a format string with a single "%s" placeholder. Only used for "record" types.
     writeToParcel: String, // A well-formed expression to write value into android.os.Parcel. Must be a format string with a single "%s" placeholder. Only used for "record" types types
     readFromParcel: String // A well-formed expression to read value from android.os.Parcel. Must be a format string with a single "%s" placeholder. Only used for "record" types types
   )
