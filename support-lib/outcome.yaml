@@ -1,5 +1,5 @@
 name: outcome
-typedef: 'record deriving(eq, nscopying)'
+typedef: 'record deriving(nscopying)'
 params: [T, E]
 prefix: ''
 cpp:

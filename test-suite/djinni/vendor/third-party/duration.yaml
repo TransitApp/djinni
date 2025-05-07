@@ -4,7 +4,7 @@
 # duration<f64, min> maps to std::chrono::duration<double, std::ratio<60>>
 ---
 name: duration
-typedef: 'record deriving(eq, ord)'
+typedef: 'record deriving(ord)'
 params: [rep, period]
 prefix: ''
 cpp:
@@ -52,7 +52,7 @@ objc:
   header: '<Foundation/Foundation.h>'
   boxed: 'NSNumber'
   pointer: false
-  hash: ''
+  hash: '%s.hash'
 objcpp:
   translator: '::djinni::Duration_h'
   header: '"Duration-objc.hpp"'
@@ -61,7 +61,7 @@ java:
   boxed: 'java.time.Duration'
   reference: true
   generic: false
-  hash: ''
+  hash: '%s.hashCode()'
 jni:
   translator: '::djinni::Duration_h'
   header: '"Duration-jni.hpp"'
@@ -88,7 +88,7 @@ objc:
   header: '<Foundation/Foundation.h>'
   boxed: 'NSNumber'
   pointer: false
-  hash: ''
+  hash: '%s.hash'
 objcpp:
   translator: '::djinni::Duration_min'
   header: '"Duration-objc.hpp"'
@@ -97,7 +97,7 @@ java:
   boxed: 'java.time.Duration'
   reference: true
   generic: false
-  hash: ''
+  hash: '%s.hashCode()'
 jni:
   translator: '::djinni::Duration_min'
   header: '"Duration-jni.hpp"'
@@ -124,7 +124,7 @@ objc:
   header: '<Foundation/Foundation.h>'
   boxed: 'NSNumber'
   pointer: false
-  hash: ''
+  hash: '%s.hash'
 objcpp:
   translator: '::djinni::Duration_s'
   header: '"Duration-objc.hpp"'
@@ -133,7 +133,7 @@ java:
   boxed: 'java.time.Duration'
   reference: true
   generic: false
-  hash: ''
+  hash: '%s.hashCode()'
 jni:
   translator: '::djinni::Duration_s'
   header: '"Duration-jni.hpp"'
@@ -160,7 +160,7 @@ objc:
   header: '<Foundation/Foundation.h>'
   boxed: 'NSNumber'
   pointer: false
-  hash: ''
+  hash: '%s.hash'
 objcpp:
   translator: '::djinni::Duration_ms'
   header: '"Duration-objc.hpp"'
@@ -169,7 +169,7 @@ java:
   boxed: 'java.time.Duration'
   reference: true
   generic: false
-  hash: ''
+  hash: '%s.hashCode()'
 jni:
   translator: '::djinni::Duration_ms'
   header: '"Duration-jni.hpp"'
@@ -196,7 +196,7 @@ objc:
   header: '<Foundation/Foundation.h>'
   boxed: 'NSNumber'
   pointer: false
-  hash: ''
+  hash: '%s.hash'
 objcpp:
   translator: '::djinni::Duration_us'
   header: '"Duration-objc.hpp"'
@@ -205,7 +205,7 @@ java:
   boxed: 'java.time.Duration'
   reference: true
   generic: false
-  hash: ''
+  hash: '%s.hashCode()'
 jni:
   translator: '::djinni::Duration_us'
   header: '"Duration-jni.hpp"'
@@ -232,7 +232,7 @@ objc:
   header: '<Foundation/Foundation.h>'
   boxed: 'NSNumber'
   pointer: false
-  hash: ''
+  hash: '%s.hash'
 objcpp:
   translator: '::djinni::Duration_ns'
   header: '"Duration-objc.hpp"'
@@ -241,7 +241,7 @@ java:
   boxed: 'java.time.Duration'
   reference: true
   generic: false
-  hash: ''
+  hash: '%s.hashCode()'
 jni:
   translator: '::djinni::Duration_ns'
   header: '"Duration-jni.hpp"'
