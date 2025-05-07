@@ -409,6 +409,7 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
                     s"(NSUInteger)self.${idObjc.field(f.ident)}"
                   case e: MExtern => e.defType match {
                     case DRecord => e.objc.hash.format("self." + idObjc.field(f.ident))
+                    case _ => throw new AssertionError("Unreachable")
                   }
                   case _ => s"self.${idObjc.field(f.ident)}.hash"
                 }
