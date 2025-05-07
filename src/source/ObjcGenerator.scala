@@ -363,6 +363,7 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
                               w.w(s"((self.${idObjc.field(f.ident)} == nil && typedOther.${idObjc.field(f.ident)} == nil) || ")
                               w.w(s"(self.${idObjc.field(f.ident)} != nil && [self.${idObjc.field(f.ident)} isEqual:typedOther.${idObjc.field(f.ident)}]))")
                           }
+                        case DEnum | DInterface => // do nothing
                         case _ => throw new AssertionError("Unreachable")
                     }
                     case _ =>
@@ -386,6 +387,7 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
                   case DEnum => w.w(s"self.${idObjc.field(f.ident)} == typedOther.${idObjc.field(f.ident)}")
                   case _ => throw new AssertionError("Unreachable")
                 }
+                case p: MProtobuf => // do nothing
                 case _ => throw new AssertionError("Unreachable")
               }
             }
@@ -409,7 +411,7 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
                     s"(NSUInteger)self.${idObjc.field(f.ident)}"
                   case e: MExtern => e.defType match {
                     case DRecord => e.objc.hash.format("self." + idObjc.field(f.ident))
-                    case _ => throw new AssertionError("Unreachable")
+                    case DInterface | DEnum => // do nothing
                   }
                   case _ => s"self.${idObjc.field(f.ident)}.hash"
                 }
@@ -433,6 +435,7 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
                 case DRecord => "(" + e.objc.hash.format("self." + idObjc.field(f.ident)) + ")"
                 case _ => throw new AssertionError("Unreachable")
               }
+              case p: MProtobuf => // do nothing
               case _ => s"self.${idObjc.field(f.ident)}.hash"
             }
             w.wl(s"hashCode = hashCode * $multiplier + $fieldHashCode;")
