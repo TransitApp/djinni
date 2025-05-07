@@ -138,7 +138,6 @@ private object IdlParser extends RegexParsers {
   }
   def deriving: Parser[Set[DerivingType]] = "deriving" ~> parens(rep1sepend(ident, ",")) ^^ {
     _.map(ident => ident.name match {
-      case "eq" => Record.DerivingType.Eq
       case "ord" => Record.DerivingType.Ord
       case "parcelable" => Record.DerivingType.AndroidParcelable
       case "nscopying" => Record.DerivingType.NSCopying

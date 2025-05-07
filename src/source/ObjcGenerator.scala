@@ -332,115 +332,113 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
 
       if (r.consts.nonEmpty) generateObjcConstants(w, r.consts, noBaseSelf, ObjcConstantType.ConstMethod)
 
-      if (r.derivingTypes.contains(DerivingType.Eq)) {
-        w.wl("- (BOOL)isEqual:(id)other")
-        w.braced {
-          w.w(s"if (![other isKindOfClass:[$self class]])").braced {
-            w.wl("return NO;")
-          }
-
-          if (superFields.isEmpty && r.fields.isEmpty) {
-            w.wl("return YES;")
-          } else {
-            w.wl(s"$self *typedOther = ($self *)other;")
-            val skipFirst = SkipFirst()
-            w.w(s"return ").nestedN(2) {
-              for (f <- superFields ++ r.fields) {
-                skipFirst { w.wl(" &&") }
-                f.ty.resolved.base match {
-                  case MBinary => w.w(s"[self.${idObjc.field(f.ident)} isEqualToData:typedOther.${idObjc.field(f.ident)}]")
-                  case MList | MArray => w.w(s"[self.${idObjc.field(f.ident)} isEqualToArray:typedOther.${idObjc.field(f.ident)}]")
-                  case MSet => w.w(s"[self.${idObjc.field(f.ident)} isEqualToSet:typedOther.${idObjc.field(f.ident)}]")
-                  case MMap => w.w(s"[self.${idObjc.field(f.ident)} isEqualToDictionary:typedOther.${idObjc.field(f.ident)}]")
-                  case MOptional =>
-                    f.ty.resolved.args.head.base match {
-                      case df: MDef if df.defType == DEnum =>
-                        w.w(s"self.${idObjc.field(f.ident)} == typedOther.${idObjc.field(f.ident)}")
-                      case e: MExtern => e.defType match {
-                          case DRecord => if(e.objc.equal.nonEmpty) {
-                               w.w(s"((self.${idObjc.field(f.ident)} == nil && typedOther.${idObjc.field(f.ident)} == nil) || ")
-                               w.w(s"(self.${idObjc.field(f.ident)} != nil && [self.${idObjc.field(f.ident)} ${e.objc.equal}typedOther.${idObjc.field(f.ident)}]))")
-                            } else {
-                               w.w(s"((self.${idObjc.field(f.ident)} == nil && typedOther.${idObjc.field(f.ident)} == nil) || ")
-                               w.w(s"(self.${idObjc.field(f.ident)} != nil && [self.${idObjc.field(f.ident)} isEqual:typedOther.${idObjc.field(f.ident)}]))")
-                            }
-                          case _ => throw new AssertionError("Unreachable")
-                      }
-                      case _ =>
-                        w.w(s"((self.${idObjc.field(f.ident)} == nil && typedOther.${idObjc.field(f.ident)} == nil) || ")
-                        w.w(s"(self.${idObjc.field(f.ident)} != nil && [self.${idObjc.field(f.ident)} isEqual:typedOther.${idObjc.field(f.ident)}]))")
-                    }
-                  case MString => w.w(s"[self.${idObjc.field(f.ident)} isEqualToString:typedOther.${idObjc.field(f.ident)}]")
-                  case MDate => w.w(s"[self.${idObjc.field(f.ident)} isEqualToDate:typedOther.${idObjc.field(f.ident)}]")
-                  case t: MPrimitive => w.w(s"self.${idObjc.field(f.ident)} == typedOther.${idObjc.field(f.ident)}")
-                  case df: MDef => df.defType match {
-                    case DRecord => w.w(s"[self.${idObjc.field(f.ident)} isEqual:typedOther.${idObjc.field(f.ident)}]")
-                    case DEnum => w.w(s"self.${idObjc.field(f.ident)} == typedOther.${idObjc.field(f.ident)}")
-                    case _ => throw new AssertionError("Unreachable")
-                  }
-                  case e: MExtern => e.defType match {
-                    case DRecord => if(e.objc.pointer) {
-                        w.w(s"[self.${idObjc.field(f.ident)} ${e.objc.equal}typedOther.${idObjc.field(f.ident)}]")
-                      } else {
-                        w.w(s"self.${idObjc.field(f.ident)} == typedOther.${idObjc.field(f.ident)}")
-                      }
-                    case DEnum => w.w(s"self.${idObjc.field(f.ident)} == typedOther.${idObjc.field(f.ident)}")
-                    case _ => throw new AssertionError("Unreachable")
-                  }
-                  case _ => throw new AssertionError("Unreachable")
-                }
-              }
-            }
-            w.wl(";")
-          }
+      w.wl("- (BOOL)isEqual:(id)other")
+      w.braced {
+        w.w(s"if (![other isKindOfClass:[$self class]])").braced {
+          w.wl("return NO;")
         }
-        w.wl
 
-        w.wl("- (NSUInteger)hash")
-        w.braced {
-          w.wl("NSUInteger hashCode = 17;")
-          val multiplier = "31"            
-          for (f <- superFields ++ r.fields) {              
-              val fieldHashCode = f.ty.resolved.base match {
-                case MList | MArray => s"self.${idObjc.field(f.ident)}.dynamicHash"
+        if (superFields.isEmpty && r.fields.isEmpty) {
+          w.wl("return YES;")
+        } else {
+          w.wl(s"$self *typedOther = ($self *)other;")
+          val skipFirst = SkipFirst()
+          w.w(s"return ").nestedN(2) {
+            for (f <- superFields ++ r.fields) {
+              skipFirst { w.wl(" &&") }
+              f.ty.resolved.base match {
+                case MBinary => w.w(s"[self.${idObjc.field(f.ident)} isEqualToData:typedOther.${idObjc.field(f.ident)}]")
+                case MList | MArray => w.w(s"[self.${idObjc.field(f.ident)} isEqualToArray:typedOther.${idObjc.field(f.ident)}]")
+                case MSet => w.w(s"[self.${idObjc.field(f.ident)} isEqualToSet:typedOther.${idObjc.field(f.ident)}]")
+                case MMap => w.w(s"[self.${idObjc.field(f.ident)} isEqualToDictionary:typedOther.${idObjc.field(f.ident)}]")
                 case MOptional =>
                   f.ty.resolved.args.head.base match {
-                    case MList | MArray => s"self.${idObjc.field(f.ident)}.dynamicHash"
                     case df: MDef if df.defType == DEnum =>
-                      s"(NSUInteger)self.${idObjc.field(f.ident)}"
+                      w.w(s"self.${idObjc.field(f.ident)} == typedOther.${idObjc.field(f.ident)}")
                     case e: MExtern => e.defType match {
-                      case DRecord => e.objc.hash.format("self." + idObjc.field(f.ident))
+                        case DRecord => if(e.objc.equal.nonEmpty) {
+                              w.w(s"((self.${idObjc.field(f.ident)} == nil && typedOther.${idObjc.field(f.ident)} == nil) || ")
+                              w.w(s"(self.${idObjc.field(f.ident)} != nil && [self.${idObjc.field(f.ident)} ${e.objc.equal}typedOther.${idObjc.field(f.ident)}]))")
+                          } else {
+                              w.w(s"((self.${idObjc.field(f.ident)} == nil && typedOther.${idObjc.field(f.ident)} == nil) || ")
+                              w.w(s"(self.${idObjc.field(f.ident)} != nil && [self.${idObjc.field(f.ident)} isEqual:typedOther.${idObjc.field(f.ident)}]))")
+                          }
+                        case _ => throw new AssertionError("Unreachable")
                     }
-                    case _ => s"self.${idObjc.field(f.ident)}.hash"
+                    case _ =>
+                      w.w(s"((self.${idObjc.field(f.ident)} == nil && typedOther.${idObjc.field(f.ident)} == nil) || ")
+                      w.w(s"(self.${idObjc.field(f.ident)} != nil && [self.${idObjc.field(f.ident)} isEqual:typedOther.${idObjc.field(f.ident)}]))")
                   }
-                case t: MPrimitive => {
-                  if (t.objcName == "float") {
-                    s"[NSNumber numberWithFloat:self.${idObjc.field(f.ident)}].hash"
-                  }
-                  else if (t.objcName == "double") {
-                    s"[NSNumber numberWithDouble:self.${idObjc.field(f.ident)}].hash"
-                  }
-                  else {
-                    s"(NSUInteger)self.${idObjc.field(f.ident)}"
-                  }
-                }
+                case MString => w.w(s"[self.${idObjc.field(f.ident)} isEqualToString:typedOther.${idObjc.field(f.ident)}]")
+                case MDate => w.w(s"[self.${idObjc.field(f.ident)} isEqualToDate:typedOther.${idObjc.field(f.ident)}]")
+                case t: MPrimitive => w.w(s"self.${idObjc.field(f.ident)} == typedOther.${idObjc.field(f.ident)}")
                 case df: MDef => df.defType match {
-                  case DEnum => s"(NSUInteger)self.${idObjc.field(f.ident)}"
-                  case _ => s"self.${idObjc.field(f.ident)}.hash"
-                }
-                case e: MExtern => e.defType match {
-                  case DEnum => s"(NSUInteger)self.${idObjc.field(f.ident)}"
-                  case DRecord => "(" + e.objc.hash.format("self." + idObjc.field(f.ident)) + ")"
+                  case DRecord => w.w(s"[self.${idObjc.field(f.ident)} isEqual:typedOther.${idObjc.field(f.ident)}]")
+                  case DEnum => w.w(s"self.${idObjc.field(f.ident)} == typedOther.${idObjc.field(f.ident)}")
                   case _ => throw new AssertionError("Unreachable")
                 }
+                case e: MExtern => e.defType match {
+                  case DRecord => if(e.objc.pointer) {
+                      w.w(s"[self.${idObjc.field(f.ident)} ${e.objc.equal}typedOther.${idObjc.field(f.ident)}]")
+                    } else {
+                      w.w(s"self.${idObjc.field(f.ident)} == typedOther.${idObjc.field(f.ident)}")
+                    }
+                  case DEnum => w.w(s"self.${idObjc.field(f.ident)} == typedOther.${idObjc.field(f.ident)}")
+                  case _ => throw new AssertionError("Unreachable")
+                }
+                case _ => throw new AssertionError("Unreachable")
+              }
+            }
+          }
+          w.wl(";")
+        }
+      }
+      w.wl
+
+      w.wl("- (NSUInteger)hash")
+      w.braced {
+        w.wl("NSUInteger hashCode = 17;")
+        val multiplier = "31"            
+        for (f <- superFields ++ r.fields) {              
+            val fieldHashCode = f.ty.resolved.base match {
+              case MList | MArray => s"self.${idObjc.field(f.ident)}.dynamicHash"
+              case MOptional =>
+                f.ty.resolved.args.head.base match {
+                  case MList | MArray => s"self.${idObjc.field(f.ident)}.dynamicHash"
+                  case df: MDef if df.defType == DEnum =>
+                    s"(NSUInteger)self.${idObjc.field(f.ident)}"
+                  case e: MExtern => e.defType match {
+                    case DRecord => e.objc.hash.format("self." + idObjc.field(f.ident))
+                  }
+                  case _ => s"self.${idObjc.field(f.ident)}.hash"
+                }
+              case t: MPrimitive => {
+                if (t.objcName == "float") {
+                  s"[NSNumber numberWithFloat:self.${idObjc.field(f.ident)}].hash"
+                }
+                else if (t.objcName == "double") {
+                  s"[NSNumber numberWithDouble:self.${idObjc.field(f.ident)}].hash"
+                }
+                else {
+                  s"(NSUInteger)self.${idObjc.field(f.ident)}"
+                }
+              }
+              case df: MDef => df.defType match {
+                case DEnum => s"(NSUInteger)self.${idObjc.field(f.ident)}"
                 case _ => s"self.${idObjc.field(f.ident)}.hash"
               }
-              w.wl(s"hashCode = hashCode * $multiplier + $fieldHashCode;")
-          }
-          w.wl("return hashCode;")
+              case e: MExtern => e.defType match {
+                case DEnum => s"(NSUInteger)self.${idObjc.field(f.ident)}"
+                case DRecord => "(" + e.objc.hash.format("self." + idObjc.field(f.ident)) + ")"
+                case _ => throw new AssertionError("Unreachable")
+              }
+              case _ => s"self.${idObjc.field(f.ident)}.hash"
+            }
+            w.wl(s"hashCode = hashCode * $multiplier + $fieldHashCode;")
         }
-        w.wl
+        w.wl("return hashCode;")
       }
+      w.wl
 
       def generatePrimitiveOrder(ident: Ident, w: IndentWriter): Unit = {
         w.wl(s"if (self.${idObjc.field(ident)} < other.${idObjc.field(ident)}) {").nested {
