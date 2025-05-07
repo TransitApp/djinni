@@ -348,6 +348,7 @@ class KotlinGenerator(spec: Spec) extends Generator(spec) {
               case t: MPrimitive => w.wl(s"if (${idJava.field(f.ident)} != other.${idJava.field(f.ident)}) return false")
               case df: MDef => w.wl(s"if (${idJava.field(f.ident)} != other.${idJava.field(f.ident)}) return false")
               case e: MExtern => w.wl(s"if (${idJava.field(f.ident)} != other.${idJava.field(f.ident)}) return false")
+              case p: MProtobuf => // do nothing
               case _ => throw new AssertionError("Unreachable")
               }
           }
@@ -381,6 +382,7 @@ class KotlinGenerator(spec: Spec) extends Generator(spec) {
                 case DEnum => s"${idJava.field(f.ident)}.hashCode()"
                 case _ => throw new AssertionError("Unreachable")
               }
+              case p: MProtobuf => // do nothing
               case _ => throw new AssertionError("Unreachable")
             }
             w.wl(s"hashCode = hashCode * $multiplier + $fieldHashCode")

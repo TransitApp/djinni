@@ -356,6 +356,7 @@ class JavaGenerator(spec: Spec) extends Generator(spec) {
                   case DEnum => w.w(s"this.${idJava.field(f.ident)} == other.${idJava.field(f.ident)}")
                   case _ => throw new AssertionError("Unreachable")
                 }
+                case p: MProtobuf => // do nothing
                 case _ => throw new AssertionError("Unreachable")
               }
             }
@@ -393,6 +394,7 @@ class JavaGenerator(spec: Spec) extends Generator(spec) {
                 case DEnum => s"${idJava.field(f.ident)}.hashCode()"
                 case _ => throw new AssertionError("Unreachable")
               }
+              case p: MProtobuf => // do nothing
               case _ => throw new AssertionError("Unreachable")
             }
             w.wl(s"hashCode = hashCode * $multiplier + $fieldHashCode;")
