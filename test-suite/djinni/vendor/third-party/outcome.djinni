@@ -2,7 +2,7 @@
 
 nested_outcome = record {
   o: outcome<i32, string>;
-} deriving(eq)
+}
 
 test_outcome = interface +c {
 	static getSuccessOutcome(): outcome<string, i32>;

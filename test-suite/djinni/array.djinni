@@ -1,7 +1,7 @@
 vec2 = record {
     x: i32;
     y: i32;
-} deriving (eq)
+}
 
 test_array = interface +c {
     static testStringArray(a: array<string>): array<string>;

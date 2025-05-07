@@ -28,4 +28,4 @@ test_duration = interface +c {
 
 record_with_duration_and_derivings = record {
 	dt: duration<f64, ns>;
-} deriving(eq, ord)
+} deriving(ord)

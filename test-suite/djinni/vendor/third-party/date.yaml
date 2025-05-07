@@ -1,7 +1,7 @@
 # This is an example YAML file mimicking the builtin "date" type as external type
 ---
 name: extern_date
-typedef: 'record deriving(eq, ord, parcelable)'
+typedef: 'record deriving(ord, parcelable)'
 params: []
 prefix: ''
 cpp:
