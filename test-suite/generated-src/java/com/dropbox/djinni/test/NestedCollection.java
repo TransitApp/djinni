@@ -24,6 +24,23 @@ public class NestedCollection implements android.os.Parcelable {
     }
 
     @Override
+    public boolean equals(@CheckForNull Object obj) {
+        if (!(obj instanceof NestedCollection)) {
+            return false;
+        }
+        NestedCollection other = (NestedCollection) obj;
+        return this.mSetList.equals(other.mSetList);
+    }
+
+    @Override
+    public int hashCode() {
+        // Pick an arbitrary non-zero starting value
+        int hashCode = 17;
+        hashCode = hashCode * 31 + mSetList.hashCode();
+        return hashCode;
+    }
+
+    @Override
     public String toString() {
         return "NestedCollection{" +
                 "mSetList=" + mSetList +

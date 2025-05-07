@@ -20,6 +20,22 @@
     return [[self alloc] initWithX:x];
 }
 
+- (BOOL)isEqual:(id)other
+{
+    if (![other isKindOfClass:[DBSupportCopying class]]) {
+        return NO;
+    }
+    DBSupportCopying *typedOther = (DBSupportCopying *)other;
+    return self.x == typedOther.x;
+}
+
+- (NSUInteger)hash
+{
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + (NSUInteger)self.x;
+    return hashCode;
+}
+
 - (id)copyWithZone:(NSZone *)zone
 {
     return self;

@@ -27,4 +27,12 @@ ConstantRecord const Constants::OBJECT_CONSTANT = ConstantRecord(
     Constants::I32_CONSTANT /* some_integer */ ,
     Constants::STRING_CONSTANT /* some_string */ );
 
+bool operator==(const Constants& lhs, const Constants& rhs) {
+    return true;
+}
+
+bool operator!=(const Constants& lhs, const Constants& rhs) {
+    return !(lhs == rhs);
+}
+
 } // namespace testsuite

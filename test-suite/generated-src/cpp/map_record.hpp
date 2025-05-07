@@ -14,6 +14,9 @@ struct MapRecord final {
     std::unordered_map<std::string, int64_t> map;
     std::unordered_map<int32_t, int32_t> imap;
 
+    friend bool operator==(const MapRecord& lhs, const MapRecord& rhs);
+    friend bool operator!=(const MapRecord& lhs, const MapRecord& rhs);
+
     MapRecord(std::unordered_map<std::string, int64_t> map_,
               std::unordered_map<int32_t, int32_t> imap_)
     : map(std::move(map_))

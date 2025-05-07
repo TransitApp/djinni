@@ -11,6 +11,9 @@ namespace testsuite {
 struct SupportCopying final {
     int32_t x;
 
+    friend bool operator==(const SupportCopying& lhs, const SupportCopying& rhs);
+    friend bool operator!=(const SupportCopying& lhs, const SupportCopying& rhs);
+
     //NOLINTNEXTLINE(google-explicit-constructor)
     SupportCopying(int32_t x_)
     : x(std::move(x_))

@@ -12,6 +12,9 @@ namespace testsuite {
 struct ConstantWithEnum final {
 
     static constant_enum const CONST_ENUM;
+
+    friend bool operator==(const ConstantWithEnum& lhs, const ConstantWithEnum& rhs);
+    friend bool operator!=(const ConstantWithEnum& lhs, const ConstantWithEnum& rhs);
 };
 
 } // namespace testsuite

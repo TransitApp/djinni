@@ -21,6 +21,23 @@ public class SupportCopying {
     }
 
     @Override
+    public boolean equals(@CheckForNull Object obj) {
+        if (!(obj instanceof SupportCopying)) {
+            return false;
+        }
+        SupportCopying other = (SupportCopying) obj;
+        return this.mX == other.mX;
+    }
+
+    @Override
+    public int hashCode() {
+        // Pick an arbitrary non-zero starting value
+        int hashCode = 17;
+        hashCode = hashCode * 31 + mX;
+        return hashCode;
+    }
+
+    @Override
     public String toString() {
         return "SupportCopying{" +
                 "mX=" + mX +

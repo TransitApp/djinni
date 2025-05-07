@@ -13,6 +13,26 @@ data class NoConstructorRecordNative(
         val XXXWEIRD_CASE: Int = 1
     }
 
+    override fun equals(other: Any?): Boolean  {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as NoConstructorRecordNative
+
+        if (mFirstValue != other.mFirstValue) return false
+        if (mSecondValue != other.mSecondValue) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int  {
+        // Pick an arbitrary non-zero starting value
+        var hashCode = 17;
+        hashCode = hashCode * 31 + mFirstValue
+        hashCode = hashCode * 31 + mSecondValue.hashCode()
+        return hashCode
+    }
+
     override fun toString(): String  {
         return "NoConstructorRecordNative {" +
                 "mFirstValue=" + mFirstValue +

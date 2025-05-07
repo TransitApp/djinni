@@ -20,6 +20,22 @@
     return [[self alloc] initWithSampleInterface:sampleInterface];
 }
 
+- (BOOL)isEqual:(id)other
+{
+    if (![other isKindOfClass:[DBTestOptionalExternInterfaceRecord class]]) {
+        return NO;
+    }
+    DBTestOptionalExternInterfaceRecord *typedOther = (DBTestOptionalExternInterfaceRecord *)other;
+    return ;
+}
+
+- (NSUInteger)hash
+{
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + ();
+    return hashCode;
+}
+
 #ifndef DJINNI_DISABLE_DESCRIPTION_METHODS
 - (NSString *)description
 {

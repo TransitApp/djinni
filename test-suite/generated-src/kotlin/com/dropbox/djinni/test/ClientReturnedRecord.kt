@@ -10,6 +10,28 @@ data class ClientReturnedRecord(
     val mMisc: String?
 ) {
 
+    override fun equals(other: Any?): Boolean  {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ClientReturnedRecord
+
+        if (mRecordId != other.mRecordId) return false
+        if (mContent != other.mContent) return false
+        if (mMisc != other.mMisc) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int  {
+        // Pick an arbitrary non-zero starting value
+        var hashCode = 17;
+        hashCode = hashCode * 31 + mRecordId.hashCode()
+        hashCode = hashCode * 31 + mContent.hashCode()
+        hashCode = hashCode * 31 + (mMisc?.hashCode() ?: 0)
+        return hashCode
+    }
+
     override fun toString(): String  {
         return "ClientReturnedRecord {" +
                 "mRecordId=" + mRecordId +

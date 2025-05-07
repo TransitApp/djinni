@@ -24,6 +24,24 @@
                                   someString:someString];
 }
 
+- (BOOL)isEqual:(id)other
+{
+    if (![other isKindOfClass:[DBConstantRecord class]]) {
+        return NO;
+    }
+    DBConstantRecord *typedOther = (DBConstantRecord *)other;
+    return self.someInteger == typedOther.someInteger &&
+            [self.someString isEqualToString:typedOther.someString];
+}
+
+- (NSUInteger)hash
+{
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + (NSUInteger)self.someInteger;
+    hashCode = hashCode * 31 + self.someString.hash;
+    return hashCode;
+}
+
 #ifndef DJINNI_DISABLE_DESCRIPTION_METHODS
 - (NSString *)description
 {

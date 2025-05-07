@@ -9,6 +9,26 @@ data class ConstantRecord(
     val mSomeString: String
 ) {
 
+    override fun equals(other: Any?): Boolean  {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ConstantRecord
+
+        if (mSomeInteger != other.mSomeInteger) return false
+        if (mSomeString != other.mSomeString) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int  {
+        // Pick an arbitrary non-zero starting value
+        var hashCode = 17;
+        hashCode = hashCode * 31 + mSomeInteger
+        hashCode = hashCode * 31 + mSomeString.hashCode()
+        return hashCode
+    }
+
     override fun toString(): String  {
         return "ConstantRecord {" +
                 "mSomeInteger=" + mSomeInteger +

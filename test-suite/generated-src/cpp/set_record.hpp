@@ -14,6 +14,9 @@ struct SetRecord final {
     std::unordered_set<std::string> set;
     std::unordered_set<int32_t> iset;
 
+    friend bool operator==(const SetRecord& lhs, const SetRecord& rhs);
+    friend bool operator!=(const SetRecord& lhs, const SetRecord& rhs);
+
     SetRecord(std::unordered_set<std::string> set_,
               std::unordered_set<int32_t> iset_)
     : set(std::move(set_))

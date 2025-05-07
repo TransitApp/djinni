@@ -7,6 +7,24 @@ data class TestOptionalExternInterfaceRecord(
     val mSampleInterface: com.dropbox.djinni.test.SampleInterface?
 ) {
 
+    override fun equals(other: Any?): Boolean  {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as TestOptionalExternInterfaceRecord
+
+        if (mSampleInterface != other.mSampleInterface) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int  {
+        // Pick an arbitrary non-zero starting value
+        var hashCode = 17;
+        hashCode = hashCode * 31 + (mSampleInterface?.hashCode() ?: 0)
+        return hashCode
+    }
+
     override fun toString(): String  {
         return "TestOptionalExternInterfaceRecord {" +
                 "mSampleInterface=" + mSampleInterface +

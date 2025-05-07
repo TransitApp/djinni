@@ -12,6 +12,9 @@ namespace testsuite {
 struct PrimitiveList final {
     std::vector<int64_t> list;
 
+    friend bool operator==(const PrimitiveList& lhs, const PrimitiveList& rhs);
+    friend bool operator!=(const PrimitiveList& lhs, const PrimitiveList& rhs);
+
     //NOLINTNEXTLINE(google-explicit-constructor)
     PrimitiveList(std::vector<int64_t> list_)
     : list(std::move(list_))

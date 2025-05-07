@@ -9,6 +9,24 @@ data class PrimitiveList(
     val mList: ArrayList<Long>
 ) {
 
+    override fun equals(other: Any?): Boolean  {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as PrimitiveList
+
+        if (mList != other.mList) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int  {
+        // Pick an arbitrary non-zero starting value
+        var hashCode = 17;
+        hashCode = hashCode * 31 + mList.hashCode()
+        return hashCode
+    }
+
     override fun toString(): String  {
         return "PrimitiveList {" +
                 "mList=" + mList +

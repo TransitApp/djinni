@@ -20,6 +20,22 @@
     return [[self alloc] initWithMapList:mapList];
 }
 
+- (BOOL)isEqual:(id)other
+{
+    if (![other isKindOfClass:[DBMapListRecord class]]) {
+        return NO;
+    }
+    DBMapListRecord *typedOther = (DBMapListRecord *)other;
+    return [self.mapList isEqualToArray:typedOther.mapList];
+}
+
+- (NSUInteger)hash
+{
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + self.mapList.dynamicHash;
+    return hashCode;
+}
+
 #ifndef DJINNI_DISABLE_DESCRIPTION_METHODS
 - (NSString *)description
 {

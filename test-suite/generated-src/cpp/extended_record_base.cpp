@@ -9,4 +9,12 @@ namespace testsuite {
 ExtendedRecord const ExtendedRecordBase::EXTENDED_RECORD_CONST = ExtendedRecord(
     true /* foo */ );
 
+bool operator==(const ExtendedRecordBase& lhs, const ExtendedRecordBase& rhs) {
+    return lhs.foo == rhs.foo;
+}
+
+bool operator!=(const ExtendedRecordBase& lhs, const ExtendedRecordBase& rhs) {
+    return !(lhs == rhs);
+}
+
 } // namespace testsuite

@@ -20,6 +20,22 @@
     return [[self alloc] initWithDatesById:datesById];
 }
 
+- (BOOL)isEqual:(id)other
+{
+    if (![other isKindOfClass:[DBMapDateRecord class]]) {
+        return NO;
+    }
+    DBMapDateRecord *typedOther = (DBMapDateRecord *)other;
+    return [self.datesById isEqualToDictionary:typedOther.datesById];
+}
+
+- (NSUInteger)hash
+{
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + self.datesById.hash;
+    return hashCode;
+}
+
 #ifndef DJINNI_DISABLE_DESCRIPTION_METHODS
 - (NSString *)description
 {

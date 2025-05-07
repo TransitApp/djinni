@@ -16,6 +16,9 @@ struct ClientReturnedRecord final {
     std::string content;
     std::experimental::optional<std::string> misc;
 
+    friend bool operator==(const ClientReturnedRecord& lhs, const ClientReturnedRecord& rhs);
+    friend bool operator!=(const ClientReturnedRecord& lhs, const ClientReturnedRecord& rhs);
+
     ClientReturnedRecord(int64_t record_id_,
                          std::string content_,
                          std::experimental::optional<std::string> misc_)
