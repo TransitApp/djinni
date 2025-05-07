@@ -245,17 +245,14 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
           w.wl(marshal.fieldType(f.ty) + " " + idCpp.field(f.ident) + defaultValue + ";")
         }
 
-        if (r.derivingTypes.contains(DerivingType.Eq)) {
-          w.wl
-          w.wl(s"friend bool operator==(const $actualSelf& lhs, const $actualSelf& rhs);")
-          w.wl(s"friend bool operator!=(const $actualSelf& lhs, const $actualSelf& rhs);")
-        }
+        w.wl
+        w.wl(s"friend bool operator==(const $actualSelf& lhs, const $actualSelf& rhs);")
+        w.wl(s"friend bool operator!=(const $actualSelf& lhs, const $actualSelf& rhs);")
+        
         if (r.derivingTypes.contains(DerivingType.Ord)) {
           w.wl
           w.wl(s"friend bool operator<(const $actualSelf& lhs, const $actualSelf& rhs);")
-          w.wl(s"friend bool operator>(const $actualSelf& lhs, const $actualSelf& rhs);")
-        }
-        if (r.derivingTypes.contains(DerivingType.Eq) && r.derivingTypes.contains(DerivingType.Ord)) {
+          w.wl(s"friend bool operator>(const $actualSelf& lhs, const $actualSelf& rhs);")        
           w.wl
           w.wl(s"friend bool operator<=(const $actualSelf& lhs, const $actualSelf& rhs);")
           w.wl(s"friend bool operator>=(const $actualSelf& lhs, const $actualSelf& rhs);")
@@ -307,58 +304,53 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
 
     writeHppFile(cppName, origin, refs.hpp, refs.hppFwds, writeCppPrototype)
 
-    if (r.consts.nonEmpty || r.derivingTypes.contains(DerivingType.Eq) || r.derivingTypes.contains(DerivingType.Ord)) {
-      writeCppFile(cppName, origin, refs.cpp, w => {
-        generateCppConstants(w, r.consts, actualSelf)
+    writeCppFile(cppName, origin, refs.cpp, w => {
+      generateCppConstants(w, r.consts, actualSelf)
 
-        val fields = superFields ++ r.fields
+      val fields = superFields ++ r.fields
 
-        if (r.derivingTypes.contains(DerivingType.Eq)) {
-          w.wl
-          w.w(s"bool operator==(const $actualSelf& lhs, const $actualSelf& rhs)").braced {
-            if(!fields.isEmpty) {
-              writeAlignedCall(w, "return ", fields, " &&", "", f => s"lhs.${idCpp.field(f.ident)} == rhs.${idCpp.field(f.ident)}")
-              w.wl(";")
-            } else {
-             w.wl("return true;")
-           }
-          }
-          w.wl
-          w.w(s"bool operator!=(const $actualSelf& lhs, const $actualSelf& rhs)").braced {
-            w.wl("return !(lhs == rhs);")
-          }
+      w.wl
+      w.w(s"bool operator==(const $actualSelf& lhs, const $actualSelf& rhs)").braced {
+        if(!fields.isEmpty) {
+          writeAlignedCall(w, "return ", fields, " &&", "", f => s"lhs.${idCpp.field(f.ident)} == rhs.${idCpp.field(f.ident)}")
+          w.wl(";")
+        } else {
+          w.wl("return true;")
         }
-        if (r.derivingTypes.contains(DerivingType.Ord)) {
-          w.wl
-          w.w(s"bool operator<(const $actualSelf& lhs, const $actualSelf& rhs)").braced {
-            for(f <- fields) {
-              w.w(s"if (lhs.${idCpp.field(f.ident)} < rhs.${idCpp.field(f.ident)})").braced {
-                w.wl("return true;")
-              }
-              w.w(s"if (rhs.${idCpp.field(f.ident)} < lhs.${idCpp.field(f.ident)})").braced {
-                w.wl("return false;")
-              }
+      }
+      w.wl
+      w.w(s"bool operator!=(const $actualSelf& lhs, const $actualSelf& rhs)").braced {
+        w.wl("return !(lhs == rhs);")
+      }
+    
+      if (r.derivingTypes.contains(DerivingType.Ord)) {
+        w.wl
+        w.w(s"bool operator<(const $actualSelf& lhs, const $actualSelf& rhs)").braced {
+          for(f <- fields) {
+            w.w(s"if (lhs.${idCpp.field(f.ident)} < rhs.${idCpp.field(f.ident)})").braced {
+              w.wl("return true;")
             }
-            w.wl("return false;")
+            w.w(s"if (rhs.${idCpp.field(f.ident)} < lhs.${idCpp.field(f.ident)})").braced {
+              w.wl("return false;")
+            }
           }
-          w.wl
-          w.w(s"bool operator>(const $actualSelf& lhs, const $actualSelf& rhs)").braced {
-            w.wl("return rhs < lhs;")
-          }
+          w.wl("return false;")
         }
-        if (r.derivingTypes.contains(DerivingType.Eq) && r.derivingTypes.contains(DerivingType.Ord)) {
-          w.wl
-          w.w(s"bool operator<=(const $actualSelf& lhs, const $actualSelf& rhs)").braced {
-            w.wl("return !(rhs < lhs);")
-          }
-          w.wl
-          w.w(s"bool operator>=(const $actualSelf& lhs, const $actualSelf& rhs)").braced {
-            w.wl("return !(lhs < rhs);")
-          }
+        w.wl
+        w.w(s"bool operator>(const $actualSelf& lhs, const $actualSelf& rhs)").braced {
+          w.wl("return rhs < lhs;")
         }
-      })
-    }
-
+        
+        w.wl
+        w.w(s"bool operator<=(const $actualSelf& lhs, const $actualSelf& rhs)").braced {
+          w.wl("return !(rhs < lhs);")
+        }
+        w.wl
+        w.w(s"bool operator>=(const $actualSelf& lhs, const $actualSelf& rhs)").braced {
+          w.wl("return !(lhs < rhs);")
+        }
+      }
+    })
   }
 
   override def generateInterface(origin: String, ident: Ident, doc: Doc, typeParams: Seq[TypeParam], i: Interface) {

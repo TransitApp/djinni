@@ -333,61 +333,61 @@ class KotlinGenerator(spec: Spec) extends Generator(spec) {
 
       w.w(s"$implementsSection").braced {
         generateJavaConstants(w, r.consts)
-
-        if (r.derivingTypes.contains(DerivingType.Eq)) {
+        
+        w.wl
+        w.w(s"override fun equals(other: Any?): Boolean ").braced {
+          w.wl("if (this === other) return true")
+          w.wl("if (javaClass != other?.javaClass) return false")
           w.wl
-          w.w(s"override fun equals(other: Any?): Boolean ").braced {
-            w.wl("if (this === other) return true")
-            w.wl("if (javaClass != other?.javaClass) return false")
-            w.wl
-            w.wl(s"other as $self")
-            w.wl
-            for (f <- fields) {
-              f.ty.resolved.base match {
-                case MBinary | MArray => w.w(s"if (!${idJava.field(f.ident)}.contentEquals(other.${idJava.field(f.ident)})) return false")
-                case MList | MSet | MMap | MString | MDate | MOptional => w.wl(s"if (${idJava.field(f.ident)} != other.${idJava.field(f.ident)}) return false")
-                case t: MPrimitive => w.wl(s"if (${idJava.field(f.ident)} != other.${idJava.field(f.ident)}) return false")
-                case df: MDef => w.wl(s"if (${idJava.field(f.ident)} != other.${idJava.field(f.ident)}) return false")
-                case e: MExtern => w.wl(s"if (${idJava.field(f.ident)} != other.${idJava.field(f.ident)}) return false")
-                case _ => throw new AssertionError("Unreachable")
-                }
-            }
-            w.wl
-            w.wl("return true")
+          w.wl(s"other as $self")
+          w.wl
+          for (f <- fields) {
+            f.ty.resolved.base match {
+              case MBinary | MArray => w.w(s"if (!${idJava.field(f.ident)}.contentEquals(other.${idJava.field(f.ident)})) return false")
+              case MList | MSet | MMap | MString | MDate | MOptional => w.wl(s"if (${idJava.field(f.ident)} != other.${idJava.field(f.ident)}) return false")
+              case t: MPrimitive => w.wl(s"if (${idJava.field(f.ident)} != other.${idJava.field(f.ident)}) return false")
+              case df: MDef => w.wl(s"if (${idJava.field(f.ident)} != other.${idJava.field(f.ident)}) return false")
+              case e: MExtern => w.wl(s"if (${idJava.field(f.ident)} != other.${idJava.field(f.ident)}) return false")
+              case p: MProtobuf => // do nothing
+              case _ => throw new AssertionError("Unreachable")
+              }
           }
-          // Also generate a hashCode function, since you shouldn't override one without the other.
-          // This hashcode implementation is based off of the apache commons-lang implementation of
-          // HashCodeBuilder (excluding support for Java arrays) which is in turn based off of the
-          // the recommendataions made in Effective Java.
           w.wl
-          w.w("override fun hashCode(): Int ").braced {
-            w.wl("// Pick an arbitrary non-zero starting value")
-            w.wl("var hashCode = 17;")
-            // Also pick an arbitrary prime to use as the multiplier.
-            val multiplier = "31"
-            for (f <- fields) {
-              val fieldHashCode = f.ty.resolved.base match {
-                case MBinary | MArray => s"${idJava.field(f.ident)}.contentHashCode()"
-                case MList | MSet | MMap | MString | MDate => s"${idJava.field(f.ident)}.hashCode()"
-                // Need to repeat this case for MDef
-                case df: MDef => s"${idJava.field(f.ident)}.hashCode()"
-                case MOptional => s"(${idJava.field(f.ident)}?.hashCode() ?: 0)"
-                case t: MPrimitive => t.jName match {
-                  case "byte" | "short" | "int" => idJava.field(f.ident)
-                  case "long" | "float" | "double" | "boolean" => s"${idJava.field(f.ident)}.hashCode()"
-                  case _ => throw new AssertionError("Unreachable")
-                }
-                case e: MExtern => e.defType match {
-                  case DRecord => "(" + e.java.hash.format(idJava.field(f.ident)) + ")"
-                  case DEnum => s"${idJava.field(f.ident)}.hashCode()"
-                  case _ => throw new AssertionError("Unreachable")
-                }
+          w.wl("return true")
+        }
+        // Also generate a hashCode function, since you shouldn't override one without the other.
+        // This hashcode implementation is based off of the apache commons-lang implementation of
+        // HashCodeBuilder (excluding support for Java arrays) which is in turn based off of the
+        // the recommendataions made in Effective Java.
+        w.wl
+        w.w("override fun hashCode(): Int ").braced {
+          w.wl("// Pick an arbitrary non-zero starting value")
+          w.wl("var hashCode = 17;")
+          // Also pick an arbitrary prime to use as the multiplier.
+          val multiplier = "31"
+          for (f <- fields) {
+            val fieldHashCode = f.ty.resolved.base match {
+              case MBinary | MArray => s"${idJava.field(f.ident)}.contentHashCode()"
+              case MList | MSet | MMap | MString | MDate => s"${idJava.field(f.ident)}.hashCode()"
+              // Need to repeat this case for MDef
+              case df: MDef => s"${idJava.field(f.ident)}.hashCode()"
+              case MOptional => s"(${idJava.field(f.ident)}?.hashCode() ?: 0)"
+              case t: MPrimitive => t.jName match {
+                case "byte" | "short" | "int" => idJava.field(f.ident)
+                case "long" | "float" | "double" | "boolean" => s"${idJava.field(f.ident)}.hashCode()"
                 case _ => throw new AssertionError("Unreachable")
               }
-              w.wl(s"hashCode = hashCode * $multiplier + $fieldHashCode")
+              case e: MExtern => e.defType match {
+                case DRecord => "(" + e.java.hash.format(idJava.field(f.ident)) + ")"
+                case DEnum => s"${idJava.field(f.ident)}.hashCode()"
+                case _ => throw new AssertionError("Unreachable")
+              }
+              case p: MProtobuf => // do nothing
+              case _ => throw new AssertionError("Unreachable")
             }
-            w.wl(s"return hashCode")
+            w.wl(s"hashCode = hashCode * $multiplier + $fieldHashCode")
           }
+          w.wl(s"return hashCode")
         }
 
         w.wl

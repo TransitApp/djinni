@@ -13,6 +13,9 @@ struct RecordUsingExtendedRecord final {
     static RecordUsingExtendedRecord const CR;
     ExtendedRecord er;
 
+    friend bool operator==(const RecordUsingExtendedRecord& lhs, const RecordUsingExtendedRecord& rhs);
+    friend bool operator!=(const RecordUsingExtendedRecord& lhs, const RecordUsingExtendedRecord& rhs);
+
     //NOLINTNEXTLINE(google-explicit-constructor)
     RecordUsingExtendedRecord(ExtendedRecord er_)
     : er(std::move(er_))

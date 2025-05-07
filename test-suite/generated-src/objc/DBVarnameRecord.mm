@@ -20,6 +20,22 @@
     return [[self alloc] initWithField:Field];
 }
 
+- (BOOL)isEqual:(id)other
+{
+    if (![other isKindOfClass:[DBVarnameRecord class]]) {
+        return NO;
+    }
+    DBVarnameRecord *typedOther = (DBVarnameRecord *)other;
+    return self.Field == typedOther.Field;
+}
+
+- (NSUInteger)hash
+{
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + (NSUInteger)self.Field;
+    return hashCode;
+}
+
 #ifndef DJINNI_DISABLE_DESCRIPTION_METHODS
 - (NSString *)description
 {

@@ -26,6 +26,23 @@ public class VarnameRecord {
     }
 
     @Override
+    public boolean equals(@CheckForNull Object obj) {
+        if (!(obj instanceof VarnameRecord)) {
+            return false;
+        }
+        VarnameRecord other = (VarnameRecord) obj;
+        return this.mField == other.mField;
+    }
+
+    @Override
+    public int hashCode() {
+        // Pick an arbitrary non-zero starting value
+        int hashCode = 17;
+        hashCode = hashCode * 31 + mField;
+        return hashCode;
+    }
+
+    @Override
     public String toString() {
         return "VarnameRecord{" +
                 "mField=" + mField +

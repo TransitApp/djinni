@@ -28,6 +28,24 @@ int32_t const DBNoConstructorRecordXXXWeirdCaseNative = 1;
                                 secondValue:secondValue];
 }
 
+- (BOOL)isEqual:(id)other
+{
+    if (![other isKindOfClass:[DBNoConstructorRecord class]]) {
+        return NO;
+    }
+    DBNoConstructorRecord *typedOther = (DBNoConstructorRecord *)other;
+    return self.FirstValue == typedOther.FirstValue &&
+            [self.secondValue isEqualToString:typedOther.secondValue];
+}
+
+- (NSUInteger)hash
+{
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + (NSUInteger)self.FirstValue;
+    hashCode = hashCode * 31 + self.secondValue.hash;
+    return hashCode;
+}
+
 #ifndef DJINNI_DISABLE_DESCRIPTION_METHODS
 - (NSString *)description
 {

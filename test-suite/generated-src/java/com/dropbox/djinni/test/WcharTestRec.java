@@ -22,6 +22,23 @@ public class WcharTestRec {
     }
 
     @Override
+    public boolean equals(@CheckForNull Object obj) {
+        if (!(obj instanceof WcharTestRec)) {
+            return false;
+        }
+        WcharTestRec other = (WcharTestRec) obj;
+        return this.mS.equals(other.mS);
+    }
+
+    @Override
+    public int hashCode() {
+        // Pick an arbitrary non-zero starting value
+        int hashCode = 17;
+        hashCode = hashCode * 31 + mS.hashCode();
+        return hashCode;
+    }
+
+    @Override
     public String toString() {
         return "WcharTestRec{" +
                 "mS=" + mS +

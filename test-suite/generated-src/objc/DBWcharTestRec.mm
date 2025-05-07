@@ -20,6 +20,22 @@
     return [[self alloc] initWithS:s];
 }
 
+- (BOOL)isEqual:(id)other
+{
+    if (![other isKindOfClass:[DBWcharTestRec class]]) {
+        return NO;
+    }
+    DBWcharTestRec *typedOther = (DBWcharTestRec *)other;
+    return [self.s isEqualToString:typedOther.s];
+}
+
+- (NSUInteger)hash
+{
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + self.s.hash;
+    return hashCode;
+}
+
 #ifndef DJINNI_DISABLE_DESCRIPTION_METHODS
 - (NSString *)description
 {

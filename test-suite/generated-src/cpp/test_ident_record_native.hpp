@@ -18,6 +18,9 @@ struct TestIdentRecord final {
     int32_t FirstValue;
     std::string second_value;
 
+    friend bool operator==(const TestIdentRecord& lhs, const TestIdentRecord& rhs);
+    friend bool operator!=(const TestIdentRecord& lhs, const TestIdentRecord& rhs);
+
     TestIdentRecord(int32_t FirstValue_,
                     std::string second_value_)
     : FirstValue(std::move(FirstValue_))

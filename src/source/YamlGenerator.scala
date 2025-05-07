@@ -120,7 +120,6 @@ class YamlGenerator(spec: Spec) extends Generator(spec) {
         ""
       } else {
         r.derivingTypes.collect {
-          case Record.DerivingType.Eq => "eq"
           case Record.DerivingType.Ord => "ord"
           case Record.DerivingType.AndroidParcelable => "parcelable"
           case Record.DerivingType.NSCopying => "nscopying"

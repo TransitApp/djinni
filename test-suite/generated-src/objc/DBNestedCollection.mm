@@ -20,6 +20,22 @@
     return [[self alloc] initWithSetList:setList];
 }
 
+- (BOOL)isEqual:(id)other
+{
+    if (![other isKindOfClass:[DBNestedCollection class]]) {
+        return NO;
+    }
+    DBNestedCollection *typedOther = (DBNestedCollection *)other;
+    return [self.setList isEqualToArray:typedOther.setList];
+}
+
+- (NSUInteger)hash
+{
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + self.setList.dynamicHash;
+    return hashCode;
+}
+
 #ifndef DJINNI_DISABLE_DESCRIPTION_METHODS
 - (NSString *)description
 {

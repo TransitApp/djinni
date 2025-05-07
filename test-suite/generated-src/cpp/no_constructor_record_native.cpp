@@ -7,4 +7,13 @@ namespace testsuite {
 
 std::string const NoConstructorRecord::RECORD_CONST_VALUE = {"test"};
 
+bool operator==(const NoConstructorRecord& lhs, const NoConstructorRecord& rhs) {
+    return lhs.FirstValue == rhs.FirstValue &&
+           lhs.second_value == rhs.second_value;
+}
+
+bool operator!=(const NoConstructorRecord& lhs, const NoConstructorRecord& rhs) {
+    return !(lhs == rhs);
+}
+
 } // namespace testsuite

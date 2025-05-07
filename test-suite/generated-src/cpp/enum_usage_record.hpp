@@ -19,6 +19,9 @@ struct EnumUsageRecord final {
     std::unordered_set<color> s;
     std::unordered_map<color, color> m;
 
+    friend bool operator==(const EnumUsageRecord& lhs, const EnumUsageRecord& rhs);
+    friend bool operator!=(const EnumUsageRecord& lhs, const EnumUsageRecord& rhs);
+
     EnumUsageRecord(color e_,
                     std::experimental::optional<color> o_,
                     std::vector<color> l_,

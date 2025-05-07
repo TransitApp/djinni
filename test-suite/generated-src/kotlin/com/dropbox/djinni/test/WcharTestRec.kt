@@ -7,6 +7,24 @@ data class WcharTestRec(
     val mS: String
 ) {
 
+    override fun equals(other: Any?): Boolean  {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as WcharTestRec
+
+        if (mS != other.mS) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int  {
+        // Pick an arbitrary non-zero starting value
+        var hashCode = 17;
+        hashCode = hashCode * 31 + mS.hashCode()
+        return hashCode
+    }
+
     override fun toString(): String  {
         return "WcharTestRec {" +
                 "mS=" + mS +

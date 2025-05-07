@@ -16,6 +16,9 @@ namespace testsuite {
 struct VarnameRecord final {
     int8_t _field_;
 
+    friend bool operator==(const VarnameRecord& lhs, const VarnameRecord& rhs);
+    friend bool operator!=(const VarnameRecord& lhs, const VarnameRecord& rhs);
+
     //NOLINTNEXTLINE(google-explicit-constructor)
     VarnameRecord(int8_t _field__)
     : _field_(std::move(_field__))

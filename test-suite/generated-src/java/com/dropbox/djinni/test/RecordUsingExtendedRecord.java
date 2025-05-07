@@ -27,6 +27,23 @@ public class RecordUsingExtendedRecord {
     }
 
     @Override
+    public boolean equals(@CheckForNull Object obj) {
+        if (!(obj instanceof RecordUsingExtendedRecord)) {
+            return false;
+        }
+        RecordUsingExtendedRecord other = (RecordUsingExtendedRecord) obj;
+        return this.mEr.equals(other.mEr);
+    }
+
+    @Override
+    public int hashCode() {
+        // Pick an arbitrary non-zero starting value
+        int hashCode = 17;
+        hashCode = hashCode * 31 + mEr.hashCode();
+        return hashCode;
+    }
+
+    @Override
     public String toString() {
         return "RecordUsingExtendedRecord{" +
                 "mEr=" + mEr +

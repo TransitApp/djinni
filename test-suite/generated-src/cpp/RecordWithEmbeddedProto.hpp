@@ -11,6 +11,9 @@ namespace testsuite {
 struct RecordWithEmbeddedProto final {
     ::djinni::test::Person person;
 
+    friend bool operator==(const RecordWithEmbeddedProto& lhs, const RecordWithEmbeddedProto& rhs);
+    friend bool operator!=(const RecordWithEmbeddedProto& lhs, const RecordWithEmbeddedProto& rhs);
+
     //NOLINTNEXTLINE(google-explicit-constructor)
     RecordWithEmbeddedProto(::djinni::test::Person person_)
     : person(std::move(person_))

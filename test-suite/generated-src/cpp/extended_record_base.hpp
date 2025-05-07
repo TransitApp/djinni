@@ -15,6 +15,9 @@ struct ExtendedRecordBase {
     static ExtendedRecord const EXTENDED_RECORD_CONST;
     bool foo;
 
+    friend bool operator==(const ExtendedRecordBase& lhs, const ExtendedRecordBase& rhs);
+    friend bool operator!=(const ExtendedRecordBase& lhs, const ExtendedRecordBase& rhs);
+
     //NOLINTNEXTLINE(google-explicit-constructor)
     ExtendedRecordBase(bool foo_)
     : foo(std::move(foo_))

@@ -26,6 +26,23 @@ public class ExtendedRecord {
     }
 
     @Override
+    public boolean equals(@CheckForNull Object obj) {
+        if (!(obj instanceof ExtendedRecord)) {
+            return false;
+        }
+        ExtendedRecord other = (ExtendedRecord) obj;
+        return this.mFoo == other.mFoo;
+    }
+
+    @Override
+    public int hashCode() {
+        // Pick an arbitrary non-zero starting value
+        int hashCode = 17;
+        hashCode = hashCode * 31 + (mFoo ? 1 : 0);
+        return hashCode;
+    }
+
+    @Override
     public String toString() {
         return "ExtendedRecord{" +
                 "mFoo=" + mFoo +

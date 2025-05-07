@@ -12,6 +12,24 @@ data class RecordUsingExtendedRecord(
                 false /* mFoo */ ) /* mEr */ )
     }
 
+    override fun equals(other: Any?): Boolean  {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as RecordUsingExtendedRecord
+
+        if (mEr != other.mEr) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int  {
+        // Pick an arbitrary non-zero starting value
+        var hashCode = 17;
+        hashCode = hashCode * 31 + mEr.hashCode()
+        return hashCode
+    }
+
     override fun toString(): String  {
         return "RecordUsingExtendedRecord {" +
                 "mEr=" + mEr +
