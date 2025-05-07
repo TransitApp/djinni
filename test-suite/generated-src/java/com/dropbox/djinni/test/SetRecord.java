@@ -32,6 +32,25 @@ public class SetRecord {
     }
 
     @Override
+    public boolean equals(@CheckForNull Object obj) {
+        if (!(obj instanceof SetRecord)) {
+            return false;
+        }
+        SetRecord other = (SetRecord) obj;
+        return this.mSet.equals(other.mSet) &&
+                this.mIset.equals(other.mIset);
+    }
+
+    @Override
+    public int hashCode() {
+        // Pick an arbitrary non-zero starting value
+        int hashCode = 17;
+        hashCode = hashCode * 31 + mSet.hashCode();
+        hashCode = hashCode * 31 + mIset.hashCode();
+        return hashCode;
+    }
+
+    @Override
     public String toString() {
         return "SetRecord{" +
                 "mSet=" + mSet +

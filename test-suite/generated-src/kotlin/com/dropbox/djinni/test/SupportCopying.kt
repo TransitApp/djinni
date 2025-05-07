@@ -7,6 +7,24 @@ data class SupportCopying(
     val mX: Int
 ) {
 
+    override fun equals(other: Any?): Boolean  {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as SupportCopying
+
+        if (mX != other.mX) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int  {
+        // Pick an arbitrary non-zero starting value
+        var hashCode = 17;
+        hashCode = hashCode * 31 + mX
+        return hashCode
+    }
+
     override fun toString(): String  {
         return "SupportCopying {" +
                 "mX=" + mX +

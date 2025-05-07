@@ -40,6 +40,27 @@ public class ClientReturnedRecord {
     }
 
     @Override
+    public boolean equals(@CheckForNull Object obj) {
+        if (!(obj instanceof ClientReturnedRecord)) {
+            return false;
+        }
+        ClientReturnedRecord other = (ClientReturnedRecord) obj;
+        return this.mRecordId == other.mRecordId &&
+                this.mContent.equals(other.mContent) &&
+                ((this.mMisc == null && other.mMisc == null) || (this.mMisc != null && this.mMisc.equals(other.mMisc)));
+    }
+
+    @Override
+    public int hashCode() {
+        // Pick an arbitrary non-zero starting value
+        int hashCode = 17;
+        hashCode = hashCode * 31 + ((int) (mRecordId ^ (mRecordId >>> 32)));
+        hashCode = hashCode * 31 + mContent.hashCode();
+        hashCode = hashCode * 31 + (mMisc == null ? 0 : mMisc.hashCode());
+        return hashCode;
+    }
+
+    @Override
     public String toString() {
         return "ClientReturnedRecord{" +
                 "mRecordId=" + mRecordId +

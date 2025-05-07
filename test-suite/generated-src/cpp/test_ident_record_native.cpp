@@ -7,4 +7,13 @@ namespace testsuite {
 
 std::string const TestIdentRecord::RECORD_CONST_VALUE = {"test"};
 
+bool operator==(const TestIdentRecord& lhs, const TestIdentRecord& rhs) {
+    return lhs.FirstValue == rhs.FirstValue &&
+           lhs.second_value == rhs.second_value;
+}
+
+bool operator!=(const TestIdentRecord& lhs, const TestIdentRecord& rhs) {
+    return !(lhs == rhs);
+}
+
 } // namespace testsuite

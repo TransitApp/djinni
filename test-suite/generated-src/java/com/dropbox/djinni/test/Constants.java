@@ -80,6 +80,22 @@ public class Constants {
     }
 
     @Override
+    public boolean equals(@CheckForNull Object obj) {
+        if (!(obj instanceof Constants)) {
+            return false;
+        }
+        Constants other = (Constants) obj;
+        return ;
+    }
+
+    @Override
+    public int hashCode() {
+        // Pick an arbitrary non-zero starting value
+        int hashCode = 17;
+        return hashCode;
+    }
+
+    @Override
     public String toString() {
         return "Constants{" +
         "}";

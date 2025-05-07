@@ -23,6 +23,23 @@ public class RecordWithFlags {
     }
 
     @Override
+    public boolean equals(@CheckForNull Object obj) {
+        if (!(obj instanceof RecordWithFlags)) {
+            return false;
+        }
+        RecordWithFlags other = (RecordWithFlags) obj;
+        return this.mAccess == other.mAccess;
+    }
+
+    @Override
+    public int hashCode() {
+        // Pick an arbitrary non-zero starting value
+        int hashCode = 17;
+        hashCode = hashCode * 31 + mAccess.hashCode();
+        return hashCode;
+    }
+
+    @Override
     public String toString() {
         return "RecordWithFlags{" +
                 "mAccess=" + mAccess +

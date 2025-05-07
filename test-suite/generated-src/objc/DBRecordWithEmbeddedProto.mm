@@ -20,6 +20,22 @@
     return [[self alloc] initWithPerson:person];
 }
 
+- (BOOL)isEqual:(id)other
+{
+    if (![other isKindOfClass:[DBRecordWithEmbeddedProto class]]) {
+        return NO;
+    }
+    DBRecordWithEmbeddedProto *typedOther = (DBRecordWithEmbeddedProto *)other;
+    return ;
+}
+
+- (NSUInteger)hash
+{
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + ();
+    return hashCode;
+}
+
 #ifndef DJINNI_DISABLE_DESCRIPTION_METHODS
 - (NSString *)description
 {

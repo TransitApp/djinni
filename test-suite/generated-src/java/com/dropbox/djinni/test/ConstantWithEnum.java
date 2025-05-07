@@ -18,6 +18,22 @@ public class ConstantWithEnum {
     }
 
     @Override
+    public boolean equals(@CheckForNull Object obj) {
+        if (!(obj instanceof ConstantWithEnum)) {
+            return false;
+        }
+        ConstantWithEnum other = (ConstantWithEnum) obj;
+        return ;
+    }
+
+    @Override
+    public int hashCode() {
+        // Pick an arbitrary non-zero starting value
+        int hashCode = 17;
+        return hashCode;
+    }
+
+    @Override
     public String toString() {
         return "ConstantWithEnum{" +
         "}";

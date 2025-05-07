@@ -18,6 +18,23 @@ public final class TestOptionalExternInterfaceRecord {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof TestOptionalExternInterfaceRecord)) {
+            return false;
+        }
+        TestOptionalExternInterfaceRecord other = (TestOptionalExternInterfaceRecord) obj;
+        return ((this.mSampleInterface == null && other.mSampleInterface == null) || (this.mSampleInterface != null && this.mSampleInterface.equals(other.mSampleInterface)));
+    }
+
+    @Override
+    public int hashCode() {
+        // Pick an arbitrary non-zero starting value
+        int hashCode = 17;
+        hashCode = hashCode * 31 + (mSampleInterface == null ? 0 : mSampleInterface.hashCode());
+        return hashCode;
+    }
+
+    @Override
     public String toString() {
         return "TestOptionalExternInterfaceRecord{" +
                 "mSampleInterface=" + mSampleInterface +

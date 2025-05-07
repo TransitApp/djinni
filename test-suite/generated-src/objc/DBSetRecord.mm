@@ -24,6 +24,24 @@
                                 iset:iset];
 }
 
+- (BOOL)isEqual:(id)other
+{
+    if (![other isKindOfClass:[DBSetRecord class]]) {
+        return NO;
+    }
+    DBSetRecord *typedOther = (DBSetRecord *)other;
+    return [self.set isEqualToSet:typedOther.set] &&
+            [self.iset isEqualToSet:typedOther.iset];
+}
+
+- (NSUInteger)hash
+{
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + self.set.hash;
+    hashCode = hashCode * 31 + self.iset.hash;
+    return hashCode;
+}
+
 #ifndef DJINNI_DISABLE_DESCRIPTION_METHODS
 - (NSString *)description
 {

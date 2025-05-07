@@ -23,6 +23,23 @@ public class PrimitiveList {
     }
 
     @Override
+    public boolean equals(@CheckForNull Object obj) {
+        if (!(obj instanceof PrimitiveList)) {
+            return false;
+        }
+        PrimitiveList other = (PrimitiveList) obj;
+        return this.mList.equals(other.mList);
+    }
+
+    @Override
+    public int hashCode() {
+        // Pick an arbitrary non-zero starting value
+        int hashCode = 17;
+        hashCode = hashCode * 31 + mList.hashCode();
+        return hashCode;
+    }
+
+    @Override
     public String toString() {
         return "PrimitiveList{" +
                 "mList=" + mList +

@@ -26,6 +26,22 @@
     return s_extendedRecordConst;
 }
 
+- (BOOL)isEqual:(id)other
+{
+    if (![other isKindOfClass:[DBExtendedRecord class]]) {
+        return NO;
+    }
+    DBExtendedRecord *typedOther = (DBExtendedRecord *)other;
+    return self.foo == typedOther.foo;
+}
+
+- (NSUInteger)hash
+{
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + (NSUInteger)self.foo;
+    return hashCode;
+}
+
 #ifndef DJINNI_DISABLE_DESCRIPTION_METHODS
 - (NSString *)description
 {

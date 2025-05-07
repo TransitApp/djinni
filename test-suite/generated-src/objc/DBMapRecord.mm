@@ -24,6 +24,24 @@
                                 imap:imap];
 }
 
+- (BOOL)isEqual:(id)other
+{
+    if (![other isKindOfClass:[DBMapRecord class]]) {
+        return NO;
+    }
+    DBMapRecord *typedOther = (DBMapRecord *)other;
+    return [self.map isEqualToDictionary:typedOther.map] &&
+            [self.imap isEqualToDictionary:typedOther.imap];
+}
+
+- (NSUInteger)hash
+{
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + self.map.hash;
+    hashCode = hashCode * 31 + self.imap.hash;
+    return hashCode;
+}
+
 #ifndef DJINNI_DISABLE_DESCRIPTION_METHODS
 - (NSString *)description
 {

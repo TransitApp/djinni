@@ -36,6 +36,30 @@
                                  m:m];
 }
 
+- (BOOL)isEqual:(id)other
+{
+    if (![other isKindOfClass:[DBEnumUsageRecord class]]) {
+        return NO;
+    }
+    DBEnumUsageRecord *typedOther = (DBEnumUsageRecord *)other;
+    return self.e == typedOther.e &&
+            self.o == typedOther.o &&
+            [self.l isEqualToArray:typedOther.l] &&
+            [self.s isEqualToSet:typedOther.s] &&
+            [self.m isEqualToDictionary:typedOther.m];
+}
+
+- (NSUInteger)hash
+{
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + (NSUInteger)self.e;
+    hashCode = hashCode * 31 + (NSUInteger)self.o;
+    hashCode = hashCode * 31 + self.l.dynamicHash;
+    hashCode = hashCode * 31 + self.s.hash;
+    hashCode = hashCode * 31 + self.m.hash;
+    return hashCode;
+}
+
 #ifndef DJINNI_DISABLE_DESCRIPTION_METHODS
 - (NSString *)description
 {

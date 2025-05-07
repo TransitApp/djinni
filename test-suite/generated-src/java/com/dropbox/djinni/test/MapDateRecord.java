@@ -23,6 +23,23 @@ public class MapDateRecord {
     }
 
     @Override
+    public boolean equals(@CheckForNull Object obj) {
+        if (!(obj instanceof MapDateRecord)) {
+            return false;
+        }
+        MapDateRecord other = (MapDateRecord) obj;
+        return this.mDatesById.equals(other.mDatesById);
+    }
+
+    @Override
+    public int hashCode() {
+        // Pick an arbitrary non-zero starting value
+        int hashCode = 17;
+        hashCode = hashCode * 31 + mDatesById.hashCode();
+        return hashCode;
+    }
+
+    @Override
     public String toString() {
         return "MapDateRecord{" +
                 "mDatesById=" + mDatesById +

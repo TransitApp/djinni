@@ -17,6 +17,9 @@ struct NoConstructorRecord final {
     static constexpr int32_t XXXWEIRD_CASE = 1;
     int32_t FirstValue;
     std::string second_value;
+
+    friend bool operator==(const NoConstructorRecord& lhs, const NoConstructorRecord& rhs);
+    friend bool operator!=(const NoConstructorRecord& lhs, const NoConstructorRecord& rhs);
 };
 
 } // namespace testsuite

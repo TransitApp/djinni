@@ -23,6 +23,23 @@ public class RecordWithEmbeddedProto {
     }
 
     @Override
+    public boolean equals(@CheckForNull Object obj) {
+        if (!(obj instanceof RecordWithEmbeddedProto)) {
+            return false;
+        }
+        RecordWithEmbeddedProto other = (RecordWithEmbeddedProto) obj;
+        return ;
+    }
+
+    @Override
+    public int hashCode() {
+        // Pick an arbitrary non-zero starting value
+        int hashCode = 17;
+        hashCode = hashCode * 31 + ();
+        return hashCode;
+    }
+
+    @Override
     public String toString() {
         return "RecordWithEmbeddedProto{" +
                 "mPerson=" + mPerson +

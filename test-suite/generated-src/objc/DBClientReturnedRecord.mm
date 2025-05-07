@@ -28,6 +28,26 @@
                                      misc:misc];
 }
 
+- (BOOL)isEqual:(id)other
+{
+    if (![other isKindOfClass:[DBClientReturnedRecord class]]) {
+        return NO;
+    }
+    DBClientReturnedRecord *typedOther = (DBClientReturnedRecord *)other;
+    return self.recordId == typedOther.recordId &&
+            [self.content isEqualToString:typedOther.content] &&
+            ((self.misc == nil && typedOther.misc == nil) || (self.misc != nil && [self.misc isEqual:typedOther.misc]));
+}
+
+- (NSUInteger)hash
+{
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + (NSUInteger)self.recordId;
+    hashCode = hashCode * 31 + self.content.hash;
+    hashCode = hashCode * 31 + self.misc.hash;
+    return hashCode;
+}
+
 #ifndef DJINNI_DISABLE_DESCRIPTION_METHODS
 - (NSString *)description
 {

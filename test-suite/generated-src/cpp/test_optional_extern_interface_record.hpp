@@ -11,6 +11,9 @@
 struct TestOptionalExternInterfaceRecord final {
     /*nullable*/ std::shared_ptr<::testsuite::SampleInterface> sample_interface;
 
+    friend bool operator==(const TestOptionalExternInterfaceRecord& lhs, const TestOptionalExternInterfaceRecord& rhs);
+    friend bool operator!=(const TestOptionalExternInterfaceRecord& lhs, const TestOptionalExternInterfaceRecord& rhs);
+
     //NOLINTNEXTLINE(google-explicit-constructor)
     TestOptionalExternInterfaceRecord(/*nullable*/ std::shared_ptr<::testsuite::SampleInterface> sample_interface_)
     : sample_interface(std::move(sample_interface_))

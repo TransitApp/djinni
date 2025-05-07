@@ -11,6 +11,24 @@ data class NestedCollection(
     val mSetList: ArrayList<HashSet<String>>
 ) : android.os.Parcelable : android.os.Parcelable {
 
+    override fun equals(other: Any?): Boolean  {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as NestedCollection
+
+        if (mSetList != other.mSetList) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int  {
+        // Pick an arbitrary non-zero starting value
+        var hashCode = 17;
+        hashCode = hashCode * 31 + mSetList.hashCode()
+        return hashCode
+    }
+
     override fun toString(): String  {
         return "NestedCollection {" +
                 "mSetList=" + mSetList +

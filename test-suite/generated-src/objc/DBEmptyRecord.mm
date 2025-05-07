@@ -19,6 +19,20 @@
     return [[self alloc] init];
 }
 
+- (BOOL)isEqual:(id)other
+{
+    if (![other isKindOfClass:[DBEmptyRecord class]]) {
+        return NO;
+    }
+    return YES;
+}
+
+- (NSUInteger)hash
+{
+    NSUInteger hashCode = 17;
+    return hashCode;
+}
+
 #ifndef DJINNI_DISABLE_DESCRIPTION_METHODS
 - (NSString *)description
 {

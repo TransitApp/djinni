@@ -32,6 +32,25 @@ public class MapRecord {
     }
 
     @Override
+    public boolean equals(@CheckForNull Object obj) {
+        if (!(obj instanceof MapRecord)) {
+            return false;
+        }
+        MapRecord other = (MapRecord) obj;
+        return this.mMap.equals(other.mMap) &&
+                this.mImap.equals(other.mImap);
+    }
+
+    @Override
+    public int hashCode() {
+        // Pick an arbitrary non-zero starting value
+        int hashCode = 17;
+        hashCode = hashCode * 31 + mMap.hashCode();
+        hashCode = hashCode * 31 + mImap.hashCode();
+        return hashCode;
+    }
+
+    @Override
     public String toString() {
         return "MapRecord{" +
                 "mMap=" + mMap +

@@ -9,4 +9,12 @@ RecordUsingExtendedRecord const RecordUsingExtendedRecord::CR = RecordUsingExten
     ExtendedRecord(
         false /* foo */ ) /* er */ );
 
+bool operator==(const RecordUsingExtendedRecord& lhs, const RecordUsingExtendedRecord& rhs) {
+    return lhs.er == rhs.er;
+}
+
+bool operator!=(const RecordUsingExtendedRecord& lhs, const RecordUsingExtendedRecord& rhs) {
+    return !(lhs == rhs);
+}
+
 } // namespace testsuite

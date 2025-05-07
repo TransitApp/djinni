@@ -9,6 +9,24 @@ data class RecordWithFlags(
     val mAccess: EnumSet<AccessFlags>
 ) {
 
+    override fun equals(other: Any?): Boolean  {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as RecordWithFlags
+
+        if (mAccess != other.mAccess) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int  {
+        // Pick an arbitrary non-zero starting value
+        var hashCode = 17;
+        hashCode = hashCode * 31 + mAccess.hashCode()
+        return hashCode
+    }
+
     override fun toString(): String  {
         return "RecordWithFlags {" +
                 "mAccess=" + mAccess +

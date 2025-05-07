@@ -11,6 +11,9 @@ namespace testsuite {
 struct RecordWithEmbeddedCppProto final {
     ::djinni::test2::PersistingState state;
 
+    friend bool operator==(const RecordWithEmbeddedCppProto& lhs, const RecordWithEmbeddedCppProto& rhs);
+    friend bool operator!=(const RecordWithEmbeddedCppProto& lhs, const RecordWithEmbeddedCppProto& rhs);
+
     //NOLINTNEXTLINE(google-explicit-constructor)
     RecordWithEmbeddedCppProto(::djinni::test2::PersistingState state_)
     : state(std::move(state_))

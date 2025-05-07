@@ -61,6 +61,31 @@ public class EnumUsageRecord implements android.os.Parcelable {
     }
 
     @Override
+    public boolean equals(@CheckForNull Object obj) {
+        if (!(obj instanceof EnumUsageRecord)) {
+            return false;
+        }
+        EnumUsageRecord other = (EnumUsageRecord) obj;
+        return this.mE == other.mE &&
+                ((this.mO == null && other.mO == null) || (this.mO != null && this.mO.equals(other.mO))) &&
+                this.mL.equals(other.mL) &&
+                this.mS.equals(other.mS) &&
+                this.mM.equals(other.mM);
+    }
+
+    @Override
+    public int hashCode() {
+        // Pick an arbitrary non-zero starting value
+        int hashCode = 17;
+        hashCode = hashCode * 31 + mE.hashCode();
+        hashCode = hashCode * 31 + (mO == null ? 0 : mO.hashCode());
+        hashCode = hashCode * 31 + mL.hashCode();
+        hashCode = hashCode * 31 + mS.hashCode();
+        hashCode = hashCode * 31 + mM.hashCode();
+        return hashCode;
+    }
+
+    @Override
     public String toString() {
         return "EnumUsageRecord{" +
                 "mE=" + mE +

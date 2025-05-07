@@ -66,6 +66,9 @@ struct Constants final {
      * No support for constant binary, list, set, map
      */
     static constexpr bool DUMMY = false;
+
+    friend bool operator==(const Constants& lhs, const Constants& rhs);
+    friend bool operator!=(const Constants& lhs, const Constants& rhs);
 };
 
 } // namespace testsuite

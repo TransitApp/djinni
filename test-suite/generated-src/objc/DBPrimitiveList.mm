@@ -20,6 +20,22 @@
     return [[self alloc] initWithList:list];
 }
 
+- (BOOL)isEqual:(id)other
+{
+    if (![other isKindOfClass:[DBPrimitiveList class]]) {
+        return NO;
+    }
+    DBPrimitiveList *typedOther = (DBPrimitiveList *)other;
+    return [self.list isEqualToArray:typedOther.list];
+}
+
+- (NSUInteger)hash
+{
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + self.list.dynamicHash;
+    return hashCode;
+}
+
 #ifndef DJINNI_DISABLE_DESCRIPTION_METHODS
 - (NSString *)description
 {

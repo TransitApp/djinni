@@ -16,6 +16,32 @@ data class EnumUsageRecord(
     val mM: HashMap<Color, Color>
 ) : android.os.Parcelable : android.os.Parcelable {
 
+    override fun equals(other: Any?): Boolean  {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as EnumUsageRecord
+
+        if (mE != other.mE) return false
+        if (mO != other.mO) return false
+        if (mL != other.mL) return false
+        if (mS != other.mS) return false
+        if (mM != other.mM) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int  {
+        // Pick an arbitrary non-zero starting value
+        var hashCode = 17;
+        hashCode = hashCode * 31 + mE.hashCode()
+        hashCode = hashCode * 31 + (mO?.hashCode() ?: 0)
+        hashCode = hashCode * 31 + mL.hashCode()
+        hashCode = hashCode * 31 + mS.hashCode()
+        hashCode = hashCode * 31 + mM.hashCode()
+        return hashCode
+    }
+
     override fun toString(): String  {
         return "EnumUsageRecord {" +
                 "mE=" + mE +

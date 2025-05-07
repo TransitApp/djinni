@@ -13,6 +13,9 @@ namespace testsuite {
  *   Indented third line of multi-line documentation.)
  */
 struct EmptyRecord final {
+
+    friend bool operator==(const EmptyRecord& lhs, const EmptyRecord& rhs);
+    friend bool operator!=(const EmptyRecord& lhs, const EmptyRecord& rhs);
 };
 
 } // namespace testsuite

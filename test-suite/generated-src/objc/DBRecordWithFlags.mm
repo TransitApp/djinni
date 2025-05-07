@@ -20,6 +20,22 @@
     return [[self alloc] initWithAccess:access];
 }
 
+- (BOOL)isEqual:(id)other
+{
+    if (![other isKindOfClass:[DBRecordWithFlags class]]) {
+        return NO;
+    }
+    DBRecordWithFlags *typedOther = (DBRecordWithFlags *)other;
+    return self.access == typedOther.access;
+}
+
+- (NSUInteger)hash
+{
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + (NSUInteger)self.access;
+    return hashCode;
+}
+
 #ifndef DJINNI_DISABLE_DESCRIPTION_METHODS
 - (NSString *)description
 {

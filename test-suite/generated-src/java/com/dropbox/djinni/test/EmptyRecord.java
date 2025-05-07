@@ -19,6 +19,22 @@ public class EmptyRecord {
     }
 
     @Override
+    public boolean equals(@CheckForNull Object obj) {
+        if (!(obj instanceof EmptyRecord)) {
+            return false;
+        }
+        EmptyRecord other = (EmptyRecord) obj;
+        return ;
+    }
+
+    @Override
+    public int hashCode() {
+        // Pick an arbitrary non-zero starting value
+        int hashCode = 17;
+        return hashCode;
+    }
+
+    @Override
     public String toString() {
         return "EmptyRecord{" +
         "}";

@@ -11,6 +11,9 @@ namespace testsuite {
 struct RecordWithFlags final {
     access_flags access;
 
+    friend bool operator==(const RecordWithFlags& lhs, const RecordWithFlags& rhs);
+    friend bool operator!=(const RecordWithFlags& lhs, const RecordWithFlags& rhs);
+
     //NOLINTNEXTLINE(google-explicit-constructor)
     RecordWithFlags(access_flags access_)
     : access(std::move(access_))

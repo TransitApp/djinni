@@ -7,4 +7,12 @@ namespace testsuite {
 
 constant_enum const ConstantWithEnum::CONST_ENUM = constant_enum::SOME_VALUE;
 
+bool operator==(const ConstantWithEnum& lhs, const ConstantWithEnum& rhs) {
+    return true;
+}
+
+bool operator!=(const ConstantWithEnum& lhs, const ConstantWithEnum& rhs) {
+    return !(lhs == rhs);
+}
+
 } // namespace testsuite

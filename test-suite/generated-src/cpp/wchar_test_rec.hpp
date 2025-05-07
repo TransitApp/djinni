@@ -11,6 +11,9 @@ namespace testsuite {
 struct WcharTestRec final {
     std::wstring s;
 
+    friend bool operator==(const WcharTestRec& lhs, const WcharTestRec& rhs);
+    friend bool operator!=(const WcharTestRec& lhs, const WcharTestRec& rhs);
+
     //NOLINTNEXTLINE(google-explicit-constructor)
     WcharTestRec(std::wstring s_)
     : s(std::move(s_))
