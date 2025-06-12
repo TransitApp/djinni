@@ -55,6 +55,7 @@ package object generatorTools {
                    cppOptionalTemplate: String,
                    cppOptionalHeader: String,
                    cppEnumHashWorkaround: Boolean,
+                   cppEnumFromString: Boolean,
                    cppNnHeader: Option[String],
                    cppNnType: Option[String],
                    cppNnCheckExpression: Option[String],
@@ -108,6 +109,8 @@ package object generatorTools {
                    yamlOutFolder: Option[File],
                    yamlOutFile: Option[String],
                    yamlPrefix: String,
+                   pythonEnumOutFolder: Option[File],
+                   pythonIdentStyle: PythonIdentStyle,
                    moduleName: String)
 
   def useProtocol(ext: Ext, spec: Spec) = ext.objc || spec.objcGenProtocol
@@ -152,6 +155,10 @@ package object generatorTools {
                           method: IdentConverter, field: IdentConverter, local: IdentConverter,
                           enum: IdentConverter, const: IdentConverter)
 
+  case class PythonIdentStyle(ty: IdentConverter, file: IdentConverter, typeParam: IdentConverter,
+                           method: IdentConverter, field: IdentConverter, local: IdentConverter,
+                           enum: IdentConverter, const: IdentConverter)
+
   object IdentStyle {
     private val camelUpperStrict = (s: String) => {
         s.split("[-_]").map(leadingUpperStrict).mkString
@@ -178,6 +185,7 @@ package object generatorTools {
     val cppDefault = CppIdentStyle(camelUpper, camelUpper, camelUpper, underLower, underLower, underLower, underCaps, underCaps)
     val objcDefault = ObjcIdentStyle(camelUpper, camelUpper, camelLower, camelLower, camelLower, camelUpper, camelUpper)
     val jsDefault = JsIdentStyle(camelUpper, camelUpper, camelLower, camelLower, camelLower, underCaps, underCaps)
+    var pythonDefault = PythonIdentStyle(camelUpper, underLowerStrict, camelUpper, underLower, underLower, underLower, underCaps, underCaps)
 
     val styles = Map(
       "FooBar" -> camelUpper,
@@ -323,6 +331,12 @@ package object generatorTools {
         }
         new YamlGenerator(spec).generate(idl)
       }
+      if (spec.pythonEnumOutFolder.isDefined) {
+        if (!spec.skipGeneration) {
+          createFolder("Python Enums", spec.pythonEnumOutFolder.get)
+        }
+        new PythonEnumGenerator(spec).generate(idl)
+      }
       None
     }
     catch {
@@ -377,6 +391,7 @@ abstract class Generator(spec: Spec)
   val idJava = spec.javaIdentStyle
   val idObjc = spec.objcIdentStyle
   val idJs = spec.jsIdentStyle
+  var idPython = spec.pythonIdentStyle
 
   def wrapNamespace(w: IndentWriter, ns: String, f: IndentWriter => Unit) {
     ns match {

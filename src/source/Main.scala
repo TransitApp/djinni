@@ -36,6 +36,7 @@ object Main {
     var cppOptionalTemplate: String = "std::optional"
     var cppOptionalHeader: String = "<optional>"
     var cppEnumHashWorkaround : Boolean = true
+    var cppEnumFromString : Boolean = true
     var cppNnHeader: Option[String] = None
     var cppNnType: Option[String] = None
     var cppNnCheckExpression: Option[String] = None
@@ -106,6 +107,8 @@ object Main {
     var yamlOutFolder: Option[File] = None
     var yamlOutFile: Option[String] = None
     var yamlPrefix: String = ""
+    var pythonEnumOutFolder: Option[File] = None
+    var pythonIdentStyle = IdentStyle.pythonDefault
 
     val argParser = new scopt.OptionParser[Unit]("djinni") {
 
@@ -169,6 +172,8 @@ object Main {
         .text("The header to use for optional values (default: \"<optional>\")")
       opt[Boolean]("cpp-enum-hash-workaround").valueName("<true/false>").foreach(x => cppEnumHashWorkaround = x)
         .text("Work around LWG-2148 by generating std::hash specializations for C++ enums (default: true)")
+      opt[Boolean]("cpp-enum-from-string").valueName("<true/false>").foreach(x => cppEnumFromString = x)
+        .text("Implement a from_string function for C++ enums (default: true)")
       opt[String]("cpp-nn-header").valueName("<header>").foreach(x => cppNnHeader = Some(x))
         .text("The header to use for non-nullable pointers")
       opt[String]("cpp-nn-type").valueName("<header>").foreach(x => cppNnType = Some(x))
@@ -265,6 +270,9 @@ object Main {
         .text("If specified all types are merged into a single YAML file instead of generating one file per type (relative to --yaml-out).")
       opt[String]("yaml-prefix").valueName("<pre>").foreach(yamlPrefix = _)
         .text("The prefix to add to type names stored in YAML files (default: \"\").")
+      note("")
+      opt[File]("python-enum-out").valueName("<out-folder>").foreach(x => pythonEnumOutFolder = Some(x))
+        .text("The output folder for Python enum files (Generator disabled if unspecified).")
       note("")
       opt[File]("list-in-files").valueName("<list-in-files>").foreach(x => inFileListPath = Some(x))
         .text("Optional file in which to write the list of input files parsed.")
@@ -396,6 +404,7 @@ object Main {
       cppOptionalTemplate,
       cppOptionalHeader,
       cppEnumHashWorkaround,
+      cppEnumFromString,
       cppNnHeader,
       cppNnType,
       cppNnCheckExpression,
@@ -449,6 +458,8 @@ object Main {
       yamlOutFolder,
       yamlOutFile,
       yamlPrefix,
+      pythonEnumOutFolder,
+      pythonIdentStyle,
       idlFile.getName.stripSuffix(".djinni"))
 
     try {
