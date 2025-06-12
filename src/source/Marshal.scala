@@ -39,6 +39,7 @@ abstract class Marshal(spec: Spec) {
 
   implicit def identToString(ident: Ident): String = ident.name
   protected val idCpp = spec.cppIdentStyle
+  protected val idPython = spec.pythonIdentStyle
   protected val idJava = spec.javaIdentStyle
   protected val idObjc = spec.objcIdentStyle
 

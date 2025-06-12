@@ -65,6 +65,11 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
       refs.hpp.add("#include <functional>") // needed for std::hash
     }
 
+    if (spec.cppEnumFromString) {
+        refs.hpp.add("#include <string>")
+        refs.hpp.add("#include <optional>")
+    }
+
     val flagsType = "int32_t"
     val enumType = "int"
     val underlyingType = if(e.flags) flagsType else enumType
@@ -96,13 +101,28 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
       } else {
         w.wl
         // Define a toString function
-        w.w("constexpr const char* "+ idCpp.method("to_string") + "(" + self + " e) noexcept").braced {
-          w.w("constexpr const char* names[] =").bracedSemi {
+        w.w(s"constexpr const char* ${idCpp.method("to_string")}($self e) noexcept").braced {
+          w.w("constexpr std::array names").bracedSemi {
             for(o <- e.options) {
               w.wl(s""""${o.ident.name}",""")
             }
           }
           w.wl(s"return names[static_cast<$underlyingType>(e)];");
+        }
+
+        if (spec.cppEnumFromString) {
+          w.wl
+          w.w(s"constexpr std::optional<$self> ${idCpp.method(s"${self}_from_string")}(const char* e) noexcept").braced {
+            w.w("constexpr std::array names").bracedSemi {
+              for(o <- e.options) {
+                w.wl(s""""${o.ident.name}",""")
+              }
+            }
+            w.w("if (const auto index = std::find(names.begin(), names.end(), std::string_view(e)); index != names.end())").braced {
+                w.wl(s"return {static_cast<$self>(std::distance(names.begin(), index))};")
+            }
+            w.wl("return std::nullopt;");
+          }
         }
       }
     },
