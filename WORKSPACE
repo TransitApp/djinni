@@ -27,13 +27,12 @@ cc_library(
 """
 )
 
-rules_scala_version = "c711b4d1f0d1cc386c63ef748c9df14d2f3a187e"
+rules_scala_version = "6.5.0"
 http_archive(
     name = "io_bazel_rules_scala",
-    sha256 = "556677f505634da64efc41912d280895e61f5da109d82bdee41cde4120a190a1",
+    sha256 = "3b00fa0b243b04565abb17d3839a5f4fa6cc2cac571f6db9f83c1982ba1e19e5",
     strip_prefix = "rules_scala-%s" % rules_scala_version,
-    type = "zip",
-    url = "https://github.com/bazelbuild/rules_scala/archive/%s.zip" % rules_scala_version,
+    url = "https://github.com/bazelbuild/rules_scala/releases/download/v%s/rules_scala-v%s.tar.gz" % (rules_scala_version, rules_scala_version),
 )
 
 load("@io_bazel_rules_scala//:scala_config.bzl", "scala_config")
