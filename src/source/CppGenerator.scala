@@ -329,24 +329,34 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
       w.wl
       w.w(s"std::string $actualSelf::to_string() const").braced {
         w.wl("std::ostringstream ss;")
-        w.w(s"""ss << "$actualSelf {";""")
-        var i: Int = 0
+        w.wl(s"""ss << "$actualSelf {";""")
+        w.wl("bool firstField = true;")
         for (f <- fields) {
           val name = idCpp.field(f.ident)
-          val isEnum = f.ty.resolved.base match {
+          val isOptional = f.ty.resolved.base == MOptional
+          val innerType = if (isOptional && f.ty.resolved.args.nonEmpty) f.ty.resolved.args.head.base else f.ty.resolved.base
+          val isEnum = innerType match {
             case df: MDef => df.defType == DEnum
             case e: MExtern => e.defType == DEnum
             case _ => false
           }
-          val valueExpr = if (isEnum) s"vm::to_string($name)" else name
-          if (i > 0) {
-            w.wl
-            w.w(s"""ss << ", $name=" << $valueExpr;""")
+          val valueExpr = if (isOptional) {
+            if (isEnum) s"vm::to_string(*$name)" else s"*$name"
           } else {
-            w.wl
-            w.w(s"""ss << "$name=" << $valueExpr;""")
+            if (isEnum) s"vm::to_string($name)" else name
           }
-          i += 1
+          w.wl
+          if (isOptional) {
+            w.w(s"if ($name)").braced {
+              w.wl("""if (!firstField) { ss << ", "; }""")
+              w.wl(s"""ss << "$name=" << $valueExpr;""")
+              w.wl("firstField = false;")
+            }
+          } else {
+            w.wl("""if (!firstField) { ss << ", "; }""")
+            w.wl(s"""ss << "$name=" << $valueExpr;""")
+            w.wl("firstField = false;")
+          }
         }
         w.wl
         w.wl("""ss << "}";""")
