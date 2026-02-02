@@ -336,8 +336,13 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
           val typeName = marshal.fieldType(f.ty)
           val isOptional = f.ty.resolved.base == MOptional
           val isList = f.ty.resolved.base == MList
-          val isPtr = typeName.endsWith("Ptr")
-          val isSmartString = typeName == "SmartString"
+          val baseTypeName = f.ty.resolved.base match {
+            case df: MDef => df.name
+            case e: MExtern => e.name
+            case _ => typeName
+          }
+          val isPtr = baseTypeName.endsWith("Ptr")
+          val isSmartString = baseTypeName == "SmartString"
           val innerType = if ((isOptional || isList) && f.ty.resolved.args.nonEmpty) f.ty.resolved.args.head.base else f.ty.resolved.base
           val innerTypeName = innerType match {
             case df: MDef => df.name
@@ -378,10 +383,10 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
             w.wl(s"""ss << "$name=" << to_string($name);""")
           } else if (isSmartString) {
             w.wl(s"""ss << "$name=" << $name.value;""")
-          } else if (isInnerRecord) {
-            w.wl(s"""ss << "$name=" << $name.toDebugString();""")
           } else if (isPtr) {
             w.wl(s"""ss << "$name=" << $name->toDebugString();""")
+          } else if (isInnerRecord) {
+            w.wl(s"""ss << "$name=" << $name.toDebugString();""")
           } else {
             w.wl(s"""ss << "$name=" << $name;""")
           }
