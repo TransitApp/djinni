@@ -334,29 +334,37 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         for (f <- fields) {
           val name = idCpp.field(f.ident)
           val isOptional = f.ty.resolved.base == MOptional
-          val innerType = if (isOptional && f.ty.resolved.args.nonEmpty) f.ty.resolved.args.head.base else f.ty.resolved.base
-          val isEnum = innerType match {
+          val isList = f.ty.resolved.base == MList
+          val innerType = if ((isOptional || isList) && f.ty.resolved.args.nonEmpty) f.ty.resolved.args.head.base else f.ty.resolved.base
+          val isInnerEnum = innerType match {
             case df: MDef => df.defType == DEnum
             case e: MExtern => e.defType == DEnum
             case _ => false
           }
-          val valueExpr = if (isOptional) {
-            if (isEnum) s"vm::toDebugString(*$name)" else s"$name->toDebugString()"
-          } else {
-            if (isEnum) s"vm::toDebugString($name)" else name
-          }
           w.wl
+          w.wl("""if (!firstField) { ss << ", "; }""")
           if (isOptional) {
             w.w(s"if ($name)").braced {
-              w.wl("""if (!firstField) { ss << ", "; }""")
+              val valueExpr = if (isInnerEnum) s"vm::toDebugString(*$name)" else s"*$name"
               w.wl(s"""ss << "$name=" << $valueExpr;""")
-              w.wl("firstField = false;")
             }
+            w.w("else").braced {
+              w.wl(s"""ss << "$name=<none>";""")
+            }
+          } else if (isList) {
+            w.wl(s"""ss << "$name=[";""")
+            w.w(s"for (size_t i = 0; i < $name.size(); ++i)").braced {
+              w.wl("""if (i > 0) { ss << ", "; }""")
+              val itemExpr = if (isInnerEnum) s"vm::toDebugString($name[i])" else s"$name[i]"
+              w.wl(s"ss << $itemExpr;")
+            }
+            w.wl("""ss << "]";""")
+          } else if (isInnerEnum) {
+            w.wl(s"""ss << "$name=" << vm::toDebugString($name);""")
           } else {
-            w.wl("""if (!firstField) { ss << ", "; }""")
-            w.wl(s"""ss << "$name=" << $valueExpr;""")
-            w.wl("firstField = false;")
+            w.wl(s"""ss << "$name=" << $name;""")
           }
+          w.wl("firstField = false;")
         }
         w.wl
         w.wl("""ss << "}";""")
