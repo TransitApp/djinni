@@ -253,7 +253,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         w.wl
         w.wl(s"friend bool operator==(const $actualSelf& lhs, const $actualSelf& rhs);")
         w.wl(s"friend bool operator!=(const $actualSelf& lhs, const $actualSelf& rhs);")
-        if (r.fields.nonEmpty) {
+        if ((superFields ++ r.fields).nonEmpty) {
           w.wl
           w.wl(s"std::string toDebugString() const;")
         }
