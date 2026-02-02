@@ -35,7 +35,11 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     writeHppFileGeneric(spec.cppHeaderOutFolder.get, spec.cppNamespace, spec.cppFileIdentStyle)(name, origin, includes, fwds, f, f2)
 
   def isPtrType(typeName: String): Boolean = {
-    typeName.endsWith("Ptr") || typeName == "VisualItem" || typeName == "MapViewModel"
+    typeName.endsWith("Ptr") || typeName == "VisualItem" || typeName == "MapViewModel" || typeName == "PlacemarkViewModel" || typeName == "VehicleLocationPlacemarkViewModel"
+  }
+
+  def isListOfPtrType(typeName: String): Boolean = {
+    typeName == "EndOfRideCardList" || typeName == "ListItineraryItems" || typeName == "ListTripDetailsItems"
   }
 
   class CppRefs(name: String) {
@@ -349,7 +353,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
               case _ => typeName
             }
             val isPtr = isPtrType(baseTypeName)
-            val isListOfPtr = baseTypeName == "EndOfRideCardList"
+            val isListOfPtr = isListOfPtrType(baseTypeName)
             val isSmartString = baseTypeName == "SmartString"
             val innerType = if ((isOptional || isList) && f.ty.resolved.args.nonEmpty) f.ty.resolved.args.head.base else f.ty.resolved.base
             val innerTypeName = innerType match {
