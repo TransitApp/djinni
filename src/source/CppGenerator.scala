@@ -341,11 +341,16 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
             case e: MExtern => e.defType == DEnum
             case _ => false
           }
+          val isInnerRecord = innerType match {
+            case df: MDef => df.defType == DRecord
+            case e: MExtern => e.defType == DRecord
+            case _ => false
+          }
           w.wl
           w.wl("""if (!firstField) { ss << ", "; }""")
           if (isOptional) {
             w.w(s"if ($name)").braced {
-              val valueExpr = if (isInnerEnum) s"vm::toDebugString(*$name)" else s"*$name"
+              val valueExpr = if (isInnerEnum) s"vm::toDebugString(*$name)" else if (isInnerRecord) s"$name->toDebugString()" else s"*$name"
               w.wl(s"""ss << "$name=" << $valueExpr;""")
             }
             w.w("else").braced {
@@ -355,12 +360,14 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
             w.wl(s"""ss << "$name=[";""")
             w.w(s"for (size_t i = 0; i < $name.size(); ++i)").braced {
               w.wl("""if (i > 0) { ss << ", "; }""")
-              val itemExpr = if (isInnerEnum) s"vm::toDebugString($name[i])" else s"$name[i]"
+              val itemExpr = if (isInnerEnum) s"vm::toDebugString($name[i])" else if (isInnerRecord) s"$name[i].toDebugString()" else s"$name[i]"
               w.wl(s"ss << $itemExpr;")
             }
             w.wl("""ss << "]";""")
           } else if (isInnerEnum) {
             w.wl(s"""ss << "$name=" << vm::toDebugString($name);""")
+          } else if (isInnerRecord) {
+            w.wl(s"""ss << "$name=" << $name.toDebugString();""")
           } else {
             w.wl(s"""ss << "$name=" << $name;""")
           }
