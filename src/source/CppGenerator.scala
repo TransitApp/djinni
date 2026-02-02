@@ -360,7 +360,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
           w.wl("""if (!firstField) { ss << ", "; }""")
           if (isOptional) {
             w.w(s"if ($name)").braced {
-              val valueExpr = if (isInnerEnum) s"to_string(*$name)" else if (isInnerSmartString) s"$name->value" else if (isInnerRecord || isInnerPtr) s"$name->toDebugString()" else s"*$name"
+              val valueExpr = if (isInnerEnum) s"to_string(*$name)" else if (isInnerSmartString) s"$name->value" else if (isInnerPtr) s"(*$name)->toDebugString()" else if (isInnerRecord) s"$name->toDebugString()" else s"*$name"
               w.wl(s"""ss << "$name=" << $valueExpr;""")
             }
             w.w("else").braced {
