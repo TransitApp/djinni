@@ -342,6 +342,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
             case _ => typeName
           }
           val isPtr = baseTypeName.endsWith("Ptr")
+          val isListOfPtr = baseTypeName == "EndOfRideCardList"
           val isSmartString = baseTypeName == "SmartString"
           val innerType = if ((isOptional || isList) && f.ty.resolved.args.nonEmpty) f.ty.resolved.args.head.base else f.ty.resolved.base
           val innerTypeName = innerType match {
@@ -385,6 +386,13 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
             w.wl(s"""ss << "$name=" << $name.value;""")
           } else if (isPtr) {
             w.wl(s"""ss << "$name=" << $name->toDebugString();""")
+          } else if (isListOfPtr) {
+            w.wl(s"""ss << "$name=[";""")
+            w.w(s"for (size_t i = 0; i < $name.size(); ++i)").braced {
+              w.wl("""if (i > 0) { ss << ", "; }""")
+              w.wl(s"ss << $name[i]->toDebugString();")
+            }
+            w.wl("""ss << "]";""")
           } else if (isInnerRecord) {
             w.wl(s"""ss << "$name=" << $name.toDebugString();""")
           } else {
