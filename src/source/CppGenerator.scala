@@ -338,7 +338,11 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
           val isList = f.ty.resolved.base == MList
           val isPtr = typeName.endsWith("Ptr")
           val innerType = if ((isOptional || isList) && f.ty.resolved.args.nonEmpty) f.ty.resolved.args.head.base else f.ty.resolved.base
-          val innerTypeName = if ((isOptional || isList) && f.ty.resolved.args.nonEmpty) marshal.typename(f.ty.resolved.args.head) else typeName
+          val innerTypeName = innerType match {
+            case df: MDef => df.name
+            case e: MExtern => e.name
+            case _ => typeName
+          }
           val isInnerPtr = innerTypeName.endsWith("Ptr")
           val isInnerEnum = innerType match {
             case df: MDef => df.defType == DEnum
@@ -354,7 +358,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
           w.wl("""if (!firstField) { ss << ", "; }""")
           if (isOptional) {
             w.w(s"if ($name)").braced {
-              val valueExpr = if (isInnerEnum) s"to_string(*$name)" else if (isInnerRecord || isInnerPtr) s"(*$name)->toDebugString()" else s"*$name"
+              val valueExpr = if (isInnerEnum) s"to_string(*$name)" else if (isInnerRecord || isInnerPtr) s"$name->toDebugString()" else s"*$name"
               w.wl(s"""ss << "$name=" << $valueExpr;""")
             }
             w.w("else").braced {
@@ -364,7 +368,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
             w.wl(s"""ss << "$name=[";""")
             w.w(s"for (size_t i = 0; i < $name.size(); ++i)").braced {
               w.wl("""if (i > 0) { ss << ", "; }""")
-              val itemExpr = if (isInnerEnum) s"to_string($name[i])" else if (isInnerRecord) s"$name[i].toDebugString()" else if (isInnerPtr) s"$name[i]->toDebugString()" else s"$name[i]"
+              val itemExpr = if (isInnerEnum) s"to_string($name[i])" else if (isInnerPtr) s"$name[i]->toDebugString()" else if (isInnerRecord) s"$name[i].toDebugString()" else s"$name[i]"
               w.wl(s"ss << $itemExpr;")
             }
             w.wl("""ss << "]";""")
