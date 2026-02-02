@@ -34,6 +34,10 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
   def writeHppFile(name: String, origin: String, includes: Iterable[String], fwds: Iterable[String], f: IndentWriter => Unit, f2: IndentWriter => Unit = (w => {})) =
     writeHppFileGeneric(spec.cppHeaderOutFolder.get, spec.cppNamespace, spec.cppFileIdentStyle)(name, origin, includes, fwds, f, f2)
 
+  def isPtrType(typeName: String): Boolean = {
+    typeName.endsWith("Ptr") || typeName == "VisualItem"
+  }
+
   class CppRefs(name: String) {
     var hpp = mutable.TreeSet[String]()
     var hppFwds = mutable.TreeSet[String]()
@@ -344,7 +348,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
               case e: MExtern => e.name
               case _ => typeName
             }
-            val isPtr = baseTypeName.endsWith("Ptr")
+            val isPtr = isPtrType(baseTypeName)
             val isListOfPtr = baseTypeName == "EndOfRideCardList"
             val isSmartString = baseTypeName == "SmartString"
             val innerType = if ((isOptional || isList) && f.ty.resolved.args.nonEmpty) f.ty.resolved.args.head.base else f.ty.resolved.base
@@ -353,7 +357,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
               case e: MExtern => e.name
               case _ => typeName
             }
-            val isInnerPtr = innerTypeName.endsWith("Ptr")
+            val isInnerPtr = isPtrType(innerTypeName)
             val isInnerSmartString = innerTypeName == "SmartString"
             val isInnerEnum = innerType match {
               case df: MDef => df.defType == DEnum
