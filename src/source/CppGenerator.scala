@@ -96,7 +96,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
       } else {
         w.wl
         // Define a toString function
-        w.w("constexpr const char* "+ idCpp.method("to_string") + "(" + self + " e) noexcept").braced {
+        w.w("constexpr const char* "+ idCpp.method("toDebugString") + "(" + self + " e) noexcept").braced {
           w.w("constexpr const char* names[] =").bracedSemi {
             for(o <- e.options) {
               w.wl(s""""${o.ident.name}",""")
@@ -200,7 +200,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     r.fields.foreach(f => refs.find(f.ty, false))
     r.consts.foreach(c => refs.find(c.ty, false))
     refs.hpp.add("#include <utility>") // Add for std::move
-    refs.hpp.add("#include <sstream>") // Add for to_string
+    refs.hpp.add("#include <sstream>") // Add for toDebugString
 
     val self = marshal.typename(ident, r)
     val isRecordInherited = isInherited(idl, ident.name)
@@ -250,7 +250,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         w.wl(s"friend bool operator==(const $actualSelf& lhs, const $actualSelf& rhs);")
         w.wl(s"friend bool operator!=(const $actualSelf& lhs, const $actualSelf& rhs);")
         w.wl
-        w.wl(s"std::string to_string() const;")
+        w.wl(s"std::string toDebugString() const;")
         
         if (r.derivingTypes.contains(DerivingType.Ord)) {
           w.wl
@@ -327,7 +327,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
       }
 
       w.wl
-      w.w(s"std::string $actualSelf::to_string() const").braced {
+      w.w(s"std::string $actualSelf::toDebugString() const").braced {
         w.wl("std::ostringstream ss;")
         w.wl(s"""ss << "$actualSelf {";""")
         w.wl("bool firstField = true;")
@@ -341,9 +341,9 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
             case _ => false
           }
           val valueExpr = if (isOptional) {
-            if (isEnum) s"vm::to_string(*$name)" else s"$name->to_string()"
+            if (isEnum) s"vm::toDebugString(*$name)" else s"$name->toDebugString()"
           } else {
-            if (isEnum) s"vm::to_string($name)" else name
+            if (isEnum) s"vm::toDebugString($name)" else name
           }
           w.wl
           if (isOptional) {
