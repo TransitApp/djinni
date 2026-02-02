@@ -35,7 +35,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     writeHppFileGeneric(spec.cppHeaderOutFolder.get, spec.cppNamespace, spec.cppFileIdentStyle)(name, origin, includes, fwds, f, f2)
 
   def isPtrType(typeName: String): Boolean = {
-    typeName.endsWith("Ptr") || typeName == "VisualItem"
+    typeName.endsWith("Ptr") || typeName == "VisualItem" || typeName == "MapViewModel"
   }
 
   class CppRefs(name: String) {
