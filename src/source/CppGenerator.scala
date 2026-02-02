@@ -95,8 +95,8 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         }
       } else {
         w.wl
-        // Define a toString function
-        w.w("constexpr const char* "+ idCpp.method("toDebugString") + "(" + self + " e) noexcept").braced {
+        // Define a to_string function
+        w.w("constexpr const char* "+ idCpp.method("to_string") + "(" + self + " e) noexcept").braced {
           w.w("constexpr const char* names[] =").bracedSemi {
             for(o <- e.options) {
               w.wl(s""""${o.ident.name}",""")
@@ -350,7 +350,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
           w.wl("""if (!firstField) { ss << ", "; }""")
           if (isOptional) {
             w.w(s"if ($name)").braced {
-              val valueExpr = if (isInnerEnum) s"vm::toDebugString(*$name)" else if (isInnerRecord) s"$name->toDebugString()" else s"*$name"
+              val valueExpr = if (isInnerEnum) s"to_string(*$name)" else if (isInnerRecord) s"$name->toDebugString()" else s"*$name"
               w.wl(s"""ss << "$name=" << $valueExpr;""")
             }
             w.w("else").braced {
@@ -360,12 +360,12 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
             w.wl(s"""ss << "$name=[";""")
             w.w(s"for (size_t i = 0; i < $name.size(); ++i)").braced {
               w.wl("""if (i > 0) { ss << ", "; }""")
-              val itemExpr = if (isInnerEnum) s"vm::toDebugString($name[i])" else if (isInnerRecord) s"$name[i].toDebugString()" else s"$name[i]"
+              val itemExpr = if (isInnerEnum) s"to_string($name[i])" else if (isInnerRecord) s"$name[i].toDebugString()" else s"$name[i]"
               w.wl(s"ss << $itemExpr;")
             }
             w.wl("""ss << "]";""")
           } else if (isInnerEnum) {
-            w.wl(s"""ss << "$name=" << vm::toDebugString($name);""")
+            w.wl(s"""ss << "$name=" << to_string($name);""")
           } else if (isInnerRecord) {
             w.wl(s"""ss << "$name=" << $name.toDebugString();""")
           } else {
