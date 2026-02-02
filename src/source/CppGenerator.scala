@@ -341,7 +341,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
             case _ => false
           }
           val valueExpr = if (isOptional) {
-            if (isEnum) s"vm::to_string(*$name)" else s"*$name"
+            if (isEnum) s"vm::to_string(*$name)" else s"$name->to_string()"
           } else {
             if (isEnum) s"vm::to_string($name)" else name
           }
