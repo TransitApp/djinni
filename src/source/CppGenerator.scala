@@ -200,6 +200,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     r.fields.foreach(f => refs.find(f.ty, false))
     r.consts.foreach(c => refs.find(c.ty, false))
     refs.hpp.add("#include <utility>") // Add for std::move
+    refs.hpp.add("#include <sstream>") // Add for to_string
 
     val self = marshal.typename(ident, r)
     val isRecordInherited = isInherited(idl, ident.name)
@@ -248,6 +249,8 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         w.wl
         w.wl(s"friend bool operator==(const $actualSelf& lhs, const $actualSelf& rhs);")
         w.wl(s"friend bool operator!=(const $actualSelf& lhs, const $actualSelf& rhs);")
+        w.wl
+        w.wl(s"std::string to_string() const;")
         
         if (r.derivingTypes.contains(DerivingType.Ord)) {
           w.wl
@@ -322,7 +325,34 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
       w.w(s"bool operator!=(const $actualSelf& lhs, const $actualSelf& rhs)").braced {
         w.wl("return !(lhs == rhs);")
       }
-    
+
+      w.wl
+      w.w(s"std::string $actualSelf::to_string() const").braced {
+        w.wl("std::ostringstream ss;")
+        w.w(s"""ss << "$actualSelf {";""")
+        var i: Int = 0
+        for (f <- fields) {
+          val name = idCpp.field(f.ident)
+          val isEnum = f.ty.resolved.base match {
+            case df: MDef => df.defType == DEnum
+            case e: MExtern => e.defType == DEnum
+            case _ => false
+          }
+          val valueExpr = if (isEnum) s"vm::to_string($name)" else name
+          if (i > 0) {
+            w.wl
+            w.w(s"""ss << ", $name=" << $valueExpr;""")
+          } else {
+            w.wl
+            w.w(s"""ss << "$name=" << $valueExpr;""")
+          }
+          i += 1
+        }
+        w.wl
+        w.wl("""ss << "}";""")
+        w.wl("return ss.str();")
+      }
+
       if (r.derivingTypes.contains(DerivingType.Ord)) {
         w.wl
         w.w(s"bool operator<(const $actualSelf& lhs, const $actualSelf& rhs)").braced {
