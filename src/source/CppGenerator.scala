@@ -42,6 +42,8 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     typeName == "EndOfRideCardList" || typeName == "ListItineraryItems" || typeName == "ListTripDetailsItems"
   }
 
+  val testRepresentationIndent = "   "
+
   class CppRefs(name: String) {
     var hpp = mutable.TreeSet[String]()
     var hppFwds = mutable.TreeSet[String]()
@@ -346,7 +348,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         w.w(s"std::string $actualSelf::getTestRepresentation(const std::string& textIndentation) const").braced {
           w.w("if constexpr (BuildConstants::UnitTests)").braced {
             w.wl("std::ostringstream ss;")
-            w.wl("""auto childIndentation = textIndentation + "  ";""")
+            w.wl("""auto childIndentation = textIndentation + "   ";""")
             w.wl(s"""ss << "$actualSelf {";""")
             if (isInlineRepresentation) {
               w.wl("bool firstField = true;")
@@ -367,7 +369,19 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
               case None =>
             }
 
-            for (f <- r.fields) {
+            // Helper function to check if a field is a list type
+            def isListField(f: Field): Boolean = {
+              val isList = f.ty.resolved.base == MList
+              val baseTypeName = f.ty.resolved.base match {
+                case df: MDef => df.name
+                case e: MExtern => e.name
+                case _ => marshal.fieldType(f.ty)
+              }
+              isList || isListOfPtrType(baseTypeName)
+            }
+
+            // Helper function to output a single field
+            def outputField(f: Field): Unit = {
               val name = idCpp.field(f.ident)
               val typeName = marshal.fieldType(f.ty)
               val isOptional = f.ty.resolved.base == MOptional
@@ -417,9 +431,9 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
                 w.w(s"for (size_t i = 0; i < $name.size(); ++i)").braced {
                   w.wl("""if (i > 0) { ss << ","; }""")
                   if (!isInlineRepresentation) {
-                    w.wl("""ss << "\n" << childIndentation << "  ";""")
+                    w.wl("""ss << "\n" << childIndentation << "   ";""")
                   }
-                  val itemExpr = if (isInnerEnum) s"to_string($name[i])" else if (isInnerSmartString) s"$name[i].value" else if (isInnerPtr) s"""$name[i]->getTestRepresentation(childIndentation + "  ")""" else if (isInnerRecord) s"""$name[i].getTestRepresentation(childIndentation + "  ")""" else s"$name[i]"
+                  val itemExpr = if (isInnerEnum) s"to_string($name[i])" else if (isInnerSmartString) s"$name[i].value" else if (isInnerPtr) s"""$name[i]->getTestRepresentation(childIndentation + "   ")""" else if (isInnerRecord) s"""$name[i].getTestRepresentation(childIndentation + "   ")""" else s"$name[i]"
                   w.wl(s"ss << $itemExpr;")
                 }
                 if (!isInlineRepresentation) {
@@ -439,9 +453,9 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
                 w.w(s"for (size_t i = 0; i < $name.size(); ++i)").braced {
                   w.wl("""if (i > 0) { ss << ","; }""")
                   if (!isInlineRepresentation) {
-                    w.wl("""ss << "\n" << childIndentation << "  ";""")
+                    w.wl("""ss << "\n" << childIndentation << "   ";""")
                   }
-                  w.wl(s"""ss << $name[i]->getTestRepresentation(childIndentation + "  ");""")
+                  w.wl(s"""ss << $name[i]->getTestRepresentation(childIndentation + "   ");""")
                 }
                 if (!isInlineRepresentation) {
                   w.w(s"if (!$name.empty())").braced {
@@ -458,6 +472,15 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
                 w.wl("firstField = false;")
               }
             }
+
+            // Output non-list fields first, then list fields (with empty line separator)
+            val (listFields, nonListFields) = r.fields.partition(isListField)
+            for (f <- nonListFields) { outputField(f) }
+            if (!isInlineRepresentation && listFields.nonEmpty && nonListFields.nonEmpty) {
+              w.wl
+              w.wl("""ss << "\n";""")
+            }
+            for (f <- listFields) { outputField(f) }
             w.wl
             if (isInlineRepresentation) {
               w.wl("""ss << "}";""")
