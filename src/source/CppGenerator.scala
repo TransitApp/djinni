@@ -339,10 +339,10 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
 
       if (fields.nonEmpty) {
         w.wl
-        w.w(s"std::string $actualSelf::getTestRepresentation(const std::string& indentation) const").braced {
+        w.w(s"std::string $actualSelf::getTestRepresentation(const std::string& textIndentation) const").braced {
           w.w("if constexpr (BuildConstants::UnitTests)").braced {
             w.wl("std::ostringstream ss;")
-            w.wl("""auto childIndentation = indentation + "  ";""")
+            w.wl("""auto childIndentation = textIndentation + "  ";""")
             w.wl(s"""ss << "$actualSelf {";""")
             w.wl("bool firstField = true;")
             for (f <- fields) {
@@ -424,7 +424,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
               w.wl("firstField = false;")
             }
             w.wl
-            w.wl("""ss << "\n" << indentation << "}";""")
+            w.wl("""ss << "\n" << textIndentation << "}";""")
             w.wl("return ss.str();")
           }
           w.wl("""return "";""")
