@@ -208,7 +208,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     r.fields.foreach(f => refs.find(f.ty, false))
     r.consts.foreach(c => refs.find(c.ty, false))
     refs.hpp.add("#include <utility>") // Add for std::move
-    refs.hpp.add("#include <sstream>") // Add for toDebugString
+    refs.hpp.add("#include <sstream>") // Add for getTestRepresentation
 
     val self = marshal.typename(ident, r)
     val isRecordInherited = isInherited(idl, ident.name)
@@ -259,7 +259,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         w.wl(s"friend bool operator!=(const $actualSelf& lhs, const $actualSelf& rhs);")
         if ((superFields ++ r.fields).nonEmpty) {
           w.wl
-          w.wl(s"std::string toDebugString(const std::string& indentation) const;")
+          w.wl(s"std::string getTestRepresentation(const std::string& indentation) const;")
         }
 
         if (r.derivingTypes.contains(DerivingType.Ord)) {
@@ -338,7 +338,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
 
       if (fields.nonEmpty) {
         w.wl
-        w.w(s"std::string $actualSelf::toDebugString(const std::string& indentation) const").braced {
+        w.w(s"std::string $actualSelf::getTestRepresentation(const std::string& indentation) const").braced {
           w.wl("std::ostringstream ss;")
           w.wl("""std::string childIndentation = indentation + "  ";""")
           w.wl(s"""ss << "$actualSelf {";""")
@@ -379,7 +379,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
             w.wl("""ss << "\n" << childIndentation;""")
             if (isOptional) {
               w.w(s"if ($name)").braced {
-                val valueExpr = if (isInnerEnum) s"to_string(*$name)" else if (isInnerSmartString) s"$name->value" else if (isInnerPtr) s"(*$name)->toDebugString(childIndentation)" else if (isInnerRecord) s"$name->toDebugString(childIndentation)" else s"*$name"
+                val valueExpr = if (isInnerEnum) s"to_string(*$name)" else if (isInnerSmartString) s"$name->value" else if (isInnerPtr) s"(*$name)->getTestRepresentation(childIndentation)" else if (isInnerRecord) s"$name->getTestRepresentation(childIndentation)" else s"*$name"
                 w.wl(s"""ss << "$name=" << $valueExpr;""")
               }
               w.w("else").braced {
@@ -390,7 +390,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
               w.w(s"for (size_t i = 0; i < $name.size(); ++i)").braced {
                 w.wl("""if (i > 0) { ss << ","; }""")
                 w.wl("""ss << "\n" << childIndentation << "  ";""")
-                val itemExpr = if (isInnerEnum) s"to_string($name[i])" else if (isInnerSmartString) s"$name[i].value" else if (isInnerPtr) s"""$name[i]->toDebugString(childIndentation + "  ")""" else if (isInnerRecord) s"""$name[i].toDebugString(childIndentation + "  ")""" else s"$name[i]"
+                val itemExpr = if (isInnerEnum) s"to_string($name[i])" else if (isInnerSmartString) s"$name[i].value" else if (isInnerPtr) s"""$name[i]->getTestRepresentation(childIndentation + "  ")""" else if (isInnerRecord) s"""$name[i].getTestRepresentation(childIndentation + "  ")""" else s"$name[i]"
                 w.wl(s"ss << $itemExpr;")
               }
               w.w(s"if (!$name.empty())").braced {
@@ -402,20 +402,20 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
             } else if (isSmartString) {
               w.wl(s"""ss << "$name=" << $name.value;""")
             } else if (isPtr) {
-              w.wl(s"""ss << "$name=" << $name->toDebugString(childIndentation);""")
+              w.wl(s"""ss << "$name=" << $name->getTestRepresentation(childIndentation);""")
             } else if (isListOfPtr) {
               w.wl(s"""ss << "$name=[";""")
               w.w(s"for (size_t i = 0; i < $name.size(); ++i)").braced {
                 w.wl("""if (i > 0) { ss << ","; }""")
                 w.wl("""ss << "\n" << childIndentation << "  ";""")
-                w.wl(s"""ss << $name[i]->toDebugString(childIndentation + "  ");""")
+                w.wl(s"""ss << $name[i]->getTestRepresentation(childIndentation + "  ");""")
               }
               w.w(s"if (!$name.empty())").braced {
                 w.wl("""ss << "\n" << childIndentation;""")
               }
               w.wl("""ss << "]";""")
             } else if (isInnerRecord) {
-              w.wl(s"""ss << "$name=" << $name.toDebugString(childIndentation);""")
+              w.wl(s"""ss << "$name=" << $name.getTestRepresentation(childIndentation);""")
             } else {
               w.wl(s"""ss << "$name=" << $name;""")
             }
