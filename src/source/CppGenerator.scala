@@ -259,7 +259,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         w.wl(s"friend bool operator!=(const $actualSelf& lhs, const $actualSelf& rhs);")
         if ((superFields ++ r.fields).nonEmpty) {
           w.wl
-          w.wl(s"std::string toDebugString() const;")
+          w.wl(s"std::string toDebugString(const std::string& indentation) const;")
         }
 
         if (r.derivingTypes.contains(DerivingType.Ord)) {
@@ -338,8 +338,9 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
 
       if (fields.nonEmpty) {
         w.wl
-        w.w(s"std::string $actualSelf::toDebugString() const").braced {
+        w.w(s"std::string $actualSelf::toDebugString(const std::string& indentation) const").braced {
           w.wl("std::ostringstream ss;")
+          w.wl("""std::string childIndentation = indentation + "  ";""")
           w.wl(s"""ss << "$actualSelf {";""")
           w.wl("bool firstField = true;")
           for (f <- fields) {
@@ -374,10 +375,11 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
               case _ => false
             }
             w.wl
-            w.wl("""if (!firstField) { ss << ", "; }""")
+            w.wl("""if (!firstField) { ss << ","; }""")
+            w.wl("""ss << "\n" << childIndentation;""")
             if (isOptional) {
               w.w(s"if ($name)").braced {
-                val valueExpr = if (isInnerEnum) s"to_string(*$name)" else if (isInnerSmartString) s"$name->value" else if (isInnerPtr) s"(*$name)->toDebugString()" else if (isInnerRecord) s"$name->toDebugString()" else s"*$name"
+                val valueExpr = if (isInnerEnum) s"to_string(*$name)" else if (isInnerSmartString) s"$name->value" else if (isInnerPtr) s"(*$name)->toDebugString(childIndentation)" else if (isInnerRecord) s"$name->toDebugString(childIndentation)" else s"*$name"
                 w.wl(s"""ss << "$name=" << $valueExpr;""")
               }
               w.w("else").braced {
@@ -386,9 +388,13 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
             } else if (isList) {
               w.wl(s"""ss << "$name=[";""")
               w.w(s"for (size_t i = 0; i < $name.size(); ++i)").braced {
-                w.wl("""if (i > 0) { ss << ", "; }""")
-                val itemExpr = if (isInnerEnum) s"to_string($name[i])" else if (isInnerSmartString) s"$name[i].value" else if (isInnerPtr) s"$name[i]->toDebugString()" else if (isInnerRecord) s"$name[i].toDebugString()" else s"$name[i]"
+                w.wl("""if (i > 0) { ss << ","; }""")
+                w.wl("""ss << "\n" << childIndentation << "  ";""")
+                val itemExpr = if (isInnerEnum) s"to_string($name[i])" else if (isInnerSmartString) s"$name[i].value" else if (isInnerPtr) s"""$name[i]->toDebugString(childIndentation + "  ")""" else if (isInnerRecord) s"""$name[i].toDebugString(childIndentation + "  ")""" else s"$name[i]"
                 w.wl(s"ss << $itemExpr;")
+              }
+              w.w(s"if (!$name.empty())").braced {
+                w.wl("""ss << "\n" << childIndentation;""")
               }
               w.wl("""ss << "]";""")
             } else if (isInnerEnum) {
@@ -396,23 +402,27 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
             } else if (isSmartString) {
               w.wl(s"""ss << "$name=" << $name.value;""")
             } else if (isPtr) {
-              w.wl(s"""ss << "$name=" << $name->toDebugString();""")
+              w.wl(s"""ss << "$name=" << $name->toDebugString(childIndentation);""")
             } else if (isListOfPtr) {
               w.wl(s"""ss << "$name=[";""")
               w.w(s"for (size_t i = 0; i < $name.size(); ++i)").braced {
-                w.wl("""if (i > 0) { ss << ", "; }""")
-                w.wl(s"ss << $name[i]->toDebugString();")
+                w.wl("""if (i > 0) { ss << ","; }""")
+                w.wl("""ss << "\n" << childIndentation << "  ";""")
+                w.wl(s"""ss << $name[i]->toDebugString(childIndentation + "  ");""")
+              }
+              w.w(s"if (!$name.empty())").braced {
+                w.wl("""ss << "\n" << childIndentation;""")
               }
               w.wl("""ss << "]";""")
             } else if (isInnerRecord) {
-              w.wl(s"""ss << "$name=" << $name.toDebugString();""")
+              w.wl(s"""ss << "$name=" << $name.toDebugString(childIndentation);""")
             } else {
               w.wl(s"""ss << "$name=" << $name;""")
             }
             w.wl("firstField = false;")
           }
           w.wl
-          w.wl("""ss << "}";""")
+          w.wl("""ss << "\n" << indentation << "}";""")
           w.wl("return ss.str();")
         }
       }
