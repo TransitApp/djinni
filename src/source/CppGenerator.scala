@@ -260,7 +260,9 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         w.wl(s"friend bool operator!=(const $actualSelf& lhs, const $actualSelf& rhs);")
         if ((superFields ++ r.fields).nonEmpty) {
           w.wl
-          w.wl(s"std::string getTestRepresentation(const std::string& indentation) const;")
+          val virtualPrefix = if (isRecordInherited && superRecord.isEmpty) "virtual " else ""
+          val overrideSuffix = if (superRecord.nonEmpty) " override" else ""
+          w.wl(s"${virtualPrefix}std::string getTestRepresentation(const std::string& indentation) const$overrideSuffix;")
         }
 
         if (r.derivingTypes.contains(DerivingType.Ord)) {
