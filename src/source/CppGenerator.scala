@@ -346,12 +346,26 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         w.w(s"std::string $actualSelf::getTestRepresentation(const std::string& textIndentation) const").braced {
           w.w("if constexpr (BuildConstants::UnitTests)").braced {
             w.wl("std::ostringstream ss;")
-            if (!isInlineRepresentation) {
-              w.wl("""auto childIndentation = textIndentation + "  ";""")
-            }
+            w.wl("""auto childIndentation = textIndentation + "  ";""")
             w.wl(s"""ss << "$actualSelf {";""")
             w.wl("bool firstField = true;")
-            for (f <- fields) {
+
+            // Call parent's getTestRepresentation if this record extends another
+            superRecord match {
+              case Some(sr) =>
+                val parentName = marshal.typename(sr.ident, sr.record)
+                w.wl
+                if (isInlineRepresentation) {
+                  w.wl(s"""ss << $parentName::getTestRepresentation(textIndentation);""")
+                } else {
+                  w.wl("""ss << "\n" << childIndentation;""")
+                  w.wl(s"""ss << $parentName::getTestRepresentation(childIndentation);""")
+                }
+                w.wl("firstField = false;")
+              case None =>
+            }
+
+            for (f <- r.fields) {
               val name = idCpp.field(f.ident)
               val typeName = marshal.fieldType(f.ty)
               val isOptional = f.ty.resolved.base == MOptional
