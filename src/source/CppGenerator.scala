@@ -339,12 +339,16 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         w.wl("return !(lhs == rhs);")
       }
 
+      val isInlineRepresentation = doc.lines.exists(_.contains("@test-representation-inline"))
+
       if (fields.nonEmpty) {
         w.wl
         w.w(s"std::string $actualSelf::getTestRepresentation(const std::string& textIndentation) const").braced {
           w.w("if constexpr (BuildConstants::UnitTests)").braced {
             w.wl("std::ostringstream ss;")
-            w.wl("""auto childIndentation = textIndentation + "  ";""")
+            if (!isInlineRepresentation) {
+              w.wl("""auto childIndentation = textIndentation + "  ";""")
+            }
             w.wl(s"""ss << "$actualSelf {";""")
             w.wl("bool firstField = true;")
             for (f <- fields) {
@@ -379,8 +383,12 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
                 case _ => false
               }
               w.wl
-              w.wl("""if (!firstField) { ss << ","; }""")
-              w.wl("""ss << "\n" << childIndentation;""")
+              if (isInlineRepresentation) {
+                w.wl("""if (!firstField) { ss << ", "; }""")
+              } else {
+                w.wl("""if (!firstField) { ss << ","; }""")
+                w.wl("""ss << "\n" << childIndentation;""")
+              }
               if (isOptional) {
                 w.w(s"if ($name)").braced {
                   val valueExpr = if (isInnerEnum) s"to_string(*$name)" else if (isInnerSmartString) s"$name->value" else if (isInnerPtr) s"(*$name)->getTestRepresentation(childIndentation)" else if (isInnerRecord) s"$name->getTestRepresentation(childIndentation)" else s"*$name"
@@ -393,12 +401,16 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
                 w.wl(s"""ss << "$name=[";""")
                 w.w(s"for (size_t i = 0; i < $name.size(); ++i)").braced {
                   w.wl("""if (i > 0) { ss << ","; }""")
-                  w.wl("""ss << "\n" << childIndentation << "  ";""")
+                  if (!isInlineRepresentation) {
+                    w.wl("""ss << "\n" << childIndentation << "  ";""")
+                  }
                   val itemExpr = if (isInnerEnum) s"to_string($name[i])" else if (isInnerSmartString) s"$name[i].value" else if (isInnerPtr) s"""$name[i]->getTestRepresentation(childIndentation + "  ")""" else if (isInnerRecord) s"""$name[i].getTestRepresentation(childIndentation + "  ")""" else s"$name[i]"
                   w.wl(s"ss << $itemExpr;")
                 }
-                w.w(s"if (!$name.empty())").braced {
-                  w.wl("""ss << "\n" << childIndentation;""")
+                if (!isInlineRepresentation) {
+                  w.w(s"if (!$name.empty())").braced {
+                    w.wl("""ss << "\n" << childIndentation;""")
+                  }
                 }
                 w.wl("""ss << "]";""")
               } else if (isInnerEnum) {
@@ -411,11 +423,15 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
                 w.wl(s"""ss << "$name=[";""")
                 w.w(s"for (size_t i = 0; i < $name.size(); ++i)").braced {
                   w.wl("""if (i > 0) { ss << ","; }""")
-                  w.wl("""ss << "\n" << childIndentation << "  ";""")
+                  if (!isInlineRepresentation) {
+                    w.wl("""ss << "\n" << childIndentation << "  ";""")
+                  }
                   w.wl(s"""ss << $name[i]->getTestRepresentation(childIndentation + "  ");""")
                 }
-                w.w(s"if (!$name.empty())").braced {
-                  w.wl("""ss << "\n" << childIndentation;""")
+                if (!isInlineRepresentation) {
+                  w.w(s"if (!$name.empty())").braced {
+                    w.wl("""ss << "\n" << childIndentation;""")
+                  }
                 }
                 w.wl("""ss << "]";""")
               } else if (isInnerRecord) {
@@ -426,7 +442,11 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
               w.wl("firstField = false;")
             }
             w.wl
-            w.wl("""ss << "\n" << textIndentation << "}";""")
+            if (isInlineRepresentation) {
+              w.wl("""ss << "}";""")
+            } else {
+              w.wl("""ss << "\n" << textIndentation << "}";""")
+            }
             w.wl("return ss.str();")
           }
           w.wl("""return "";""")
