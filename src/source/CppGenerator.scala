@@ -348,7 +348,9 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
             w.wl("std::ostringstream ss;")
             w.wl("""auto childIndentation = textIndentation + "  ";""")
             w.wl(s"""ss << "$actualSelf {";""")
-            w.wl("bool firstField = true;")
+            if (isInlineRepresentation) {
+              w.wl("bool firstField = true;")
+            }
 
             // Call parent's getTestRepresentation if this record extends another
             superRecord match {
@@ -357,11 +359,11 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
                 w.wl
                 if (isInlineRepresentation) {
                   w.wl(s"""ss << $parentName::getTestRepresentation(textIndentation);""")
+                  w.wl("firstField = false;")
                 } else {
                   w.wl("""ss << "\n" << childIndentation;""")
                   w.wl(s"""ss << $parentName::getTestRepresentation(childIndentation);""")
                 }
-                w.wl("firstField = false;")
               case None =>
             }
 
@@ -400,7 +402,6 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
               if (isInlineRepresentation) {
                 w.wl("""if (!firstField) { ss << ", "; }""")
               } else {
-                w.wl("""if (!firstField) { ss << ","; }""")
                 w.wl("""ss << "\n" << childIndentation;""")
               }
               if (isOptional) {
@@ -453,7 +454,9 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
               } else {
                 w.wl(s"""ss << "$name=" << $name;""")
               }
-              w.wl("firstField = false;")
+              if (isInlineRepresentation) {
+                w.wl("firstField = false;")
+              }
             }
             w.wl
             if (isInlineRepresentation) {
