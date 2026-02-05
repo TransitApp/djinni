@@ -46,6 +46,156 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
 
   val testRepresentationIndent = "   "
 
+  def writeCppGetTestRepresentation(w: IndentWriter, actualSelf: String, fields: Seq[Field], ownFields: Seq[Field], superRecord: Option[SuperRecord], doc: Doc): Unit = {
+    val isInlineRepresentation = doc.lines.exists(_.contains("@test-representation-inline"))
+
+    if (fields.nonEmpty) {
+      w.wl
+      w.w(s"std::string $actualSelf::getTestRepresentation(const std::string& textIndentation) const").braced {
+        w.w("if constexpr (BuildConstants::UnitTests)").braced {
+          w.wl("std::ostringstream ss;")
+          w.wl("""auto childIndentation = textIndentation + "   ";""")
+          w.wl(s"""ss << "$actualSelf {";""")
+
+          // Track if we've output anything (for inline separator)
+          var isFirstOutput = true
+
+          // Call parent's getTestRepresentation if this record extends another
+          superRecord match {
+            case Some(sr) =>
+              val parentName = marshal.typename(sr.ident, sr.record)
+              w.wl
+              if (isInlineRepresentation) {
+                w.wl(s"""ss << $parentName::getTestRepresentation(textIndentation);""")
+              } else {
+                w.wl("""ss << "\n" << childIndentation;""")
+                w.wl(s"""ss << $parentName::getTestRepresentation(childIndentation);""")
+              }
+              isFirstOutput = false
+            case None =>
+          }
+
+          // Helper function to check if a field is a list type
+          def isListField(f: Field): Boolean = {
+            f.ty.resolved.base == MList || isListOfPtrType(f.ty.resolved.base)
+          }
+
+          // Helper function to output a single field
+          def outputField(f: Field, isFirst: Boolean): Unit = {
+            val name = idCpp.field(f.ident)
+            val typeName = marshal.fieldType(f.ty)
+            val isOptional = f.ty.resolved.base == MOptional
+            val isList = f.ty.resolved.base == MList
+            val baseTypeName = f.ty.resolved.base match {
+              case df: MDef => df.name
+              case e: MExtern => e.name
+              case _ => typeName
+            }
+            val isPtr = isPtrType(f.ty.resolved.base)
+            val isListOfPtr = isListOfPtrType(f.ty.resolved.base)
+            val isSmartString = baseTypeName == "SmartString"
+            val innerType = if ((isOptional || isList) && f.ty.resolved.args.nonEmpty) f.ty.resolved.args.head.base else f.ty.resolved.base
+            val innerTypeName = innerType match {
+              case df: MDef => df.name
+              case e: MExtern => e.name
+              case _ => typeName
+            }
+            val isInnerPtr = isPtrType(innerType)
+            val isInnerSmartString = innerTypeName == "SmartString"
+            val isInnerEnum = innerType match {
+              case df: MDef => df.defType == DEnum
+              case e: MExtern => e.defType == DEnum
+              case _ => false
+            }
+            val isInnerRecord = innerType match {
+              case df: MDef => df.defType == DRecord
+              case e: MExtern => e.defType == DRecord
+              case _ => false
+            }
+            w.wl
+            val inlinePrefix = if (isInlineRepresentation && !isFirst) ", " else ""
+            if (!isInlineRepresentation) {
+              w.wl("""ss << "\n" << childIndentation;""")
+            }
+            if (isOptional) {
+              w.w(s"if ($name)").braced {
+                val valueExpr = if (isInnerEnum) s"to_string(*$name)" else if (isInnerSmartString) s"$name->value" else if (isInnerPtr) s"(*$name)->getTestRepresentation(childIndentation)" else if (isInnerRecord) s"$name->getTestRepresentation(childIndentation)" else s"*$name"
+                w.wl(s"""ss << "$inlinePrefix$name=" << $valueExpr;""")
+              }
+              w.w("else").braced {
+                w.wl(s"""ss << "$inlinePrefix$name=<none>";""")
+              }
+            } else if (isList) {
+              w.wl(s"""ss << "$inlinePrefix$name=[";""")
+              w.w(s"for (size_t i = 0; i < $name.size(); ++i)").braced {
+                w.wl("""if (i > 0) { ss << ","; }""")
+                if (!isInlineRepresentation) {
+                  w.wl("""ss << "\n" << childIndentation << "   ";""")
+                }
+                val itemExpr = if (isInnerEnum) s"to_string($name[i])" else if (isInnerSmartString) s"$name[i].value" else if (isInnerPtr) s"""$name[i]->getTestRepresentation(childIndentation + "   ")""" else if (isInnerRecord) s"""$name[i].getTestRepresentation(childIndentation + "   ")""" else s"$name[i]"
+                w.wl(s"ss << $itemExpr;")
+              }
+              if (!isInlineRepresentation) {
+                w.w(s"if (!$name.empty())").braced {
+                  w.wl("""ss << "\n" << childIndentation;""")
+                }
+              }
+              w.wl("""ss << "]";""")
+            } else if (isInnerEnum) {
+              w.wl(s"""ss << "$inlinePrefix$name=" << to_string($name);""")
+            } else if (isSmartString) {
+              w.wl(s"""ss << "$inlinePrefix$name=" << $name.value;""")
+            } else if (isPtr) {
+              w.wl(s"""ss << "$inlinePrefix$name=" << $name->getTestRepresentation(childIndentation);""")
+            } else if (isListOfPtr) {
+              w.wl(s"""ss << "$inlinePrefix$name=[";""")
+              w.w(s"for (size_t i = 0; i < $name.size(); ++i)").braced {
+                w.wl("""if (i > 0) { ss << ","; }""")
+                if (!isInlineRepresentation) {
+                  w.wl("""ss << "\n" << childIndentation << "   ";""")
+                }
+                w.wl(s"""ss << $name[i]->getTestRepresentation(childIndentation + "   ");""")
+              }
+              if (!isInlineRepresentation) {
+                w.w(s"if (!$name.empty())").braced {
+                  w.wl("""ss << "\n" << childIndentation;""")
+                }
+              }
+              w.wl("""ss << "]";""")
+            } else if (isInnerRecord) {
+              w.wl(s"""ss << "$inlinePrefix$name=" << $name.getTestRepresentation(childIndentation);""")
+            } else {
+              w.wl(s"""ss << "$inlinePrefix$name=" << $name;""")
+            }
+          }
+
+          // Output non-list fields first, then list fields (with empty line separator)
+          val (listFields, nonListFields) = ownFields.partition(isListField)
+          for (f <- nonListFields) {
+            outputField(f, isFirstOutput)
+            isFirstOutput = false
+          }
+          if (!isInlineRepresentation && listFields.nonEmpty && nonListFields.nonEmpty) {
+            w.wl
+            w.wl("""ss << "\n";""")
+          }
+          for (f <- listFields) {
+            outputField(f, isFirstOutput)
+            isFirstOutput = false
+          }
+          w.wl
+          if (isInlineRepresentation) {
+            w.wl("""ss << "}";""")
+          } else {
+            w.wl("""ss << "\n" << textIndentation << "}";""")
+          }
+          w.wl("return ss.str();")
+        }
+        w.wl("""return "";""")
+      }
+    }
+  }
+
   class CppRefs(name: String) {
     var hpp = mutable.TreeSet[String]()
     var hppFwds = mutable.TreeSet[String]()
@@ -343,153 +493,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         w.wl("return !(lhs == rhs);")
       }
 
-      val isInlineRepresentation = doc.lines.exists(_.contains("@test-representation-inline"))
-
-      if (fields.nonEmpty) {
-        w.wl
-        w.w(s"std::string $actualSelf::getTestRepresentation(const std::string& textIndentation) const").braced {
-          w.w("if constexpr (BuildConstants::UnitTests)").braced {
-            w.wl("std::ostringstream ss;")
-            w.wl("""auto childIndentation = textIndentation + "   ";""")
-            w.wl(s"""ss << "$actualSelf {";""")
-
-            // Track if we've output anything (for inline separator)
-            var isFirstOutput = true
-
-            // Call parent's getTestRepresentation if this record extends another
-            superRecord match {
-              case Some(sr) =>
-                val parentName = marshal.typename(sr.ident, sr.record)
-                w.wl
-                if (isInlineRepresentation) {
-                  w.wl(s"""ss << $parentName::getTestRepresentation(textIndentation);""")
-                } else {
-                  w.wl("""ss << "\n" << childIndentation;""")
-                  w.wl(s"""ss << $parentName::getTestRepresentation(childIndentation);""")
-                }
-                isFirstOutput = false
-              case None =>
-            }
-
-            // Helper function to check if a field is a list type
-            def isListField(f: Field): Boolean = {
-              f.ty.resolved.base == MList || isListOfPtrType(f.ty.resolved.base)
-            }
-
-            // Helper function to output a single field
-            def outputField(f: Field, isFirst: Boolean): Unit = {
-              val name = idCpp.field(f.ident)
-              val typeName = marshal.fieldType(f.ty)
-              val isOptional = f.ty.resolved.base == MOptional
-              val isList = f.ty.resolved.base == MList
-              val baseTypeName = f.ty.resolved.base match {
-                case df: MDef => df.name
-                case e: MExtern => e.name
-                case _ => typeName
-              }
-              val isPtr = isPtrType(f.ty.resolved.base)
-              val isListOfPtr = isListOfPtrType(f.ty.resolved.base)
-              val isSmartString = baseTypeName == "SmartString"
-              val innerType = if ((isOptional || isList) && f.ty.resolved.args.nonEmpty) f.ty.resolved.args.head.base else f.ty.resolved.base
-              val innerTypeName = innerType match {
-                case df: MDef => df.name
-                case e: MExtern => e.name
-                case _ => typeName
-              }
-              val isInnerPtr = isPtrType(innerType)
-              val isInnerSmartString = innerTypeName == "SmartString"
-              val isInnerEnum = innerType match {
-                case df: MDef => df.defType == DEnum
-                case e: MExtern => e.defType == DEnum
-                case _ => false
-              }
-              val isInnerRecord = innerType match {
-                case df: MDef => df.defType == DRecord
-                case e: MExtern => e.defType == DRecord
-                case _ => false
-              }
-              w.wl
-              val inlinePrefix = if (isInlineRepresentation && !isFirst) ", " else ""
-              if (!isInlineRepresentation) {
-                w.wl("""ss << "\n" << childIndentation;""")
-              }
-              if (isOptional) {
-                w.w(s"if ($name)").braced {
-                  val valueExpr = if (isInnerEnum) s"to_string(*$name)" else if (isInnerSmartString) s"$name->value" else if (isInnerPtr) s"(*$name)->getTestRepresentation(childIndentation)" else if (isInnerRecord) s"$name->getTestRepresentation(childIndentation)" else s"*$name"
-                  w.wl(s"""ss << "$inlinePrefix$name=" << $valueExpr;""")
-                }
-                w.w("else").braced {
-                  w.wl(s"""ss << "$inlinePrefix$name=<none>";""")
-                }
-              } else if (isList) {
-                w.wl(s"""ss << "$inlinePrefix$name=[";""")
-                w.w(s"for (size_t i = 0; i < $name.size(); ++i)").braced {
-                  w.wl("""if (i > 0) { ss << ","; }""")
-                  if (!isInlineRepresentation) {
-                    w.wl("""ss << "\n" << childIndentation << "   ";""")
-                  }
-                  val itemExpr = if (isInnerEnum) s"to_string($name[i])" else if (isInnerSmartString) s"$name[i].value" else if (isInnerPtr) s"""$name[i]->getTestRepresentation(childIndentation + "   ")""" else if (isInnerRecord) s"""$name[i].getTestRepresentation(childIndentation + "   ")""" else s"$name[i]"
-                  w.wl(s"ss << $itemExpr;")
-                }
-                if (!isInlineRepresentation) {
-                  w.w(s"if (!$name.empty())").braced {
-                    w.wl("""ss << "\n" << childIndentation;""")
-                  }
-                }
-                w.wl("""ss << "]";""")
-              } else if (isInnerEnum) {
-                w.wl(s"""ss << "$inlinePrefix$name=" << to_string($name);""")
-              } else if (isSmartString) {
-                w.wl(s"""ss << "$inlinePrefix$name=" << $name.value;""")
-              } else if (isPtr) {
-                w.wl(s"""ss << "$inlinePrefix$name=" << $name->getTestRepresentation(childIndentation);""")
-              } else if (isListOfPtr) {
-                w.wl(s"""ss << "$inlinePrefix$name=[";""")
-                w.w(s"for (size_t i = 0; i < $name.size(); ++i)").braced {
-                  w.wl("""if (i > 0) { ss << ","; }""")
-                  if (!isInlineRepresentation) {
-                    w.wl("""ss << "\n" << childIndentation << "   ";""")
-                  }
-                  w.wl(s"""ss << $name[i]->getTestRepresentation(childIndentation + "   ");""")
-                }
-                if (!isInlineRepresentation) {
-                  w.w(s"if (!$name.empty())").braced {
-                    w.wl("""ss << "\n" << childIndentation;""")
-                  }
-                }
-                w.wl("""ss << "]";""")
-              } else if (isInnerRecord) {
-                w.wl(s"""ss << "$inlinePrefix$name=" << $name.getTestRepresentation(childIndentation);""")
-              } else {
-                w.wl(s"""ss << "$inlinePrefix$name=" << $name;""")
-              }
-            }
-
-            // Output non-list fields first, then list fields (with empty line separator)
-            val (listFields, nonListFields) = r.fields.partition(isListField)
-            for (f <- nonListFields) {
-              outputField(f, isFirstOutput)
-              isFirstOutput = false
-            }
-            if (!isInlineRepresentation && listFields.nonEmpty && nonListFields.nonEmpty) {
-              w.wl
-              w.wl("""ss << "\n";""")
-            }
-            for (f <- listFields) {
-              outputField(f, isFirstOutput)
-              isFirstOutput = false
-            }
-            w.wl
-            if (isInlineRepresentation) {
-              w.wl("""ss << "}";""")
-            } else {
-              w.wl("""ss << "\n" << textIndentation << "}";""")
-            }
-            w.wl("return ss.str();")
-          }
-          w.wl("""return "";""")
-        }
-      }
+      writeCppGetTestRepresentation(w, actualSelf, fields, r.fields, superRecord, doc)
 
       if (r.derivingTypes.contains(DerivingType.Ord)) {
         w.wl
