@@ -34,12 +34,14 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
   def writeHppFile(name: String, origin: String, includes: Iterable[String], fwds: Iterable[String], f: IndentWriter => Unit, f2: IndentWriter => Unit = (w => {})) =
     writeHppFileGeneric(spec.cppHeaderOutFolder.get, spec.cppNamespace, spec.cppFileIdentStyle)(name, origin, includes, fwds, f, f2)
 
-  def isPtrType(typeName: String): Boolean = {
-    typeName.endsWith("Ptr") || typeName == "VisualItem" || typeName == "MapViewModel" || typeName == "PlacemarkViewModel" || typeName == "VehicleLocationPlacemarkViewModel"
+  def isPtrType(base: Meta): Boolean = base match {
+    case e: MExtern => e.cpp.typename.contains("shared_ptr") && !e.cpp.typename.contains("vector")
+    case _ => false
   }
 
-  def isListOfPtrType(typeName: String): Boolean = {
-    typeName == "EndOfRideCardList" || typeName == "ListItineraryItems" || typeName == "ListTripDetailsItems"
+  def isListOfPtrType(base: Meta): Boolean = base match {
+    case e: MExtern => e.cpp.typename.contains("shared_ptr") && e.cpp.typename.contains("vector")
+    case _ => false
   }
 
   val testRepresentationIndent = "   "
@@ -350,9 +352,9 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
             w.wl("std::ostringstream ss;")
             w.wl("""auto childIndentation = textIndentation + "   ";""")
             w.wl(s"""ss << "$actualSelf {";""")
-            if (isInlineRepresentation) {
-              w.wl("bool firstField = true;")
-            }
+
+            // Track if we've output anything (for inline separator)
+            var isFirstOutput = true
 
             // Call parent's getTestRepresentation if this record extends another
             superRecord match {
@@ -361,27 +363,21 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
                 w.wl
                 if (isInlineRepresentation) {
                   w.wl(s"""ss << $parentName::getTestRepresentation(textIndentation);""")
-                  w.wl("firstField = false;")
                 } else {
                   w.wl("""ss << "\n" << childIndentation;""")
                   w.wl(s"""ss << $parentName::getTestRepresentation(childIndentation);""")
                 }
+                isFirstOutput = false
               case None =>
             }
 
             // Helper function to check if a field is a list type
             def isListField(f: Field): Boolean = {
-              val isList = f.ty.resolved.base == MList
-              val baseTypeName = f.ty.resolved.base match {
-                case df: MDef => df.name
-                case e: MExtern => e.name
-                case _ => marshal.fieldType(f.ty)
-              }
-              isList || isListOfPtrType(baseTypeName)
+              f.ty.resolved.base == MList || isListOfPtrType(f.ty.resolved.base)
             }
 
             // Helper function to output a single field
-            def outputField(f: Field): Unit = {
+            def outputField(f: Field, isFirst: Boolean): Unit = {
               val name = idCpp.field(f.ident)
               val typeName = marshal.fieldType(f.ty)
               val isOptional = f.ty.resolved.base == MOptional
@@ -391,8 +387,8 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
                 case e: MExtern => e.name
                 case _ => typeName
               }
-              val isPtr = isPtrType(baseTypeName)
-              val isListOfPtr = isListOfPtrType(baseTypeName)
+              val isPtr = isPtrType(f.ty.resolved.base)
+              val isListOfPtr = isListOfPtrType(f.ty.resolved.base)
               val isSmartString = baseTypeName == "SmartString"
               val innerType = if ((isOptional || isList) && f.ty.resolved.args.nonEmpty) f.ty.resolved.args.head.base else f.ty.resolved.base
               val innerTypeName = innerType match {
@@ -400,7 +396,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
                 case e: MExtern => e.name
                 case _ => typeName
               }
-              val isInnerPtr = isPtrType(innerTypeName)
+              val isInnerPtr = isPtrType(innerType)
               val isInnerSmartString = innerTypeName == "SmartString"
               val isInnerEnum = innerType match {
                 case df: MDef => df.defType == DEnum
@@ -413,21 +409,20 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
                 case _ => false
               }
               w.wl
-              if (isInlineRepresentation) {
-                w.wl("""if (!firstField) { ss << ", "; }""")
-              } else {
+              val inlinePrefix = if (isInlineRepresentation && !isFirst) ", " else ""
+              if (!isInlineRepresentation) {
                 w.wl("""ss << "\n" << childIndentation;""")
               }
               if (isOptional) {
                 w.w(s"if ($name)").braced {
                   val valueExpr = if (isInnerEnum) s"to_string(*$name)" else if (isInnerSmartString) s"$name->value" else if (isInnerPtr) s"(*$name)->getTestRepresentation(childIndentation)" else if (isInnerRecord) s"$name->getTestRepresentation(childIndentation)" else s"*$name"
-                  w.wl(s"""ss << "$name=" << $valueExpr;""")
+                  w.wl(s"""ss << "$inlinePrefix$name=" << $valueExpr;""")
                 }
                 w.w("else").braced {
-                  w.wl(s"""ss << "$name=<none>";""")
+                  w.wl(s"""ss << "$inlinePrefix$name=<none>";""")
                 }
               } else if (isList) {
-                w.wl(s"""ss << "$name=[";""")
+                w.wl(s"""ss << "$inlinePrefix$name=[";""")
                 w.w(s"for (size_t i = 0; i < $name.size(); ++i)").braced {
                   w.wl("""if (i > 0) { ss << ","; }""")
                   if (!isInlineRepresentation) {
@@ -443,13 +438,13 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
                 }
                 w.wl("""ss << "]";""")
               } else if (isInnerEnum) {
-                w.wl(s"""ss << "$name=" << to_string($name);""")
+                w.wl(s"""ss << "$inlinePrefix$name=" << to_string($name);""")
               } else if (isSmartString) {
-                w.wl(s"""ss << "$name=" << $name.value;""")
+                w.wl(s"""ss << "$inlinePrefix$name=" << $name.value;""")
               } else if (isPtr) {
-                w.wl(s"""ss << "$name=" << $name->getTestRepresentation(childIndentation);""")
+                w.wl(s"""ss << "$inlinePrefix$name=" << $name->getTestRepresentation(childIndentation);""")
               } else if (isListOfPtr) {
-                w.wl(s"""ss << "$name=[";""")
+                w.wl(s"""ss << "$inlinePrefix$name=[";""")
                 w.w(s"for (size_t i = 0; i < $name.size(); ++i)").braced {
                   w.wl("""if (i > 0) { ss << ","; }""")
                   if (!isInlineRepresentation) {
@@ -464,23 +459,26 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
                 }
                 w.wl("""ss << "]";""")
               } else if (isInnerRecord) {
-                w.wl(s"""ss << "$name=" << $name.getTestRepresentation(childIndentation);""")
+                w.wl(s"""ss << "$inlinePrefix$name=" << $name.getTestRepresentation(childIndentation);""")
               } else {
-                w.wl(s"""ss << "$name=" << $name;""")
-              }
-              if (isInlineRepresentation) {
-                w.wl("firstField = false;")
+                w.wl(s"""ss << "$inlinePrefix$name=" << $name;""")
               }
             }
 
             // Output non-list fields first, then list fields (with empty line separator)
             val (listFields, nonListFields) = r.fields.partition(isListField)
-            for (f <- nonListFields) { outputField(f) }
+            for (f <- nonListFields) {
+              outputField(f, isFirstOutput)
+              isFirstOutput = false
+            }
             if (!isInlineRepresentation && listFields.nonEmpty && nonListFields.nonEmpty) {
               w.wl
               w.wl("""ss << "\n";""")
             }
-            for (f <- listFields) { outputField(f) }
+            for (f <- listFields) {
+              outputField(f, isFirstOutput)
+              isFirstOutput = false
+            }
             w.wl
             if (isInlineRepresentation) {
               w.wl("""ss << "}";""")
