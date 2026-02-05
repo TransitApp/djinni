@@ -397,8 +397,9 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         w.wl
         w.wl
       }
-      writeDoc(w, doc)
-      
+      val filteredDoc = Doc(doc.lines.filterNot(_.contains("@test-representation-")))
+      writeDoc(w, filteredDoc)
+
       writeCppTypeParams(w, params)
       w.w("struct " + actualSelf + marshal.extendsRecord(idl, r) + cppFinal).bracedSemi {
         generateHppConstants(w, r.consts)
