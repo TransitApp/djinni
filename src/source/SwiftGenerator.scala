@@ -94,13 +94,10 @@ class SwiftGenerator(spec: Spec) extends Generator(spec) {
     writeSwiftFile(swiftName, origin, refs, w => {
       writeDoc(w, doc)
       val options = normalEnumOptions(e)
-      val rawType = if (options.nonEmpty) ": Int, Sendable, Codable" else ": Sendable"
-      w.w(s"public enum $swiftName$rawType").braced {
-        var shift = 0
+      w.w(s"public enum $swiftName: Sendable").braced {
         for (o <- options) {
           writeDoc(w, o.doc)
-          w.wl(s"case ${swiftEnumCase(o.ident.name)} = $shift")
-          shift += 1
+          w.wl(s"case ${swiftEnumCase(o.ident.name)}")
         }
       }
     })
@@ -123,10 +120,7 @@ class SwiftGenerator(spec: Spec) extends Generator(spec) {
     // Collect imports from all non-skipped fields
     fields.foreach(f => refs.find(f.ty))
 
-    // Check if all fields use types that support auto-synthesized conformances.
-    // Extern types may not conform to Equatable/Hashable/Codable.
-    val hasExternFields = fields.exists(f => marshal.hasExternType(f.ty.resolved))
-    val conformances = if (hasExternFields) "Sendable" else "Sendable, Equatable, Hashable, Codable"
+    val conformances = "Sendable"
 
     val swiftName = marshal.typename(ident, r)
 
