@@ -103,6 +103,8 @@ package object generatorTools {
                    jsIdentStyle: JsIdentStyle,
                    tsOutFolder: Option[File],
                    tsModule: String,
+                   swiftOutFolder: Option[File],
+                   swiftTypeIdentStyle: IdentConverter,
                    outFileListWriter: Option[Writer],
                    skipGeneration: Boolean,
                    yamlOutFolder: Option[File],
@@ -316,6 +318,12 @@ package object generatorTools {
           createFolder("TypeScript", spec.tsOutFolder.get)
         }
         new TsGenerator(spec).generate(idl)
+      }
+      if (spec.swiftOutFolder.isDefined) {
+        if (!spec.skipGeneration) {
+          createFolder("Swift", spec.swiftOutFolder.get)
+        }
+        new SwiftGenerator(spec).generate(idl)
       }
       if (spec.yamlOutFolder.isDefined) {
         if (!spec.skipGeneration) {

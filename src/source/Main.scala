@@ -100,6 +100,8 @@ object Main {
     var jsIdentStyle = IdentStyle.jsDefault
     var tsOutFolder: Option[File] = None
     var tsModule: String = "module"
+    var swiftOutFolder: Option[File] = None
+    var swiftTypeIdentStyle: IdentConverter = IdentStyle.camelUpper
     var inFileListPath: Option[File] = None
     var outFileListPath: Option[File] = None
     var skipGeneration: Boolean = false
@@ -259,6 +261,9 @@ object Main {
       opt[String]("ts-module").valueName("<name>").foreach(tsModule = _)
         .text("TypeScript declaration module name (default: \"module\").")
       note("")
+      opt[File]("swift-out").valueName("<out-folder>").foreach(x => swiftOutFolder = Some(x))
+        .text("The output folder for Swift files (Generator disabled if unspecified).")
+      note("")
       opt[File]("yaml-out").valueName("<out-folder>").foreach(x => yamlOutFolder = Some(x))
         .text("The output folder for YAML files (Generator disabled if unspecified).")
       opt[String]("yaml-out-file").valueName("<out-file>").foreach(x => yamlOutFile = Some(x))
@@ -295,6 +300,7 @@ object Main {
       identStyle("ident-objc-local",      c => { objcIdentStyle = objcIdentStyle.copy(local = c) })
       identStyle("ident-objc-const",      c => { objcIdentStyle = objcIdentStyle.copy(const = c) })
       identStyle("ident-objc-file",       c => { objcFileIdentStyleOptional = Some(c) })
+      identStyle("ident-swift-type",      c => { swiftTypeIdentStyle = c })
     }
 
     if (!argParser.parse(args)) {
@@ -444,6 +450,8 @@ object Main {
       jsIdentStyle,
       tsOutFolder,
       tsModule,
+      swiftOutFolder,
+      swiftTypeIdentStyle,
       outFileListWriter,
       skipGeneration,
       yamlOutFolder,

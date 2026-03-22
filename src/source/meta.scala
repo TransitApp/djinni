@@ -33,7 +33,7 @@ abstract sealed class Meta
 
 case class MParam(name: String) extends Meta { val numParams = 0 }
 case class MDef(name: String, override val numParams: Int, defType: DefType, body: TypeDef) extends Meta
-case class MExtern(name: String, override val numParams: Int, defType: DefType, body: TypeDef, cpp: MExtern.Cpp, objc: MExtern.Objc, objcpp: MExtern.Objcpp, java: MExtern.Java, jni: MExtern.Jni, wasm: MExtern.Wasm, ts: MExtern.Ts) extends Meta
+case class MExtern(name: String, override val numParams: Int, defType: DefType, body: TypeDef, cpp: MExtern.Cpp, objc: MExtern.Objc, objcpp: MExtern.Objcpp, java: MExtern.Java, jni: MExtern.Jni, wasm: MExtern.Wasm, ts: MExtern.Ts, swift: MExtern.Swift) extends Meta
 object MExtern {
   // These hold the information marshals need to interface with existing types correctly
   // All include paths are complete including quotation marks "a/b/c" or angle brackets <a/b/c>.
@@ -83,6 +83,11 @@ object MExtern {
     typename: String, // The TypeScript type
     module: String,   // The module to import for the type
     generic: Boolean
+  )
+  case class Swift(
+    typename: String, // The Swift type name (e.g. "UIColor", "String")
+    module: String,   // The module to import (e.g. "UIKit", "Foundation")
+    skip: Boolean     // If true, omit fields of this type from generated structs
   )
 }
 case class MProtobuf(name: String, override val numParams: Int, body: ProtobufMessage) extends Meta

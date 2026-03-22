@@ -73,6 +73,7 @@ class YamlGenerator(spec: Spec) extends Generator(spec) {
     w.wl("jni:").nested { write(w, jni(td)) }
     w.wl("wasm:").nested { write(w, wasm(td)) }
     w.wl("ts:").nested {write(w, ts(td)) }
+    w.wl("swift:").nested { write(w, swift(td)) }
   }
 
   private def write(w: IndentWriter, m: Map[String, Any]) {
@@ -194,6 +195,12 @@ class YamlGenerator(spec: Spec) extends Generator(spec) {
     //, "generic" -> false
   )
 
+  private def swift(td: TypeDecl) = Map[String, Any](
+    "typename" -> QuotedString(""),
+    "module" -> QuotedString(""),
+    "skip" -> false
+  )
+
   // TODO: there has to be a way to do all this without the MExpr/Meta conversions?
   private def mexpr(td: TypeDecl) = MExpr(meta(td), List())
 
@@ -278,7 +285,11 @@ object YamlGenerator {
     MExtern.Ts(
       getOptionalField(td, "ts", "typename"),
       getOptionalField(td, "ts", "module"),
-      getOptionalField(td, "ts", "generic", false))
+      getOptionalField(td, "ts", "generic", false)),
+    MExtern.Swift(
+      getOptionalField(td, "swift", "typename", ""),
+      getOptionalField(td, "swift", "module", ""),
+      getOptionalField(td, "swift", "skip", false))
   )
 
   private def nested(td: ExternTypeDecl, key: String) = {
