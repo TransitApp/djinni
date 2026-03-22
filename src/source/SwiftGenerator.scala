@@ -189,8 +189,10 @@ class SwiftGenerator(spec: Spec) extends Generator(spec) {
 
   // Convert a Djinni default value expression to Swift syntax
   private def convertDefaultValue(value: String, tm: MExpr): String = {
-    // Handle enum default values like "LetterCase::Default" → ".default"
-    if (value.contains("::")) {
+    if (value == "std::nullopt") {
+      "nil"
+    } else if (value.contains("::")) {
+      // Handle enum default values like "LetterCase::Default" → ".default"
       val parts = value.split("::")
       if (parts.length == 2) {
         "." + swiftEnumCase(parts(1).trim)

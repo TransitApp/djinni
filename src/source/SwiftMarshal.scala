@@ -71,7 +71,8 @@ class SwiftMarshal(spec: Spec) extends Marshal(spec) {
       case _ => false
     }
     tm.base match {
-      case MOptional => tm.args.headOption.exists(arg => checkBase(arg.base))
+      case MOptional | MList | MSet | MArray => tm.args.headOption.exists(arg => checkBase(arg.base))
+      case MMap => tm.args.exists(arg => checkBase(arg.base))
       case other => checkBase(other)
     }
   }
