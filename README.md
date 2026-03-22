@@ -28,6 +28,7 @@ Please run `bazel clean --expunge` at the root where the `WORKSPACE` file is loc
 ## Modifications
 
  - Added Kotlin support
+ - Added Swift code generation (pure Swift structs and enums)
  - Added inheritance support (only in C++, Objc, Kotlin, Java)
  - Cpp default values
 
@@ -37,6 +38,35 @@ Please run `bazel clean --expunge` at the root where the `WORKSPACE` file is loc
 
 In your script replace `--java-out` by `--kotlin-out`:
 
+### Swift support
+
+Generate pure Swift value types (structs for records, enums for enums) with no ObjC or C++ dependencies.
+
+```bash
+djinni --idl MyTypes.djinni \
+    --swift-out ./generated/swift \
+    --ident-swift-type SPFooBar
+```
+
+- `--swift-out <folder>` — Output folder for Swift files (disabled if unspecified)
+- `--ident-swift-type <style>` — Type naming style (e.g. `SPFooBar` produces `SPMyType`)
+
+**Generated output:**
+- Enums get `: Int, Sendable` conformance with sequential raw values
+- Records become `Sendable` structs with `public let` fields and a memberwise `public init`
+- Record inheritance (`extends`) is flattened into a single struct
+- Optional fields (`optional<T>`) become `T?` with `= nil` defaults in init
+- Interfaces are skipped (no Swift output)
+- Swift keywords in enum cases are automatically escaped with backticks
+
+**Extern types:** Add a `swift:` section to your `.yaml` extern files:
+
+```yaml
+swift:
+    typename: 'UIColor'   # Swift type to use
+    module: 'UIKit'        # Module to import
+    skip: true             # Omit fields of this type from generated structs
+```
 
 ### Inheritance
 
