@@ -5,6 +5,7 @@
 
 #include <chrono>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -16,6 +17,8 @@ struct MapDateRecord final {
 
     friend bool operator==(const MapDateRecord& lhs, const MapDateRecord& rhs);
     friend bool operator!=(const MapDateRecord& lhs, const MapDateRecord& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     //NOLINTNEXTLINE(google-explicit-constructor)
     MapDateRecord(std::unordered_map<std::string, std::chrono::system_clock::time_point> dates_by_id_)

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdint>
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -20,6 +21,8 @@ struct NoConstructorRecord final {
 
     friend bool operator==(const NoConstructorRecord& lhs, const NoConstructorRecord& rhs);
     friend bool operator!=(const NoConstructorRecord& lhs, const NoConstructorRecord& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 };
 
 } // namespace testsuite

@@ -39,6 +39,7 @@ kotlin_out="$base_dir/generated-src/kotlin/com/dropbox/djinni/test"
 wasm_out="$base_dir/generated-src/wasm"
 ts_out="$base_dir/generated-src/ts"
 yaml_out="$base_dir/generated-src/yaml"
+swift_out="$base_dir/generated-src/swift"
 
 java_package="com.dropbox.djinni.test"
 
@@ -53,7 +54,7 @@ elif [ $# -eq 1 ]; then
         echo "Unexpected arguemnt: \"$command\"." 1>&2
         exit 1
     fi
-    for dir in "$temp_out" "$cpp_out" "$jni_out" "$java_out", "$kotlin_out"; do
+    for dir in "$temp_out" "$cpp_out" "$jni_out" "$java_out", "$kotlin_out" "$swift_out"; do
         if [ -e "$dir" ]; then
             echo "Deleting \"$dir\"..."
             rm -r "$dir"
@@ -101,6 +102,9 @@ fi
     --ts-out "$temp_out_relative/ts" \
     --ts-module "test_wchar" \
     \
+    --swift-out "$temp_out_relative/swift" \
+    --ident-swift-type TSFooBar \
+    \
     --yaml-out "$temp_out_relative/yaml" \
     --yaml-out-file "yaml-test.yaml" \
     --yaml-prefix "test_" \
@@ -137,6 +141,9 @@ fi
     --wasm-namespace "testsuite" \
     --ts-out "$temp_out_relative/ts" \
     --ts-module "test" \
+    \
+    --swift-out "$temp_out_relative/swift" \
+    --ident-swift-type TSFooBar \
     \
     --list-in-files "./generated-src/inFileList.txt" \
     --list-out-files "./generated-src/outFileList.txt"\
@@ -278,6 +285,34 @@ fi
     --idl "$no_constructor_in_relative" \
 )
 
+# Run Swift-specific test with extern types
+swift_test_in_relative="djinni/swift_test.djinni"
+(cd "$base_dir" && \
+"$base_dir/../src/run-assume-built" \
+    --cpp-out "$temp_out_relative/cpp" \
+    --cpp-namespace testsuite \
+    \
+    --objc-out "$temp_out_relative/objc" \
+    --objcpp-out "$temp_out_relative/objc" \
+    --objc-type-prefix DB \
+    \
+    --java-out "$temp_out_relative/java" \
+    --java-package com.dropbox.djinni.test \
+    --ident-java-field mFooBar \
+    \
+    --kotlin-out "$temp_out_relative/kotlin" \
+    \
+    --jni-out "$temp_out_relative/jni" \
+    --ident-jni-class NativeFooBar \
+    --ident-jni-file NativeFooBar \
+    \
+    --swift-out "$temp_out_relative/swift" \
+    --ident-swift-type TSFooBar \
+    \
+    --idl "$swift_test_in_relative" \
+    --idl-include-path "djinni/vendor" \
+)
+
 # Make sure we can parse back our own generated YAML file
 cp "$base_dir/djinni/yaml-test.djinni" "$temp_out/yaml"
 (cd "$base_dir" && \
@@ -328,6 +363,7 @@ mirror "jni" "$temp_out/jni" "$jni_out"
 mirror "objc" "$temp_out/objc" "$objc_out"
 mirror "wasm" "$temp_out/wasm" "$wasm_out"
 mirror "ts" "$temp_out/ts" "$ts_out"
+mirror "swift" "$temp_out/swift" "$swift_out"
 
 date > "$gen_stamp"
 

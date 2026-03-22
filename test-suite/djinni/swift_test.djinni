@@ -1,0 +1,173 @@
+@extern "vendor/third-party/swift_extern.yaml"
+
+# ============================================================
+# Test: Enum generation
+# Verifies: Int raw type, Sendable, sequential values, case naming
+# ============================================================
+
+swift_test_color = enum {
+    Red;
+    Green;
+    Blue;
+}
+
+# Enum with multi-word cases (underscore-separated in Djinni)
+swift_test_shadow_elevation = enum {
+    None;
+    Low_Shadow;
+    Medium_Shadow;
+    High_Shadow;
+}
+
+# ============================================================
+# Test: All primitive types in a single record
+# Verifies: type mapping for every primitive
+# ============================================================
+
+swift_test_all_primitives = record {
+    my_bool: bool;
+    my_i8: i8;
+    my_i16: i16;
+    my_i32: i32;
+    my_i64: i64;
+    my_f32: f32;
+    my_f64: f64;
+    my_string: string;
+    my_binary: binary;
+    my_date: date;
+}
+
+# ============================================================
+# Test: Collection types
+# Verifies: list -> [T], set -> Set<T>, map -> [K: V]
+# ============================================================
+
+swift_test_collections = record {
+    string_list: list<string>;
+    int_set: set<i32>;
+    string_to_int_map: map<string, i64>;
+    nested_list: list<list<string>>;
+    enum_list: list<swift_test_color>;
+    enum_map: map<swift_test_color, string>;
+}
+
+# ============================================================
+# Test: Optional fields
+# Verifies: T? type, = nil default in init
+# ============================================================
+
+swift_test_optionals = record {
+    required_field: string;
+    optional_string: optional<string>;
+    optional_int: optional<i32>;
+    optional_enum: optional<swift_test_color>;
+    optional_record: optional<swift_test_all_primitives>;
+    optional_list: optional<list<string>>;
+}
+
+# ============================================================
+# Test: Record inheritance (extends) — must be flattened
+# Verifies: super fields appear first, all in one struct
+# ============================================================
+
+swift_test_base_label = record {
+    text_color: i32;
+    font_size: f32;
+}
+
+swift_test_label = record extends swift_test_base_label {
+    text: string;
+    is_bold: bool;
+}
+
+# ============================================================
+# Test: Enum default values in records
+# Verifies: default value conversion (EnumType::Value -> .value)
+# ============================================================
+
+swift_test_letter_case = enum {
+    Default;
+    Upper;
+    Lower;
+}
+
+swift_test_text_style = record {
+    color: i32;
+    letter_case: swift_test_letter_case;
+}
+
+# ============================================================
+# Test: Extern types with swift: sections
+# Verifies: custom typename, custom module, skip behavior
+# ============================================================
+
+# Uses swift_color_type (typename: UIColor, module: UIKit)
+# Uses swift_smart_string (typename: String)
+# Uses swift_image_type (typename: TSImage, module: TestFramework)
+# Uses swift_user_action (skip: true) — field should be omitted
+swift_test_extern_record = record {
+    background_color: swift_color_type;
+    label_text: swift_smart_string;
+    icon: swift_image_type;
+    action: swift_user_action;
+}
+
+# Extern type in optional field (skip should still apply)
+swift_test_extern_optional = record {
+    name: string;
+    opt_color: optional<swift_color_type>;
+    opt_action: optional<swift_user_action>;
+}
+
+# ============================================================
+# Test: Empty record (only constants, no fields)
+# Verifies: struct with no fields, no init
+# ============================================================
+
+swift_test_empty = record {
+    const some_const: i32 = 42;
+}
+
+# ============================================================
+# Test: Record with single field
+# Verifies: inline init (not multi-line)
+# ============================================================
+
+swift_test_single_field = record {
+    value: string;
+}
+
+# ============================================================
+# Test: Nested records
+# Verifies: correct type references between generated types
+# ============================================================
+
+swift_test_nested = record {
+    label: swift_test_label;
+    color: swift_test_color;
+    style: swift_test_text_style;
+}
+
+# ============================================================
+# Test: Interface (should be completely skipped)
+# Verifies: no Swift file generated for interfaces
+# ============================================================
+
+swift_test_interface = interface +c {
+    do_something(input: string): string;
+    get_color(): swift_test_color;
+}
+
+# ============================================================
+# Test: Record with doc comments
+# Verifies: doc comments are preserved in Swift output
+# ============================================================
+
+# A documented record for testing
+# This has multi-line documentation
+swift_test_documented = record {
+    # The main label text
+    text: string;
+    # Whether the label is visible
+    visible: bool;
+}

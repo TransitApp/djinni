@@ -27,9 +27,25 @@ class SwiftGenerator(spec: Spec) extends Generator(spec) {
 
   val marshal = new SwiftMarshal(spec)
 
-  // Lowercase the first character, preserve rest (for enum cases)
-  private val swiftEnumCase: IdentConverter = (s: String) =>
-    if (s.isEmpty) s else s.charAt(0).toLower + s.substring(1)
+  // Swift reserved keywords that need backtick escaping when used as identifiers
+  private val swiftKeywords = Set(
+    "associatedtype", "class", "deinit", "enum", "extension", "fileprivate",
+    "func", "import", "init", "inout", "internal", "let", "open", "operator",
+    "private", "protocol", "public", "rethrows", "static", "struct", "subscript",
+    "typealias", "var", "break", "case", "continue", "default", "defer", "do",
+    "else", "fallthrough", "for", "guard", "if", "in", "repeat", "return",
+    "switch", "where", "while", "as", "Any", "catch", "false", "is", "nil",
+    "super", "self", "Self", "throw", "throws", "true", "try", "none"
+  )
+
+  private def escapeSwiftKeyword(name: String): String =
+    if (swiftKeywords.contains(name)) s"`$name`" else name
+
+  // Lowercase the first character, preserve rest (for enum cases), escape keywords
+  private val swiftEnumCase: IdentConverter = (s: String) => {
+    val converted = if (s.isEmpty) s else s.charAt(0).toLower + s.substring(1)
+    escapeSwiftKeyword(converted)
+  }
 
   // camelLower for field names
   private val swiftField: IdentConverter = IdentStyle.camelLower
@@ -77,9 +93,11 @@ class SwiftGenerator(spec: Spec) extends Generator(spec) {
 
     writeSwiftFile(swiftName, origin, refs, w => {
       writeDoc(w, doc)
-      w.w(s"public enum $swiftName: Int, Sendable").braced {
+      val options = normalEnumOptions(e)
+      val rawType = if (options.nonEmpty) ": Int, Sendable" else ": Sendable"
+      w.w(s"public enum $swiftName$rawType").braced {
         var shift = 0
-        for (o <- normalEnumOptions(e)) {
+        for (o <- options) {
           writeDoc(w, o.doc)
           w.wl(s"case ${swiftEnumCase(o.ident.name)} = $shift")
           shift += 1

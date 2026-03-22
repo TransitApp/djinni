@@ -38,6 +38,8 @@ wasm:
 ts:
   typename: 'number'
   module: ''
+swift:
+  typename: 'TimeInterval'
 ---
 name: h
 typedef: 'record'
@@ -74,6 +76,8 @@ wasm:
 ts:
   typename: 'number'
   module: ''
+swift:
+  typename: 'TimeInterval'
 ---
 name: min
 typedef: 'record'
@@ -110,6 +114,8 @@ wasm:
 ts:
   typename: 'number'
   module: ''
+swift:
+  typename: 'TimeInterval'
 ---
 name: s
 typedef: 'record'
@@ -146,6 +152,8 @@ wasm:
 ts:
   typename: 'number'
   module: ''
+swift:
+  typename: 'TimeInterval'
 ---
 name: ms
 typedef: 'record'
@@ -182,6 +190,8 @@ wasm:
 ts:
   typename: 'number'
   module: ''
+swift:
+  typename: 'TimeInterval'
 ---
 name: us
 typedef: 'record'
@@ -218,6 +228,8 @@ wasm:
 ts:
   typename: 'number'
   module: ''
+swift:
+  typename: 'TimeInterval'
 ---
 name: ns
 typedef: 'record'
@@ -254,3 +266,5 @@ wasm:
 ts:
   typename: 'number'
   module: ''
+swift:
+  typename: 'TimeInterval'

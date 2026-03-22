@@ -67,6 +67,7 @@ class SwiftMarshal(spec: Spec) extends Marshal(spec) {
   def shouldSkipField(tm: MExpr): Boolean = {
     def checkBase(m: Meta): Boolean = m match {
       case e: MExtern => e.swift.skip
+      case _: MProtobuf => true // Protobuf types are not supported in Swift generation
       case _ => false
     }
     tm.base match {
@@ -114,6 +115,7 @@ class SwiftMarshal(spec: Spec) extends Marshal(spec) {
             case MVoid => "Void"
             case d: MDef => swiftTypeIdent(d.name)
             case p: MParam => p.name
+            case _: MProtobuf => throw new AssertionError("Protobuf types should be filtered before reaching Swift marshal")
             case _ => throw new AssertionError("Unexpected type in Swift marshal: " + o)
           }
           base

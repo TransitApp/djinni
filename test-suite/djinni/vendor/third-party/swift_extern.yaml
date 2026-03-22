@@ -1,0 +1,132 @@
+# Extern types for testing Swift code generation
+# Tests: custom typename, module import, and skip behavior
+
+---
+name: swift_color_type
+typedef: 'record'
+params: []
+prefix: ''
+cpp:
+  typename: 'TestColor'
+  header: '"TestColor.h"'
+  byValue: false
+objc:
+  typename: 'UIColor'
+  header: '<UIKit/UIKit.h>'
+  boxed: 'UIColor'
+  pointer: true
+  hash: '%s.hash'
+objcpp:
+  translator: '::djinni::TestColorTranslator'
+  header: '"TestColorTranslator.h"'
+java:
+  typename: 'android.graphics.Color'
+  boxed: 'android.graphics.Color'
+  reference: true
+  generic: false
+  hash: '%s.hashCode()'
+jni:
+  translator: '::djinni::TestColorJni'
+  header: '"TestColorJni.h"'
+  typename: jobject
+  typeSignature: 'Landroid/graphics/Color;'
+swift:
+  typename: 'UIColor'
+  module: 'UIKit'
+
+---
+name: swift_smart_string
+typedef: 'record'
+params: []
+prefix: ''
+cpp:
+  typename: 'SmartString'
+  header: '"SmartString.h"'
+  byValue: false
+objc:
+  typename: 'SmartString'
+  header: '"SmartString.h"'
+  boxed: 'SmartString'
+  pointer: true
+  hash: '%s.hash'
+objcpp:
+  translator: '::djinni::SmartStringTranslator'
+  header: '"SmartStringTranslator.h"'
+java:
+  typename: 'com.example.SmartString'
+  boxed: 'com.example.SmartString'
+  reference: true
+  generic: false
+  hash: '%s.hashCode()'
+jni:
+  translator: '::djinni::SmartStringJni'
+  header: '"SmartStringJni.h"'
+  typename: jobject
+  typeSignature: 'Lcom/example/SmartString;'
+swift:
+  typename: 'String'
+
+---
+name: swift_image_type
+typedef: 'record'
+params: []
+prefix: ''
+cpp:
+  typename: 'ImageViewModel'
+  header: '"ImageViewModel.h"'
+  byValue: false
+objc:
+  typename: 'ImageViewModel'
+  header: '"ImageViewModel.h"'
+  boxed: 'ImageViewModel'
+  pointer: true
+  hash: '%s.hash'
+objcpp:
+  translator: '::djinni::ImageViewModelTranslator'
+  header: '"ImageViewModelTranslator.h"'
+java:
+  typename: 'com.example.ImageViewModel'
+  boxed: 'com.example.ImageViewModel'
+  reference: true
+  generic: false
+  hash: '%s.hashCode()'
+jni:
+  translator: '::djinni::ImageViewModelJni'
+  header: '"ImageViewModelJni.h"'
+  typename: jobject
+  typeSignature: 'Lcom/example/ImageViewModel;'
+swift:
+  typename: 'TSImage'
+  module: 'TestFramework'
+
+---
+name: swift_user_action
+typedef: 'record'
+params: []
+prefix: ''
+cpp:
+  typename: 'UserAction'
+  header: '"UserAction.h"'
+  byValue: false
+objc:
+  typename: 'UserAction'
+  header: '"UserAction.h"'
+  boxed: 'UserAction'
+  pointer: true
+  hash: '%s.hash'
+objcpp:
+  translator: '::djinni::UserActionTranslator'
+  header: '"UserActionTranslator.h"'
+java:
+  typename: 'com.example.UserAction'
+  boxed: 'com.example.UserAction'
+  reference: true
+  generic: false
+  hash: '%s.hashCode()'
+jni:
+  translator: '::djinni::UserActionJni'
+  header: '"UserActionJni.h"'
+  typename: jobject
+  typeSignature: 'Lcom/example/UserAction;'
+swift:
+  skip: true

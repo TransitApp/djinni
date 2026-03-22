@@ -36,3 +36,5 @@ ts:
   typename: 'Outcome'
   module: '@djinni_support/Outcome'
   generic: true
+swift:
+  skip: true

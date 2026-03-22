@@ -38,3 +38,5 @@ wasm:
 ts:
   typename: 'Date'
   module: ''
+swift:
+  typename: 'Date'

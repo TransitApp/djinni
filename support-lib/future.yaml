@@ -36,3 +36,5 @@ ts:
   typename: 'Promise'
   module: ''
   generic: true
+swift:
+  skip: true

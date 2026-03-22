@@ -5,6 +5,7 @@
 
 #include <chrono>
 #include <cstdint>
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -22,6 +23,8 @@ struct RecordWithDerivings final {
 
     friend bool operator==(const RecordWithDerivings& lhs, const RecordWithDerivings& rhs);
     friend bool operator!=(const RecordWithDerivings& lhs, const RecordWithDerivings& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     friend bool operator<(const RecordWithDerivings& lhs, const RecordWithDerivings& rhs);
     friend bool operator>(const RecordWithDerivings& lhs, const RecordWithDerivings& rhs);
