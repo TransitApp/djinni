@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct TSRecordWithNestedDerivings: Sendable {
+public struct TSRecordWithNestedDerivings: Sendable, Equatable, Hashable, Codable {
     public let key: Int32
     public let rec: TSRecordWithDerivings
 

@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct TSVec2: Sendable {
+public struct TSVec2: Sendable, Equatable, Hashable, Codable {
     public let x: Int32
     public let y: Int32
 

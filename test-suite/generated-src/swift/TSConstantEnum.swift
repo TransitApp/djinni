@@ -4,7 +4,7 @@
 import Foundation
 
 /** enum for use in constants */
-public enum TSConstantEnum: Int, Sendable {
+public enum TSConstantEnum: Int, Sendable, Codable {
     case some_value = 0
     case some_other_value = 1
 }

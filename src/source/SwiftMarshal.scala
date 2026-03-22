@@ -76,6 +76,15 @@ class SwiftMarshal(spec: Spec) extends Marshal(spec) {
     }
   }
 
+  // Check if an MExpr contains any extern types (which may not conform to Equatable/Hashable/Codable)
+  def hasExternType(tm: MExpr): Boolean = {
+    tm.base match {
+      case _: MExtern => true
+      case MOptional | MList | MSet | MMap | MArray => tm.args.exists(hasExternType)
+      case _ => false
+    }
+  }
+
   private def toSwiftType(tm: MExpr): String = {
     def f(tm: MExpr): String = {
       tm.base match {

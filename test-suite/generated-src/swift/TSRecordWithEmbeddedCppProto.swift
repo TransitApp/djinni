@@ -3,5 +3,5 @@
 
 import Foundation
 
-public struct TSRecordWithEmbeddedCppProto: Sendable {
+public struct TSRecordWithEmbeddedCppProto: Sendable, Equatable, Hashable, Codable {
 }

@@ -3,5 +3,5 @@
 
 import Foundation
 
-public struct TSNestedOutcome: Sendable {
+public struct TSNestedOutcome: Sendable, Equatable, Hashable, Codable {
 }

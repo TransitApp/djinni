@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct TSSupportCopying: Sendable {
+public struct TSSupportCopying: Sendable, Equatable, Hashable, Codable {
     public let x: Int32
 
     public init(x: Int32) {

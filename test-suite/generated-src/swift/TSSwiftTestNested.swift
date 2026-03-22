@@ -9,7 +9,7 @@ import Foundation
  * Verifies: correct type references between generated types
  * ============================================================
  */
-public struct TSSwiftTestNested: Sendable {
+public struct TSSwiftTestNested: Sendable, Equatable, Hashable, Codable {
     public let label: TSSwiftTestLabel
     public let color: TSSwiftTestColor
     public let style: TSSwiftTestTextStyle

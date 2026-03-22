@@ -9,7 +9,7 @@ import Foundation
  * Verifies: T? type, = nil default in init
  * ============================================================
  */
-public struct TSSwiftTestOptionals: Sendable {
+public struct TSSwiftTestOptionals: Sendable, Equatable, Hashable, Codable {
     public let requiredField: String
     public let optionalString: String?
     public let optionalInt: Int32?

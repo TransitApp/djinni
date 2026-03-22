@@ -4,7 +4,7 @@
 import Foundation
 
 /** Record returned by a client */
-public struct TSClientReturnedRecord: Sendable {
+public struct TSClientReturnedRecord: Sendable, Equatable, Hashable, Codable {
     public let recordId: Int64
     public let content: String
     public let misc: String?

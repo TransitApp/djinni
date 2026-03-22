@@ -8,7 +8,7 @@ import Foundation
  * anticipate it to be used as a prefix/suffix.  Some name styles behave
  * badly when it is.  However this test case ensures we at least don't crash.
  */
-public struct TSVarnameRecord: Sendable {
+public struct TSVarnameRecord: Sendable, Equatable, Hashable, Codable {
     public let Field: Int8
 
     public init(Field: Int8) {

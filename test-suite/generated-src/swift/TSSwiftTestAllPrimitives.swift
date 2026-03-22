@@ -9,7 +9,7 @@ import UIKit
  * Verifies: type mapping for every primitive
  * ============================================================
  */
-public struct TSSwiftTestAllPrimitives: Sendable {
+public struct TSSwiftTestAllPrimitives: Sendable, Equatable, Hashable, Codable {
     public let myBool: Bool
     public let myI8: Int8
     public let myI16: Int16

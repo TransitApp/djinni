@@ -9,7 +9,7 @@ import UIKit
  * Verifies: super fields appear first, all in one struct
  * ============================================================
  */
-public struct TSSwiftTestBaseLabel: Sendable {
+public struct TSSwiftTestBaseLabel: Sendable, Equatable, Hashable, Codable {
     public let textColor: Int32
     public let fontSize: CGFloat
 

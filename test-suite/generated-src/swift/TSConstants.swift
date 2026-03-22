@@ -4,5 +4,5 @@
 import Foundation
 
 /** Record containing constants */
-public struct TSConstants: Sendable {
+public struct TSConstants: Sendable, Equatable, Hashable, Codable {
 }

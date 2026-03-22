@@ -3,7 +3,7 @@
 
 import UIKit
 
-public struct TSAssortedPrimitives: Sendable {
+public struct TSAssortedPrimitives: Sendable, Equatable, Hashable, Codable {
     public let b: Bool
     public let eight: Int8
     public let sixteen: Int16

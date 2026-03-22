@@ -11,7 +11,7 @@ import Foundation
  * A documented record for testing
  * This has multi-line documentation
  */
-public struct TSSwiftTestDocumented: Sendable {
+public struct TSSwiftTestDocumented: Sendable, Equatable, Hashable, Codable {
     /** The main label text */
     public let text: String
     /** Whether the label is visible */

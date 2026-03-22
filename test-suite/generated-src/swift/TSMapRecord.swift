@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct TSMapRecord: Sendable {
+public struct TSMapRecord: Sendable, Equatable, Hashable, Codable {
     public let map: [String: Int64]
     public let imap: [Int32: Int32]
 

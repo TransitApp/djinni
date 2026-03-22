@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct TSSwiftTestTextStyle: Sendable {
+public struct TSSwiftTestTextStyle: Sendable, Equatable, Hashable, Codable {
     public let color: Int32
     public let letterCase: TSSwiftTestLetterCase
 

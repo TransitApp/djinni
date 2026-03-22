@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct TSNestedCollection: Sendable {
+public struct TSNestedCollection: Sendable, Equatable, Hashable, Codable {
     public let setList: [Set<String>]
 
     public init(setList: [Set<String>]) {

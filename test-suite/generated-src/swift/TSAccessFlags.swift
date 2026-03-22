@@ -3,7 +3,7 @@
 
 import Foundation
 
-public enum TSAccessFlags: Int, Sendable {
+public enum TSAccessFlags: Int, Sendable, Codable {
     case owner_read = 0
     case owner_write = 1
     case owner_execute = 2

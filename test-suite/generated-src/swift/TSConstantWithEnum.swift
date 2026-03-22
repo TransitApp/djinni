@@ -4,5 +4,5 @@
 import Foundation
 
 /** Record containing enum constant */
-public struct TSConstantWithEnum: Sendable {
+public struct TSConstantWithEnum: Sendable, Equatable, Hashable, Codable {
 }

@@ -9,7 +9,7 @@ import Foundation
  * Verifies: default value conversion (EnumType::Value -> .value)
  * ============================================================
  */
-public enum TSSwiftTestLetterCase: Int, Sendable {
+public enum TSSwiftTestLetterCase: Int, Sendable, Codable {
     case `default` = 0
     case upper = 1
     case lower = 2

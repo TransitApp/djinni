@@ -9,7 +9,7 @@ import Foundation
  * Verifies: inline init (not multi-line)
  * ============================================================
  */
-public struct TSSwiftTestSingleField: Sendable {
+public struct TSSwiftTestSingleField: Sendable, Equatable, Hashable, Codable {
     public let value: String
 
     public init(value: String) {

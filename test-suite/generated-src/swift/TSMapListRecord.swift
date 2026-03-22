@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct TSMapListRecord: Sendable {
+public struct TSMapListRecord: Sendable, Equatable, Hashable, Codable {
     public let mapList: [[String: Int64]]
 
     public init(mapList: [[String: Int64]]) {

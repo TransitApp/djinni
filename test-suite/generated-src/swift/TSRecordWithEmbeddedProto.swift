@@ -3,5 +3,5 @@
 
 import Foundation
 
-public struct TSRecordWithEmbeddedProto: Sendable {
+public struct TSRecordWithEmbeddedProto: Sendable, Equatable, Hashable, Codable {
 }

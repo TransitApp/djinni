@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct TSRecordWithFlags: Sendable {
+public struct TSRecordWithFlags: Sendable, Equatable, Hashable, Codable {
     public let access: TSAccessFlags
 
     public init(access: TSAccessFlags) {

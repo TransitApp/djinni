@@ -3,7 +3,7 @@
 
 import UIKit
 
-public struct TSRecordWithDerivings: Sendable {
+public struct TSRecordWithDerivings: Sendable, Equatable, Hashable, Codable {
     public let eight: Int8
     public let sixteen: Int16
     public let thirtytwo: Int32

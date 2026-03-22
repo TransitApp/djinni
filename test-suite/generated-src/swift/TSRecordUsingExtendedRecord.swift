@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct TSRecordUsingExtendedRecord: Sendable {
+public struct TSRecordUsingExtendedRecord: Sendable, Equatable, Hashable, Codable {
     public let er: TSExtendedRecord
 
     public init(er: TSExtendedRecord) {

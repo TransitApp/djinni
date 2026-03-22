@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct TSWcharTestRec: Sendable {
+public struct TSWcharTestRec: Sendable, Equatable, Hashable, Codable {
     public let s: String
 
     public init(s: String) {

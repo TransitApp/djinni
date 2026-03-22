@@ -4,7 +4,7 @@
 import Foundation
 
 /** Extended record */
-public struct TSExtendedRecord: Sendable {
+public struct TSExtendedRecord: Sendable, Equatable, Hashable, Codable {
     public let foo: Bool
 
     public init(foo: Bool) {

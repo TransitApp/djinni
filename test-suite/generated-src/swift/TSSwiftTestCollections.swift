@@ -9,7 +9,7 @@ import Foundation
  * Verifies: list -> [T], set -> Set<T>, map -> [K: V]
  * ============================================================
  */
-public struct TSSwiftTestCollections: Sendable {
+public struct TSSwiftTestCollections: Sendable, Equatable, Hashable, Codable {
     public let stringList: [String]
     public let intSet: Set<Int32>
     public let stringToIntMap: [String: Int64]

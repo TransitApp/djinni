@@ -9,5 +9,5 @@ import Foundation
  * Verifies: struct with no fields, no init
  * ============================================================
  */
-public struct TSSwiftTestEmpty: Sendable {
+public struct TSSwiftTestEmpty: Sendable, Equatable, Hashable, Codable {
 }

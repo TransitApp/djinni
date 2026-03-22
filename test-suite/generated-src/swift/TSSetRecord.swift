@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct TSSetRecord: Sendable {
+public struct TSSetRecord: Sendable, Equatable, Hashable, Codable {
     public let set: Set<String>
     public let iset: Set<Int32>
 

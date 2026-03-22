@@ -4,7 +4,7 @@
 import Foundation
 
 /** Record for use in constants */
-public struct TSConstantRecord: Sendable {
+public struct TSConstantRecord: Sendable, Equatable, Hashable, Codable {
     public let someInteger: Int32
     public let someString: String
 

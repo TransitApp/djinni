@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct TSEnumUsageRecord: Sendable {
+public struct TSEnumUsageRecord: Sendable, Equatable, Hashable, Codable {
     public let e: TSColor
     public let o: TSColor?
     public let l: [TSColor]

@@ -9,7 +9,7 @@ import Foundation
  * Verifies: Int raw type, Sendable, sequential values, case naming
  * ============================================================
  */
-public enum TSSwiftTestColor: Int, Sendable {
+public enum TSSwiftTestColor: Int, Sendable, Codable {
     case red = 0
     case green = 1
     case blue = 2

@@ -3,7 +3,7 @@
 
 import Foundation
 
-public enum TSColor: Int, Sendable {
+public enum TSColor: Int, Sendable, Codable {
     case red = 0
     case orange = 1
     case yellow = 2

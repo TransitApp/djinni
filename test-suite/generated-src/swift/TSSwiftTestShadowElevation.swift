@@ -4,7 +4,7 @@
 import Foundation
 
 /** Enum with multi-word cases (underscore-separated in Djinni) */
-public enum TSSwiftTestShadowElevation: Int, Sendable {
+public enum TSSwiftTestShadowElevation: Int, Sendable, Codable {
     case `none` = 0
     case low_Shadow = 1
     case medium_Shadow = 2

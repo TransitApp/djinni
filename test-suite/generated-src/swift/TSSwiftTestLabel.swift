@@ -3,7 +3,7 @@
 
 import UIKit
 
-public struct TSSwiftTestLabel: Sendable {
+public struct TSSwiftTestLabel: Sendable, Equatable, Hashable, Codable {
     public let textColor: Int32
     public let fontSize: CGFloat
     public let text: String

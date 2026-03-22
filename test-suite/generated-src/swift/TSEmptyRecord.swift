@@ -8,5 +8,5 @@ import Foundation
  * (Second line of multi-line documentation.
  *   Indented third line of multi-line documentation.)
  */
-public struct TSEmptyRecord: Sendable {
+public struct TSEmptyRecord: Sendable, Equatable, Hashable, Codable {
 }

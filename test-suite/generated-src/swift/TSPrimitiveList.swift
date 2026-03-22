@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct TSPrimitiveList: Sendable {
+public struct TSPrimitiveList: Sendable, Equatable, Hashable, Codable {
     public let list: [Int64]
 
     public init(list: [Int64]) {
