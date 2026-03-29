@@ -17,28 +17,46 @@ pub struct GeneratorContext {
     pub out_files: Vec<PathBuf>,
 }
 
+pub fn create_file_from_parts<F>(
+    out_files: &mut Vec<PathBuf>,
+    written_files: &mut HashMap<String, String>,
+    folder: &Path,
+    file_name: &str,
+    f: F,
+) where
+    F: FnOnce(&mut IndentWriter),
+{
+    let file_path = folder.join(file_name);
+    out_files.push(file_path.clone());
+
+    let cp = file_path.to_string_lossy().to_lowercase();
+    if let Some(existing) = written_files.get(&cp) {
+        panic!(
+            "Refusing to write \"{}\"; we already wrote a file to path \"{}\"",
+            file_path.display(),
+            existing
+        );
+    }
+    written_files.insert(cp, file_path.to_string_lossy().to_string());
+
+    let mut w = IndentWriter::new();
+    f(&mut w);
+    fs::write(&file_path, w.into_string()).expect("Failed to write file");
+}
+
 impl GeneratorContext {
     pub fn create_file<F>(&mut self, folder: &Path, file_name: &str, f: F)
     where
         F: FnOnce(&mut IndentWriter),
     {
-        let file_path = folder.join(file_name);
-        self.out_files.push(file_path.clone());
+        create_file_from_parts(&mut self.out_files, &mut self.written_files, folder, file_name, f);
+    }
 
-        let cp = file_path.to_string_lossy().to_lowercase();
-        if let Some(existing) = self.written_files.get(&cp) {
-            panic!(
-                "Refusing to write \"{}\"; we already wrote a file to path \"{}\"",
-                file_path.display(),
-                existing
-            );
-        }
-        self.written_files
-            .insert(cp, file_path.to_string_lossy().to_string());
-
-        let mut w = IndentWriter::new();
-        f(&mut w);
-        fs::write(&file_path, w.into_string()).expect("Failed to write file");
+    /// Split borrow: returns (&Spec, &mut out_files, &mut written_files) so that
+    /// callers can hold an immutable reference to spec (e.g. via CppMarshal) while
+    /// still creating files.
+    pub fn split_borrow(&mut self) -> (&Spec, &mut Vec<PathBuf>, &mut HashMap<String, String>) {
+        (&self.spec, &mut self.out_files, &mut self.written_files)
     }
 
     pub fn write_hpp_file(

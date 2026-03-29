@@ -77,7 +77,16 @@ impl ParserContext {
         idl_file: &Path,
         in_files: &mut Vec<PathBuf>,
     ) -> Result<(Vec<TypeDecl>, Vec<String>), ParseError> {
-        let normalized = normalize_path(idl_file);
+        // Canonicalize the path so all subsequent relative imports resolve correctly
+        let normalized = if idl_file.is_relative() {
+            std::env::current_dir()
+                .unwrap_or_default()
+                .join(idl_file)
+        } else {
+            idl_file.to_path_buf()
+        };
+        // Use std canonicalize if file exists, otherwise just normalize
+        let normalized = normalized.canonicalize().unwrap_or_else(|_| normalize_path(&normalized));
         in_files.push(normalized.clone());
 
         self.visited_files.insert(normalized.clone());
