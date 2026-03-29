@@ -6,7 +6,7 @@ use std::path::Path;
 
 use djinni_ast::ast::*;
 use djinni_ast::meta::*;
-use djinni_ast::spec::{q, Spec};
+use djinni_ast::spec::q;
 
 use crate::cpp_marshal::{CppMarshal, SymbolReference};
 use crate::gen::*;
@@ -819,9 +819,9 @@ fn write_cpp_type_params(
     w.wl(&format!("template <{}>", parts.join(", ")));
 }
 
-fn should_constexpr(c: &Const, marshal: &CppMarshal) -> bool {
+fn should_constexpr(c: &Const) -> bool {
     if let Some(ref resolved) = c.ty.resolved {
-        matches!(&resolved.base, Meta::MPrimitive(_)) && !matches!(&resolved.base, Meta::MOptional)
+        matches!(&resolved.base, Meta::MPrimitive(_))
     } else {
         false
     }
@@ -834,7 +834,7 @@ fn generate_hpp_constants(
     id_cpp: &djinni_ast::ident_style::CppIdentStyle,
 ) {
     for c in consts {
-        let is_constexpr = should_constexpr(c, marshal);
+        let is_constexpr = should_constexpr(c);
         let const_value = if is_constexpr {
             match &c.value {
                 ConstValue::Int(l) => format!(" = {};", l),
@@ -887,7 +887,7 @@ fn generate_cpp_constants(
 ) {
     let mut first = true;
     for c in consts {
-        if !should_constexpr(c, marshal) {
+        if !should_constexpr(c) {
             if !first {
                 w.wl_empty();
             }

@@ -477,7 +477,6 @@ fn build_ident(pair: pest::iterators::Pair<Rule>, file: &Path) -> Ident {
     let (line, col) = span.start_pos().line_col();
     Ident {
         name: pair.as_str().to_string(),
-        file: file.to_path_buf(),
         loc: Loc {
             file: file.to_path_buf(),
             line,
@@ -737,7 +736,6 @@ fn parse_extern_yaml(content: &str, file: &Path) -> Result<Vec<TypeDecl>, ParseE
                     .map(|s| TypeParam {
                         ident: Ident {
                             name: s.to_string(),
-                            file: file.to_path_buf(),
                             loc: Loc {
                                 file: file.to_path_buf(),
                                 line: 1,
@@ -752,7 +750,6 @@ fn parse_extern_yaml(content: &str, file: &Path) -> Result<Vec<TypeDecl>, ParseE
         let body = parse_extern_typedef(typedef_str, file)?;
         let ident = Ident {
             name,
-            file: file.to_path_buf(),
             loc: Loc {
                 file: file.to_path_buf(),
                 line: 1,
@@ -950,7 +947,6 @@ fn parse_protobuf_yaml(content: &str, file: &Path) -> Result<Vec<TypeDecl>, Pars
         let name = msg.as_str().unwrap_or_default().to_string();
         let ident = Ident {
             name,
-            file: file.to_path_buf(),
             loc: Loc {
                 file: file.to_path_buf(),
                 line: 1,

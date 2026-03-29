@@ -4,7 +4,7 @@
 pub struct IndentWriter {
     buf: String,
     indent: String,
-    start_indent: String,
+    _start_indent: String,
     current_indent: String,
     start_of_line: bool,
 }
@@ -18,7 +18,7 @@ impl IndentWriter {
         Self {
             buf: String::new(),
             indent: indent.to_string(),
-            start_indent: start_indent.to_string(),
+            _start_indent: start_indent.to_string(),
             current_indent: start_indent.to_string(),
             start_of_line: true,
         }

@@ -6,7 +6,6 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use djinni_ast::ast::*;
-use djinni_ast::ident_style;
 use djinni_ast::spec::Spec;
 
 use crate::writer::IndentWriter;
@@ -142,14 +141,6 @@ pub fn wrap_namespace<F: FnOnce(&mut IndentWriter)>(w: &mut IndentWriter, ns: &s
         w.wl_empty();
         w.wl(&format!("}} // namespace {}", ns));
     }
-}
-
-pub fn wrap_anonymous_namespace<F: FnOnce(&mut IndentWriter)>(w: &mut IndentWriter, f: F) {
-    w.wl("namespace { // anonymous namespace");
-    w.wl_empty();
-    f(w);
-    w.wl_empty();
-    w.wl("} // end anonymous namespace");
 }
 
 pub fn write_doc(w: &mut IndentWriter, doc: &Doc) {
@@ -302,7 +293,7 @@ pub fn write_aligned_call(
 }
 
 /// Collect all fields from a record and its base records (inheritance chain)
-pub fn collect_super_fields(idl: &[TypeDecl], r: &Record) -> Vec<Field> {
+fn collect_super_fields(idl: &[TypeDecl], r: &Record) -> Vec<Field> {
     let mut fields = r.fields.clone();
     let mut current = r.clone();
     while let Some(ref base_name) = current.base_record {

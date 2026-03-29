@@ -22,19 +22,7 @@ impl std::fmt::Display for Loc {
 #[derive(Debug, Clone)]
 pub struct Ident {
     pub name: String,
-    pub file: PathBuf,
     pub loc: Loc,
-}
-
-#[derive(Debug, Clone)]
-pub struct ConstRef {
-    pub ident: Ident,
-}
-
-#[derive(Debug, Clone)]
-pub struct EnumValue {
-    pub ty: Ident,
-    pub ident: Ident,
 }
 
 #[derive(Debug, Clone)]
