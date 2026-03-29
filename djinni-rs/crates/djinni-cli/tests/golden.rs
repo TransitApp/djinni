@@ -99,6 +99,43 @@ fn compare_dirs(expected_dir: &Path, actual_dir: &Path) -> Option<String> {
     }
 }
 
+/// Like compare_dirs but only checks that files in actual match expected.
+/// Does NOT report missing files in actual (allows partial generation).
+fn compare_dirs_subset(expected_dir: &Path, actual_dir: &Path) -> Option<String> {
+    let expected = read_dir_recursive(expected_dir);
+    let actual = read_dir_recursive(actual_dir);
+
+    let mut diffs = Vec::new();
+
+    // Files in actual but not in expected (shouldn't happen)
+    for key in actual.keys() {
+        if !expected.contains_key(key) {
+            diffs.push(format!("EXTRA in actual: {}", key));
+        }
+    }
+
+    // Files that differ
+    for (key, actual_content) in &actual {
+        if let Some(expected_content) = expected.get(key) {
+            if expected_content != actual_content {
+                let diff = similar::TextDiff::from_lines(expected_content, actual_content);
+                let unified = diff
+                    .unified_diff()
+                    .context_radius(3)
+                    .header(&format!("expected/{}", key), &format!("actual/{}", key))
+                    .to_string();
+                diffs.push(format!("DIFF in {}:\n{}", key, unified));
+            }
+        }
+    }
+
+    if diffs.is_empty() {
+        None
+    } else {
+        Some(diffs.join("\n\n"))
+    }
+}
+
 /// Run the djinni binary with the given arguments, in the given working directory.
 fn run_djinni(working_dir: &Path, args: &[&str]) -> Result<(), String> {
     let binary = djinni_binary();
@@ -404,7 +441,143 @@ fn golden_cpp_only() {
 
     let expected = test_suite.join("generated-src").join("cpp");
     let actual = temp_out.join("cpp");
-    if let Some(report) = compare_dirs(&expected, &actual) {
+    // Use subset comparison since this is a single invocation (all.djinni only)
+    if let Some(report) = compare_dirs_subset(&expected, &actual) {
         panic!("Golden file mismatch in 'cpp':\n\n{}", report);
+    }
+}
+
+/// Test that runs all 6 invocations for C++ only, matching the full run_djinni.sh
+#[test]
+fn golden_cpp_all_invocations() {
+    let root = repo_root();
+    let test_suite = root.join("test-suite");
+    let temp = tempfile::tempdir().unwrap();
+    let temp_out = temp.path();
+
+    // Invocation 1: wchar_test.djinni (with wide strings)
+    run_djinni(
+        &test_suite,
+        &[
+            "--cpp-out", &temp_out.join("cpp").to_string_lossy(),
+            "--cpp-namespace", "testsuite",
+            "--ident-cpp-enum-type", "foo_bar",
+            "--cpp-optional-template", "std::experimental::optional",
+            "--cpp-optional-header", "\"../../handwritten-src/cpp/optional.hpp\"",
+            "--cpp-extended-record-include-prefix", "../../handwritten-src/cpp/",
+            "--cpp-use-wide-strings", "true",
+            "--idl", "djinni/wchar_test.djinni",
+        ],
+    )
+    .unwrap();
+
+    // Invocation 2: all.djinni (the main test)
+    run_djinni(
+        &test_suite,
+        &[
+            "--cpp-out", &temp_out.join("cpp").to_string_lossy(),
+            "--cpp-namespace", "testsuite",
+            "--ident-cpp-enum-type", "foo_bar",
+            "--cpp-optional-template", "std::experimental::optional",
+            "--cpp-optional-header", "\"../../handwritten-src/cpp/optional.hpp\"",
+            "--cpp-extended-record-include-prefix", "../../handwritten-src/cpp/",
+            "--idl", "djinni/all.djinni",
+            "--idl-include-path", "djinni/vendor",
+        ],
+    )
+    .unwrap();
+
+    // Invocation 3: function_prologue.djinni
+    run_djinni(
+        &test_suite,
+        &[
+            "--cpp-out", &temp_out.join("cpp").to_string_lossy(),
+            "--cpp-namespace", "testsuite",
+            "--ident-cpp-enum-type", "foo_bar",
+            "--cpp-optional-template", "std::experimental::optional",
+            "--cpp-optional-header", "\"../../handwritten-src/cpp/optional.hpp\"",
+            "--cpp-extended-record-include-prefix", "../../handwritten-src/cpp/",
+            "--idl", "djinni/function_prologue.djinni",
+        ],
+    )
+    .unwrap();
+
+    // Invocation 4: ident_explicit.djinni (with strict ident styles)
+    run_djinni(
+        &test_suite,
+        &[
+            "--cpp-out", &temp_out.join("cpp").to_string_lossy(),
+            "--cpp-namespace", "testsuite",
+            "--ident-cpp-file", "foo_bar!_native",
+            "--ident-cpp-enum-type", "foo_bar!",
+            "--cpp-optional-template", "std::experimental::optional",
+            "--cpp-optional-header", "\"../../handwritten-src/cpp/optional.hpp\"",
+            "--cpp-extended-record-include-prefix", "../../handwritten-src/cpp/",
+            "--idl", "djinni/ident_explicit.djinni",
+        ],
+    )
+    .unwrap();
+
+    // Invocation 5: interface_and_abstract_class.djinni
+    run_djinni(
+        &test_suite,
+        &[
+            "--cpp-out", &temp_out.join("cpp").to_string_lossy(),
+            "--cpp-namespace", "testsuite",
+            "--ident-cpp-enum-type", "foo_bar",
+            "--cpp-optional-template", "std::experimental::optional",
+            "--cpp-optional-header", "\"../../handwritten-src/cpp/optional.hpp\"",
+            "--cpp-extended-record-include-prefix", "../../handwritten-src/cpp/",
+            "--idl", "djinni/interface_and_abstract_class.djinni",
+            "--idl-include-path", "djinni/vendor",
+        ],
+    )
+    .unwrap();
+
+    // Invocation 6: no_constructor.djinni (with no struct constructor)
+    run_djinni(
+        &test_suite,
+        &[
+            "--cpp-out", &temp_out.join("cpp").to_string_lossy(),
+            "--cpp-namespace", "testsuite",
+            "--cpp-struct-constructor", "false",
+            "--ident-cpp-file", "foo_bar_native",
+            "--ident-cpp-enum-type", "foo_bar",
+            "--cpp-optional-template", "std::experimental::optional",
+            "--cpp-optional-header", "\"../../handwritten-src/cpp/optional.hpp\"",
+            "--cpp-extended-record-include-prefix", "../../handwritten-src/cpp/",
+            "--idl", "djinni/no_constructor.djinni",
+        ],
+    )
+    .unwrap();
+
+    // Compare C++ output against golden files
+    // Use subset comparison to ignore YAML round-trip generated files
+    let expected = test_suite.join("generated-src").join("cpp");
+    let actual = temp_out.join("cpp");
+    if let Some(report) = compare_dirs_subset(&expected, &actual) {
+        panic!("Golden file mismatch in 'cpp':\n\n{}", report);
+    }
+
+    // Also check we generated all the expected files (excluding YAML round-trip ones)
+    let expected_files = read_dir_recursive(&expected);
+    let actual_files = read_dir_recursive(&actual);
+    let yaml_roundtrip_files: std::collections::HashSet<&str> = [
+        "extern_record_with_derivings.cpp",
+        "extern_record_with_derivings.hpp",
+        "extern_interface_1.hpp",
+        "extern_interface_2.hpp",
+        "test_optional_extern_interface_record.cpp",
+        "test_optional_extern_interface_record.hpp",
+    ].iter().cloned().collect();
+
+    let mut missing = Vec::new();
+    for key in expected_files.keys() {
+        if !actual_files.contains_key(key) && !yaml_roundtrip_files.contains(key.as_str()) {
+            missing.push(key.clone());
+        }
+    }
+    if !missing.is_empty() {
+        panic!("Missing {} files:\n{}", missing.len(), missing.join("\n"));
     }
 }

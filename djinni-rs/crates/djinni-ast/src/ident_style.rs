@@ -60,13 +60,13 @@ pub fn under_caps(s: &str) -> String {
     s.to_uppercase()
 }
 
-fn camel_upper_strict(s: &str) -> String {
+pub fn camel_upper_strict(s: &str) -> String {
     s.split(&['-', '_'][..])
         .map(|part| leading_upper_strict(part))
         .collect()
 }
 
-fn camel_lower_strict(s: &str) -> String {
+pub fn camel_lower_strict(s: &str) -> String {
     let parts: Vec<&str> = s.split('_').collect();
     if parts.is_empty() {
         return String::new();
@@ -78,11 +78,11 @@ fn camel_lower_strict(s: &str) -> String {
     result
 }
 
-fn under_lower_strict(s: &str) -> String {
+pub fn under_lower_strict(s: &str) -> String {
     s.to_lowercase()
 }
 
-fn under_upper_strict(s: &str) -> String {
+pub fn under_upper_strict(s: &str) -> String {
     s.split('_')
         .map(|part| leading_upper_strict(part))
         .collect::<Vec<_>>()

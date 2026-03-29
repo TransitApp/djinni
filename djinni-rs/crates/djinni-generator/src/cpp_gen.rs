@@ -55,7 +55,7 @@ pub fn generate_cpp(ctx: &mut GeneratorContext, idl: &[TypeDecl]) {
             }
             TypeDef::Interface(i) => {
                 generate_interface(
-                    ctx, &cpp_out, &cpp_header_out, origin, ident, &doc, params, i,
+                    ctx, &cpp_out, &cpp_header_out, origin, ident, &doc, params, i, idl,
                 );
             }
             TypeDef::ProtobufMessage(_) => {}
@@ -575,7 +575,7 @@ fn generate_record(
         }
         w.wl_empty();
         wrap_namespace(w, &cpp_namespace, |w| {
-            generate_cpp_constants(w, &r.consts, &actual_self, &marshal, id_cpp);
+            generate_cpp_constants(w, &r.consts, &actual_self, &marshal, id_cpp, idl);
 
             // operator==
             w.wl_empty();
@@ -672,6 +672,7 @@ fn generate_interface(
     doc: &Doc,
     params: &[TypeParam],
     i: &Interface,
+    idl: &[TypeDecl],
 ) {
     let (spec, out_files, written_files) = ctx.split_borrow();
     let marshal = CppMarshal::new(spec);
@@ -795,7 +796,7 @@ fn generate_interface(
             }
             w.wl_empty();
             wrap_namespace(w, &cpp_namespace, |w| {
-                generate_cpp_constants(w, &i.consts, &self_name, &marshal, id_cpp);
+                generate_cpp_constants(w, &i.consts, &self_name, &marshal, id_cpp, idl);
             });
         });
     }
@@ -882,6 +883,7 @@ fn generate_cpp_constants(
     self_name: &str,
     marshal: &CppMarshal,
     id_cpp: &djinni_ast::ident_style::CppIdentStyle,
+    idl: &[TypeDecl],
 ) {
     let mut first = true;
     for c in consts {
@@ -897,10 +899,27 @@ fn generate_cpp_constants(
                 self_name,
                 (id_cpp.const_)(&c.ident.name)
             ));
-            write_cpp_const_value(w, &c.ty, &c.value, marshal, id_cpp, self_name);
+            write_cpp_const_value(w, &c.ty, &c.value, marshal, id_cpp, self_name, idl);
             w.wl(";");
         }
     }
+}
+
+/// Look up a record definition from the resolved IDL by type name.
+/// This gives us access to fields with resolved TypeRefs, unlike MDef.body
+/// which stores a pre-resolution snapshot.
+fn find_resolved_record<'a>(idl: &'a [TypeDecl], name: &str) -> Option<&'a Record> {
+    idl.iter().find_map(|td| {
+        if td.ident().name == name {
+            if let TypeDef::Record(r) = td.body() {
+                Some(r)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    })
 }
 
 fn write_cpp_const_value(
@@ -910,6 +929,7 @@ fn write_cpp_const_value(
     marshal: &CppMarshal,
     id_cpp: &djinni_ast::ident_style::CppIdentStyle,
     self_name: &str,
+    idl: &[TypeDecl],
 ) {
     match value {
         ConstValue::Int(l) => {
@@ -942,7 +962,9 @@ fn write_cpp_const_value(
         ConstValue::Composite(fields) => {
             if let Some(ref resolved) = ty.resolved {
                 if let Meta::MDef(d) = &resolved.base {
-                    if let TypeDef::Record(rec) = &d.body {
+                    // Look up the record from the resolved IDL (not MDef.body)
+                    // to get fields with resolved TypeRefs
+                    if let Some(rec) = find_resolved_record(idl, &d.name) {
                         let type_name = marshal.field_type_from_typeref(ty, &[]);
                         w.wl(&format!("{}(", type_name));
                         w.increase();
@@ -953,7 +975,7 @@ fn write_cpp_const_value(
                             }
                             first = false;
                             if let Some((_, val)) = fields.iter().find(|(k, _)| *k == f.ident.name) {
-                                write_cpp_const_value(w, &f.ty, val, marshal, id_cpp, self_name);
+                                write_cpp_const_value(w, &f.ty, val, marshal, id_cpp, self_name, idl);
                                 w.w(&format!(" /* {} */ ", (id_cpp.field)(&f.ident.name)));
                             }
                         }
