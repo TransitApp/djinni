@@ -5,4 +5,8 @@ edition = "2021"
 
 [dependencies]
 djinni-ast = { workspace = true }
+serde_yaml = { workspace = true }
 thiserror = { workspace = true }
+
+[dev-dependencies]
+djinni-parser = { workspace = true }
