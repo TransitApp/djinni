@@ -1,0 +1,27 @@
+[workspace]
+members = [
+    "crates/djinni-ast",
+    "crates/djinni-parser",
+    "crates/djinni-resolver",
+    "crates/djinni-generator",
+    "crates/djinni-cli",
+]
+resolver = "2"
+
+[workspace.dependencies]
+djinni-ast = { path = "crates/djinni-ast" }
+djinni-parser = { path = "crates/djinni-parser" }
+djinni-resolver = { path = "crates/djinni-resolver" }
+djinni-generator = { path = "crates/djinni-generator" }
+
+pest = "2.7"
+pest_derive = "2.7"
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"
+thiserror = "2"
+anyhow = "1"
+similar = "2"
+pretty_assertions = "1"
+tempfile = "3"
+walkdir = "2"

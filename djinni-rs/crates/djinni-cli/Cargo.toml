@@ -1,0 +1,22 @@
+[package]
+name = "djinni-cli"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "djinni"
+path = "src/main.rs"
+
+[dependencies]
+djinni-ast = { workspace = true }
+djinni-parser = { workspace = true }
+djinni-resolver = { workspace = true }
+djinni-generator = { workspace = true }
+clap = { workspace = true }
+anyhow = { workspace = true }
+
+[dev-dependencies]
+similar = { workspace = true }
+pretty_assertions = { workspace = true }
+tempfile = { workspace = true }
+walkdir = { workspace = true }

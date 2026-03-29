@@ -1,0 +1,8 @@
+[package]
+name = "djinni-resolver"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+djinni-ast = { workspace = true }
+thiserror = { workspace = true }
