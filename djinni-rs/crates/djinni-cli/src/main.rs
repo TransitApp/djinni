@@ -153,16 +153,27 @@ struct Cli {
 }
 
 fn infer_ident(opt: &Option<String>, default: fn(&str) -> String) -> fn(&str) -> String {
-    // For now, only support the built-in styles via exact match.
-    // The full IdentConverter with prefix/suffix is Box<dyn Fn> which doesn't fit fn pointer.
-    // We handle the common cases used by the test suite.
     match opt.as_deref() {
         Some("FooBar") => ident_style::camel_upper,
         Some("fooBar") => ident_style::camel_lower,
         Some("foo_bar") => ident_style::under_lower,
         Some("Foo_Bar") => ident_style::under_upper,
         Some("FOO_BAR") => ident_style::under_caps,
+        Some("FooBar!") => ident_style::camel_upper_strict,
+        Some("fooBar!") => ident_style::camel_lower_strict,
+        Some("foo_bar!") => ident_style::under_lower_strict,
+        Some("Foo_Bar!") => ident_style::under_upper_strict,
+        Some("FOO_BAR!") => ident_style::under_caps,
         _ => default,
+    }
+}
+
+/// Infer an ident converter that may include prefix/suffix (returns IdentConverter).
+/// Falls back to a plain fn pointer wrapped in Box.
+fn infer_ident_converter(opt: &Option<String>, default: fn(&str) -> String) -> IdentConverter {
+    match opt {
+        Some(s) => ident_style::infer(s).unwrap_or_else(|| Box::new(default)),
+        None => Box::new(default),
     }
 }
 
@@ -174,13 +185,15 @@ fn build_spec(cli: &Cli) -> Spec {
                 "foo_bar" => style.enum_type = ident_style::under_lower,
                 "FooBar" => style.enum_type = ident_style::camel_upper,
                 "FOO_BAR" => style.enum_type = ident_style::under_caps,
+                "foo_bar!" => style.enum_type = ident_style::under_lower_strict,
+                "FooBar!" => style.enum_type = ident_style::camel_upper_strict,
                 _ => {}
             }
         }
         style
     };
 
-    let cpp_file_ident_style: IdentConverter = Box::new(infer_ident(&cli.ident_cpp_file, ident_style::under_lower));
+    let cpp_file_ident_style: IdentConverter = infer_ident_converter(&cli.ident_cpp_file, ident_style::under_lower);
 
     Spec {
         java_out_folder: cli.java_out.as_ref().map(PathBuf::from),
