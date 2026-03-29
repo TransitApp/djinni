@@ -7,11 +7,11 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /*package*/ enum EnumSixValue {
-    FIRST,
-    SECOND,
-    THIRD,
-    FOURTH,
-    FIFTH,
-    SIXTH,
+    First,
+    Second,
+    Third,
+    Fourth,
+    Fifth,
+    Sixth,
     ;
 }

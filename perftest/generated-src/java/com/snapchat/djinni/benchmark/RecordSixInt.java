@@ -61,6 +61,33 @@ import javax.annotation.Nonnull;
     }
 
     @Override
+    public boolean equals(@CheckForNull Object obj) {
+        if (!(obj instanceof RecordSixInt)) {
+            return false;
+        }
+        RecordSixInt other = (RecordSixInt) obj;
+        return this.mI1 == other.mI1 &&
+                this.mI2 == other.mI2 &&
+                this.mI3 == other.mI3 &&
+                this.mI4 == other.mI4 &&
+                this.mI5 == other.mI5 &&
+                this.mI6 == other.mI6;
+    }
+
+    @Override
+    public int hashCode() {
+        // Pick an arbitrary non-zero starting value
+        int hashCode = 17;
+        hashCode = hashCode * 31 + ((int) (mI1 ^ (mI1 >>> 32)));
+        hashCode = hashCode * 31 + ((int) (mI2 ^ (mI2 >>> 32)));
+        hashCode = hashCode * 31 + ((int) (mI3 ^ (mI3 >>> 32)));
+        hashCode = hashCode * 31 + ((int) (mI4 ^ (mI4 >>> 32)));
+        hashCode = hashCode * 31 + ((int) (mI5 ^ (mI5 >>> 32)));
+        hashCode = hashCode * 31 + ((int) (mI6 ^ (mI6 >>> 32)));
+        return hashCode;
+    }
+
+    @Override
     public String toString() {
         return "RecordSixInt{" +
                 "mI1=" + mI1 +

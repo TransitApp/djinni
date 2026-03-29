@@ -4,6 +4,7 @@
 #pragma once
 
 #include "constant_enum.hpp"
+#include <sstream>
 #include <utility>
 
 namespace testsuite {

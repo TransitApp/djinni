@@ -36,6 +36,30 @@
                                  fieldE:fieldE];
 }
 
+- (BOOL)isEqual:(id)other
+{
+    if (![other isKindOfClass:[SPLevelFViewModel class]]) {
+        return NO;
+    }
+    SPLevelFViewModel *typedOther = (SPLevelFViewModel *)other;
+    return [self.fieldA isEqualToString:typedOther.fieldA] &&
+            [self.fieldB isEqualToString:typedOther.fieldB] &&
+            [self.fieldC isEqualToString:typedOther.fieldC] &&
+            [self.fieldD isEqualToString:typedOther.fieldD] &&
+            [self.fieldE isEqualToString:typedOther.fieldE];
+}
+
+- (NSUInteger)hash
+{
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + self.fieldA.hash;
+    hashCode = hashCode * 31 + self.fieldB.hash;
+    hashCode = hashCode * 31 + self.fieldC.hash;
+    hashCode = hashCode * 31 + self.fieldD.hash;
+    hashCode = hashCode * 31 + self.fieldE.hash;
+    return hashCode;
+}
+
 #ifndef DJINNI_DISABLE_DESCRIPTION_METHODS
 - (NSString *)description
 {

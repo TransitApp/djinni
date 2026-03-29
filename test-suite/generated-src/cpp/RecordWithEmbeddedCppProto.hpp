@@ -4,6 +4,7 @@
 #pragma once
 
 #include "proto/cpp/test2.pb.h"
+#include <sstream>
 #include <utility>
 
 namespace testsuite {
@@ -13,6 +14,8 @@ struct RecordWithEmbeddedCppProto final {
 
     friend bool operator==(const RecordWithEmbeddedCppProto& lhs, const RecordWithEmbeddedCppProto& rhs);
     friend bool operator!=(const RecordWithEmbeddedCppProto& lhs, const RecordWithEmbeddedCppProto& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     //NOLINTNEXTLINE(google-explicit-constructor)
     RecordWithEmbeddedCppProto(::djinni::test2::PersistingState state_)

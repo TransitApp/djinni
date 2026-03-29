@@ -4,6 +4,7 @@
 #pragma once
 
 #include <chrono>
+#include <sstream>
 #include <utility>
 
 namespace testsuite {
@@ -13,6 +14,8 @@ struct RecordWithDurationAndDerivings final {
 
     friend bool operator==(const RecordWithDurationAndDerivings& lhs, const RecordWithDurationAndDerivings& rhs);
     friend bool operator!=(const RecordWithDurationAndDerivings& lhs, const RecordWithDurationAndDerivings& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     friend bool operator<(const RecordWithDurationAndDerivings& lhs, const RecordWithDurationAndDerivings& rhs);
     friend bool operator>(const RecordWithDurationAndDerivings& lhs, const RecordWithDurationAndDerivings& rhs);

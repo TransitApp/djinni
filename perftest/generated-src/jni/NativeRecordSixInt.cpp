@@ -27,12 +27,14 @@ auto NativeRecordSixInt::toCpp(JNIEnv* jniEnv, JniType j) -> CppType {
     ::djinni::JniLocalScope jscope(jniEnv, 7);
     assert(j != nullptr);
     const auto& data = ::djinni::JniClass<NativeRecordSixInt>::get();
-    return {::djinni::I64::toCpp(jniEnv, jniEnv->GetLongField(j, data.field_mI1)),
-            ::djinni::I64::toCpp(jniEnv, jniEnv->GetLongField(j, data.field_mI2)),
-            ::djinni::I64::toCpp(jniEnv, jniEnv->GetLongField(j, data.field_mI3)),
-            ::djinni::I64::toCpp(jniEnv, jniEnv->GetLongField(j, data.field_mI4)),
-            ::djinni::I64::toCpp(jniEnv, jniEnv->GetLongField(j, data.field_mI5)),
-            ::djinni::I64::toCpp(jniEnv, jniEnv->GetLongField(j, data.field_mI6))};
+    ::snapchat::djinni::benchmark::RecordSixInt model;
+    model.mI1 = ::djinni::I64::toCpp(jniEnv, jniEnv->GetLongField(j, data.field_mI1));
+    model.mI2 = ::djinni::I64::toCpp(jniEnv, jniEnv->GetLongField(j, data.field_mI2));
+    model.mI3 = ::djinni::I64::toCpp(jniEnv, jniEnv->GetLongField(j, data.field_mI3));
+    model.mI4 = ::djinni::I64::toCpp(jniEnv, jniEnv->GetLongField(j, data.field_mI4));
+    model.mI5 = ::djinni::I64::toCpp(jniEnv, jniEnv->GetLongField(j, data.field_mI5));
+    model.mI6 = ::djinni::I64::toCpp(jniEnv, jniEnv->GetLongField(j, data.field_mI6));
+    return model;
 }
 
 } // namespace djinni_generated

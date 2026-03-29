@@ -4,6 +4,7 @@
 #pragma once
 
 #include "../../handwritten-src/cpp/extended_record.hpp"
+#include <sstream>
 #include <utility>
 
 namespace testsuite {
@@ -15,6 +16,8 @@ struct RecordUsingExtendedRecord final {
 
     friend bool operator==(const RecordUsingExtendedRecord& lhs, const RecordUsingExtendedRecord& rhs);
     friend bool operator!=(const RecordUsingExtendedRecord& lhs, const RecordUsingExtendedRecord& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     //NOLINTNEXTLINE(google-explicit-constructor)
     RecordUsingExtendedRecord(ExtendedRecord er_)

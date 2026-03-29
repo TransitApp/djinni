@@ -4,6 +4,7 @@
 #pragma once
 
 #include "LevelBViewModel.h"
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -11,6 +12,11 @@ namespace transitLib::vm {
 
 struct LevelC : public LevelB {
     std::string fieldC;
+
+    friend bool operator==(const LevelC& lhs, const LevelC& rhs);
+    friend bool operator!=(const LevelC& lhs, const LevelC& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const override;
 
     virtual ~LevelC(){};
 };

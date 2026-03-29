@@ -5,6 +5,7 @@
 
 #include "expected.hpp"
 #include <cstdint>
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -15,6 +16,8 @@ struct NestedOutcome final {
 
     friend bool operator==(const NestedOutcome& lhs, const NestedOutcome& rhs);
     friend bool operator!=(const NestedOutcome& lhs, const NestedOutcome& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     //NOLINTNEXTLINE(google-explicit-constructor)
     NestedOutcome(djinni::expected<int32_t, std::string> o_)

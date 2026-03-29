@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdint>
+#include <sstream>
 #include <utility>
 
 namespace testsuite {
@@ -13,6 +14,8 @@ struct SupportCopying final {
 
     friend bool operator==(const SupportCopying& lhs, const SupportCopying& rhs);
     friend bool operator!=(const SupportCopying& lhs, const SupportCopying& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     //NOLINTNEXTLINE(google-explicit-constructor)
     SupportCopying(int32_t x_)
