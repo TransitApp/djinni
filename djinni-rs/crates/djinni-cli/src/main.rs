@@ -152,22 +152,6 @@ struct Cli {
     ident_objc_const: Option<String>,
 }
 
-fn infer_ident(opt: &Option<String>, default: fn(&str) -> String) -> fn(&str) -> String {
-    match opt.as_deref() {
-        Some("FooBar") => ident_style::camel_upper,
-        Some("fooBar") => ident_style::camel_lower,
-        Some("foo_bar") => ident_style::under_lower,
-        Some("Foo_Bar") => ident_style::under_upper,
-        Some("FOO_BAR") => ident_style::under_caps,
-        Some("FooBar!") => ident_style::camel_upper_strict,
-        Some("fooBar!") => ident_style::camel_lower_strict,
-        Some("foo_bar!") => ident_style::under_lower_strict,
-        Some("Foo_Bar!") => ident_style::under_upper_strict,
-        Some("FOO_BAR!") => ident_style::under_caps,
-        _ => default,
-    }
-}
-
 /// Infer an ident converter that may include prefix/suffix (returns IdentConverter).
 /// Falls back to a plain fn pointer wrapped in Box.
 fn infer_ident_converter(opt: &Option<String>, default: fn(&str) -> String) -> IdentConverter {
@@ -304,14 +288,12 @@ fn main() -> Result<()> {
     eprintln!("Parsing...");
     let mut parser_ctx = ParserContext::new(include_paths);
     let mut all_types = Vec::new();
-    let mut all_flags = Vec::new();
     let mut in_files = Vec::new();
 
     for idl_path in &cli.idl {
         let path = PathBuf::from(idl_path);
-        let (types, flags) = parser_ctx.parse_file(&path, &mut in_files)?;
+        let (types, _flags) = parser_ctx.parse_file(&path, &mut in_files)?;
         all_types.extend(types);
-        all_flags.extend(flags);
     }
 
     // Resolve types
