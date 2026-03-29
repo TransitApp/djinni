@@ -127,6 +127,14 @@ impl TypeDecl {
             | TypeDecl::Protobuf { origin, .. } => origin,
         }
     }
+
+    pub fn body_mut(&mut self) -> &mut TypeDef {
+        match self {
+            TypeDecl::Intern { body, .. }
+            | TypeDecl::Extern { body, .. }
+            | TypeDecl::Protobuf { body, .. } => body,
+        }
+    }
 }
 
 // Language extension flags
