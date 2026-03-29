@@ -1,0 +1,10 @@
+[package]
+name = "djinni-generator"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+djinni-ast = { workspace = true }
+djinni-resolver = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }

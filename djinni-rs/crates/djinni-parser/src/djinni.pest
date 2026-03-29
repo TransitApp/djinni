@@ -1,0 +1,90 @@
+// vinsg
+// PEG grammar for Djinni IDL files
+//
+// Note: # lines are documentation, NOT comments. They are captured and attached
+// to the following declaration. COMMENT is intentionally NOT defined.
+
+WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
+
+// Top-level file
+idl_file = { SOI ~ flag* ~ import_ref* ~ type_decl* ~ EOI }
+
+// @flag "..."
+flag = { "@flag" ~ quoted_string }
+
+// @import/@extern/@protobuf "..."
+import_ref = { "@" ~ directive ~ quoted_string }
+directive = @{ "import" | "extern" | "protobuf" }
+
+quoted_string = ${ "\"" ~ quoted_inner ~ "\"" }
+quoted_inner = @{ (!"\"" ~ !"\\" ~ ANY | "\\" ~ ANY)* }
+
+// Type declaration: doc ident<params> = typedef
+type_decl = { doc ~ ident ~ type_params? ~ "=" ~ type_def }
+
+// Type definition body
+type_def = _{ record_def | enum_def | flags_def | interface_def }
+
+// ---- Records ----
+record_def = { "record" ~ base_record? ~ ext_mods ~ "{" ~ record_items ~ "}" ~ deriving_clause? }
+base_record = ${ "extends" ~ WHITESPACE+ ~ ident }
+record_items = { ((const_field | record_field) ~ ";")* }
+record_field = { doc ~ ident ~ ":" ~ type_ref ~ ("=" ~ default_value)? }
+const_field = { doc ~ "const" ~ ident ~ ":" ~ type_ref ~ "=" ~ value }
+
+default_value = @{ default_enum_ref | default_func_call | default_word | default_string }
+default_enum_ref = @{ ident_chars ~ "::" ~ ident_chars }
+default_func_call = @{ ident_chars ~ "()" }
+default_word = @{ (ASCII_ALPHANUMERIC | "_" | "+" | "-" | ".")+ }
+default_string = @{ "\"" ~ (!"\"" ~ ANY | "\\\"")* ~ "\"" }
+ident_chars = _{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }
+
+deriving_clause = { "deriving" ~ "(" ~ ident ~ ("," ~ ident)* ~ ","? ~ ")" }
+
+// ---- Enums ----
+enum_def = { "enum" ~ "{" ~ (doc ~ ident ~ ";")* ~ "}" }
+
+// ---- Flags ----
+flags_def = { "flags" ~ "{" ~ flags_option* ~ "}" }
+flags_option = { doc ~ ident ~ ("=" ~ flags_special)? ~ ";" }
+flags_special = @{ "all" | "none" }
+
+// ---- Interfaces ----
+interface_def = { "interface" ~ ext_mods ~ "{" ~ interface_items ~ "}" }
+interface_items = { ((const_field | method) ~ ";")* }
+
+method = { doc ~ static_kw? ~ const_kw? ~ ident ~ "(" ~ param_list ~ ")" ~ (":" ~ type_ref)? ~ ext_mods }
+static_kw = { "static" }
+const_kw = { "const" }
+param_list = { (record_field ~ ("," ~ record_field)* ~ ","?)? }
+
+// ---- Values (for constants) ----
+value = { float_val | int_val | bool_val | string_val | enum_val | composite_val | const_ref_val }
+
+float_val = @{ ("+" | "-")? ~ ASCII_DIGIT* ~ "." ~ ASCII_DIGIT* ~ (("E" | "e") ~ ("+" | "-")? ~ ASCII_DIGIT*)? }
+int_val = @{ ("+" | "-")? ~ ASCII_DIGIT+ }
+bool_val = @{ "true" | "false" | "True" | "False" }
+string_val = ${ "\"" ~ string_inner ~ "\"" }
+string_inner = @{ (!"\"" ~ !"\\" ~ ANY | "\\" ~ ANY)* }
+enum_val = ${ ident ~ "::" ~ ident }
+const_ref_val = { ident }
+composite_val = { "{" ~ composite_field ~ ("," ~ composite_field)* ~ ","? ~ "}" }
+composite_field = { ident ~ "=" ~ value }
+
+// ---- Type references ----
+type_ref = { ident ~ ("<" ~ type_ref ~ ("," ~ type_ref)* ~ ","? ~ ">")? }
+
+// ---- Extension modifiers: +c +j +o +w ----
+ext_mods = { ("+" ~ ident)* }
+
+// ---- Type parameters: <T, U> ----
+type_params = { "<" ~ ident ~ ("," ~ ident)* ~ ","? ~ ">" }
+
+// ---- Identifier ----
+ident = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }
+
+// ---- Documentation comments ----
+// # lines are captured (not silently skipped)
+doc = { doc_line* }
+doc_line = ${ "#" ~ doc_text ~ NEWLINE }
+doc_text = @{ (!NEWLINE ~ ANY)* }
