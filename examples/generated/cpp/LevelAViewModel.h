@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -10,6 +11,11 @@ namespace transitLib::vm {
 
 struct LevelA {
     std::string fieldA;
+
+    friend bool operator==(const LevelA& lhs, const LevelA& rhs);
+    friend bool operator!=(const LevelA& lhs, const LevelA& rhs);
+
+    virtual std::string getTestRepresentation(const std::string& indentation) const;
 
     virtual ~LevelA(){};
 };

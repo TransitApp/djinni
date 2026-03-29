@@ -5,6 +5,7 @@
 
 #include "record_with_derivings.hpp"
 #include <cstdint>
+#include <sstream>
 #include <utility>
 
 namespace testsuite {
@@ -15,6 +16,8 @@ struct RecordWithNestedDerivings final {
 
     friend bool operator==(const RecordWithNestedDerivings& lhs, const RecordWithNestedDerivings& rhs);
     friend bool operator!=(const RecordWithNestedDerivings& lhs, const RecordWithNestedDerivings& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     friend bool operator<(const RecordWithNestedDerivings& lhs, const RecordWithNestedDerivings& rhs);
     friend bool operator>(const RecordWithNestedDerivings& lhs, const RecordWithNestedDerivings& rhs);

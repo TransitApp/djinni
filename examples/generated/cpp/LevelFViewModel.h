@@ -4,11 +4,17 @@
 #pragma once
 
 #include "LevelEViewModel.h"
+#include <sstream>
 #include <utility>
 
 namespace transitLib::vm {
 
 struct LevelF : public LevelE {
+
+    friend bool operator==(const LevelF& lhs, const LevelF& rhs);
+    friend bool operator!=(const LevelF& lhs, const LevelF& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const override;
 };
 
 } // namespace transitLib::vm

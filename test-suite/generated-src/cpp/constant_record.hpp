@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdint>
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -16,6 +17,8 @@ struct ConstantRecord final {
 
     friend bool operator==(const ConstantRecord& lhs, const ConstantRecord& rhs);
     friend bool operator!=(const ConstantRecord& lhs, const ConstantRecord& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     ConstantRecord(int32_t some_integer_,
                    std::string some_string_)

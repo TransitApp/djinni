@@ -5,6 +5,7 @@
 
 #include "color.hpp"
 #include "record_with_derivings.hpp"
+#include <sstream>
 #include <utility>
 
 /** This file tests YAML dumped by Djinni can be parsed back in */
@@ -14,6 +15,8 @@ struct ExternRecordWithDerivings final {
 
     friend bool operator==(const ExternRecordWithDerivings& lhs, const ExternRecordWithDerivings& rhs);
     friend bool operator!=(const ExternRecordWithDerivings& lhs, const ExternRecordWithDerivings& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     friend bool operator<(const ExternRecordWithDerivings& lhs, const ExternRecordWithDerivings& rhs);
     friend bool operator>(const ExternRecordWithDerivings& lhs, const ExternRecordWithDerivings& rhs);

@@ -5,6 +5,7 @@
 
 #include <chrono>
 #include <memory>
+#include <sstream>
 #include <utility>
 
 namespace testsuite {
@@ -14,6 +15,8 @@ struct DateRecord final {
 
     friend bool operator==(const DateRecord& lhs, const DateRecord& rhs);
     friend bool operator!=(const DateRecord& lhs, const DateRecord& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     friend bool operator<(const DateRecord& lhs, const DateRecord& rhs);
     friend bool operator>(const DateRecord& lhs, const DateRecord& rhs);

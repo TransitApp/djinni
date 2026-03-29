@@ -24,6 +24,24 @@
                                  fieldB:fieldB];
 }
 
+- (BOOL)isEqual:(id)other
+{
+    if (![other isKindOfClass:[SPLevelBViewModel class]]) {
+        return NO;
+    }
+    SPLevelBViewModel *typedOther = (SPLevelBViewModel *)other;
+    return [self.fieldA isEqualToString:typedOther.fieldA] &&
+            [self.fieldB isEqualToString:typedOther.fieldB];
+}
+
+- (NSUInteger)hash
+{
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + self.fieldA.hash;
+    hashCode = hashCode * 31 + self.fieldB.hash;
+    return hashCode;
+}
+
 #ifndef DJINNI_DISABLE_DESCRIPTION_METHODS
 - (NSString *)description
 {

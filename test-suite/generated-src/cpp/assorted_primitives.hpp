@@ -5,6 +5,7 @@
 
 #include "../../handwritten-src/cpp/optional.hpp"
 #include <cstdint>
+#include <sstream>
 #include <utility>
 
 namespace testsuite {
@@ -27,6 +28,8 @@ struct AssortedPrimitives final {
 
     friend bool operator==(const AssortedPrimitives& lhs, const AssortedPrimitives& rhs);
     friend bool operator!=(const AssortedPrimitives& lhs, const AssortedPrimitives& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     AssortedPrimitives(bool b_,
                        int8_t eight_,

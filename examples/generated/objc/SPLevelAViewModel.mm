@@ -20,6 +20,22 @@
     return [[self alloc] initWithFieldA:fieldA];
 }
 
+- (BOOL)isEqual:(id)other
+{
+    if (![other isKindOfClass:[SPLevelAViewModel class]]) {
+        return NO;
+    }
+    SPLevelAViewModel *typedOther = (SPLevelAViewModel *)other;
+    return [self.fieldA isEqualToString:typedOther.fieldA];
+}
+
+- (NSUInteger)hash
+{
+    NSUInteger hashCode = 17;
+    hashCode = hashCode * 31 + self.fieldA.hash;
+    return hashCode;
+}
+
 #ifndef DJINNI_DISABLE_DESCRIPTION_METHODS
 - (NSString *)description
 {

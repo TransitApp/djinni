@@ -14,6 +14,32 @@ data class LevelF(
     override val fieldE: String
 ) : LevelE(fieldA, fieldB, fieldC, fieldD, fieldE) {
 
+    override fun equals(other: Any?): Boolean  {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as LevelF
+
+        if (fieldA != other.fieldA) return false
+        if (fieldB != other.fieldB) return false
+        if (fieldC != other.fieldC) return false
+        if (fieldD != other.fieldD) return false
+        if (fieldE != other.fieldE) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int  {
+        // Pick an arbitrary non-zero starting value
+        var hashCode = 17;
+        hashCode = hashCode * 31 + fieldA.hashCode()
+        hashCode = hashCode * 31 + fieldB.hashCode()
+        hashCode = hashCode * 31 + fieldC.hashCode()
+        hashCode = hashCode * 31 + fieldD.hashCode()
+        hashCode = hashCode * 31 + fieldE.hashCode()
+        return hashCode
+    }
+
     override fun toString(): String  {
         return "LevelF {" +
                 "fieldA=" + fieldA +

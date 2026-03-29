@@ -11,6 +11,26 @@ open class LevelB(
     open val fieldB: String
 ) : LevelA(fieldA) {
 
+    override fun equals(other: Any?): Boolean  {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as LevelB
+
+        if (fieldA != other.fieldA) return false
+        if (fieldB != other.fieldB) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int  {
+        // Pick an arbitrary non-zero starting value
+        var hashCode = 17;
+        hashCode = hashCode * 31 + fieldA.hashCode()
+        hashCode = hashCode * 31 + fieldB.hashCode()
+        return hashCode
+    }
+
     override fun toString(): String  {
         return "LevelB {" +
                 "fieldA=" + fieldA +

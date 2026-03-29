@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdint>
+#include <sstream>
 #include <utility>
 
 namespace snapchat::djinni::benchmark {
@@ -15,6 +16,11 @@ struct RecordSixInt final {
     int64_t i4;
     int64_t i5;
     int64_t i6;
+
+    friend bool operator==(const RecordSixInt& lhs, const RecordSixInt& rhs);
+    friend bool operator!=(const RecordSixInt& lhs, const RecordSixInt& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     RecordSixInt(int64_t i1_,
                  int64_t i2_,

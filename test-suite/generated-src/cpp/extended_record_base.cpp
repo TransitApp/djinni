@@ -3,6 +3,7 @@
 
 #include "extended_record_base.hpp"  // my header
 #include "../../handwritten-src/cpp/extended_record.hpp"
+#include "BuildConstants.h"
 
 namespace testsuite {
 
@@ -15,6 +16,21 @@ bool operator==(const ExtendedRecordBase& lhs, const ExtendedRecordBase& rhs) {
 
 bool operator!=(const ExtendedRecordBase& lhs, const ExtendedRecordBase& rhs) {
     return !(lhs == rhs);
+}
+
+std::string ExtendedRecordBase::getTestRepresentation(const std::string& textIndentation) const {
+    if constexpr (BuildConstants::UnitTests) {
+        std::ostringstream ss;
+        auto childIndentation = textIndentation + "   ";
+        ss << "ExtendedRecordBase {";
+
+        ss << "\n" << childIndentation;
+        ss << "foo=" << foo;
+
+        ss << "\n" << textIndentation << "}";
+        return ss.str();
+    }
+    return "";
 }
 
 } // namespace testsuite
