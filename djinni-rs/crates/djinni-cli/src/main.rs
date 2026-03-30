@@ -183,7 +183,15 @@ fn build_spec(cli: &Cli) -> Spec {
         java_out_folder: cli.java_out.as_ref().map(PathBuf::from),
         java_package: cli.java_package.clone(),
         java_class_access_modifier: JavaAccessModifier::Public,
-        java_ident_style: ident_style::java_default(),
+        java_ident_style: {
+            let mut style = ident_style::java_default();
+            if let Some(ref s) = cli.ident_java_field {
+                if let Some(conv) = ident_style::infer(s) {
+                    style.field = conv;
+                }
+            }
+            style
+        },
         java_cpp_exception: None,
         java_annotation: None,
         java_nullable_annotation: cli.java_nullable_annotation.clone(),
@@ -251,6 +259,7 @@ fn build_spec(cli: &Cli) -> Spec {
         objc_disable_class_ctor: false,
         objc_closed_enums: false,
         objc_strict_protocol: true,
+        objc_type_prefix: cli.objc_type_prefix.clone().unwrap_or_default(),
         wasm_out_folder: cli.wasm_out.as_ref().map(PathBuf::from),
         wasm_include_prefix: String::new(),
         wasm_include_cpp_prefix: String::new(),
@@ -305,6 +314,12 @@ fn main() -> Result<()> {
     if let Some(ref dir) = spec.cpp_out_folder {
         fs::create_dir_all(dir)?;
     }
+    if let Some(ref dir) = spec.objc_out_folder {
+        fs::create_dir_all(dir)?;
+    }
+    if let Some(ref dir) = spec.objcpp_out_folder {
+        fs::create_dir_all(dir)?;
+    }
 
     // Generate
     eprintln!("Generating...");
@@ -315,6 +330,8 @@ fn main() -> Result<()> {
     };
 
     generate_cpp(&mut gen_ctx, &all_types);
+    djinni_generator::objc_gen::generate_objc(&mut gen_ctx, &all_types);
+    djinni_generator::objcpp_gen::generate_objcpp(&mut gen_ctx, &all_types);
 
     // Write file lists
     if let Some(ref path) = gen_ctx.spec.list_in_files {

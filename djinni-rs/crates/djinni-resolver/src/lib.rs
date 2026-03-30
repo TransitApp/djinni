@@ -97,7 +97,74 @@ pub fn resolve(
         resolve_type_def(&scope, td.body_mut())?;
     }
 
+    // Second pass: update MDef.body inside resolved MExprs with now-resolved bodies.
+    // The MDef.body was cloned before resolution, so field TypeRefs are None.
+    // Build a map of resolved bodies, then fix up all MExpr trees.
+    let resolved_bodies: HashMap<String, TypeDef> = idl
+        .iter()
+        .filter_map(|td| {
+            if let TypeDecl::Intern { ident, body, .. } = td {
+                Some((ident.name.clone(), body.clone()))
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    for td in idl.iter_mut() {
+        let mut visited = std::collections::HashSet::new();
+        fixup_typedef(td.body_mut(), &resolved_bodies, &mut visited);
+    }
+
     Ok(())
+}
+
+fn fixup_typedef(td: &mut TypeDef, resolved: &HashMap<String, TypeDef>, visited: &mut std::collections::HashSet<String>) {
+    match td {
+        TypeDef::Record(r) => {
+            for f in &mut r.fields {
+                fixup_typeref(&mut f.ty, resolved, visited);
+            }
+            for c in &mut r.consts {
+                fixup_typeref(&mut c.ty, resolved, visited);
+            }
+        }
+        TypeDef::Interface(i) => {
+            for m in &mut i.methods {
+                for p in &mut m.params {
+                    fixup_typeref(&mut p.ty, resolved, visited);
+                }
+                if let Some(ref mut ret) = m.ret {
+                    fixup_typeref(ret, resolved, visited);
+                }
+            }
+            for c in &mut i.consts {
+                fixup_typeref(&mut c.ty, resolved, visited);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn fixup_typeref(tr: &mut TypeRef, resolved: &HashMap<String, TypeDef>, visited: &mut std::collections::HashSet<String>) {
+    if let Some(ref mut mexpr) = tr.resolved {
+        fixup_mexpr(mexpr, resolved, visited);
+    }
+}
+
+fn fixup_mexpr(mexpr: &mut MExpr, resolved: &HashMap<String, TypeDef>, visited: &mut std::collections::HashSet<String>) {
+    if let Meta::MDef(ref mut d) = mexpr.base {
+        if !visited.contains(&d.name) {
+            visited.insert(d.name.clone());
+            if let Some(body) = resolved.get(&d.name) {
+                d.body = body.clone();
+            }
+            fixup_typedef(&mut d.body, resolved, visited);
+        }
+    }
+    for arg in &mut mexpr.args {
+        fixup_mexpr(arg, resolved, visited);
+    }
 }
 
 fn resolve_type_def(scope: &Scope, type_def: &mut TypeDef) -> Result<(), ResolveError> {

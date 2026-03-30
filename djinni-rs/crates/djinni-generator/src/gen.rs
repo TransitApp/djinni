@@ -207,7 +207,7 @@ pub fn normal_enum_options(e: &Enum) -> Vec<&EnumOption> {
 pub fn write_enum_option_none(
     w: &mut IndentWriter,
     e: &Enum,
-    ident_fn: fn(&str) -> String,
+    ident_fn: &dyn Fn(&str) -> String,
     delim: &str,
 ) {
     if let Some(o) = e.options.iter().find(|o| o.special_flag == Some(SpecialFlag::NoFlags)) {
@@ -219,7 +219,7 @@ pub fn write_enum_option_none(
 pub fn write_enum_options(
     w: &mut IndentWriter,
     e: &Enum,
-    ident_fn: fn(&str) -> String,
+    ident_fn: &dyn Fn(&str) -> String,
     delim: &str,
 ) {
     for (shift, o) in normal_enum_options(e).iter().enumerate() {
@@ -245,7 +245,7 @@ pub fn write_enum_options(
 pub fn write_enum_option_all(
     w: &mut IndentWriter,
     e: &Enum,
-    ident_fn: fn(&str) -> String,
+    ident_fn: &dyn Fn(&str) -> String,
     delim: &str,
 ) {
     if let Some(o) = e

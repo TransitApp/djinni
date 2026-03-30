@@ -177,9 +177,9 @@ fn generate_enum(
             // enum class
             w.w(&format!("enum class {} : {}", self_name, underlying_type));
             w.braced_semi(|w| {
-                write_enum_option_none(w, e, id_enum, "=");
-                write_enum_options(w, e, id_enum, "=");
-                write_enum_option_all(w, e, id_enum, "=");
+                write_enum_option_none(w, e, &id_enum, "=");
+                write_enum_options(w, e, &id_enum, "=");
+                write_enum_option_all(w, e, &id_enum, "=");
             });
 
             if e.flags {
