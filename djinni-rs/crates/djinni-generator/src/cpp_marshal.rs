@@ -315,6 +315,57 @@ impl<'a> CppMarshal<'a> {
         ))
     }
 
+    // --- fq methods for Option<TypeRef> (JNI bridge convenience) ---
+
+    pub fn fq_return_type_opt(&self, ret: &Option<TypeRef>) -> String {
+        self.fq_return_type(ret.as_ref())
+    }
+
+    pub fn fq_param_type_from_typeref(&self, ty: &TypeRef) -> String {
+        match &ty.resolved {
+            Some(tm) => self.to_cpp_param_type(tm, Some(&self.spec.cpp_namespace), &[]),
+            None => String::new(),
+        }
+    }
+
+    /// maybe_move: wrap in std::move if the type is not by-value
+    pub fn maybe_move(&self, expr: &str, ty: &TypeRef) -> String {
+        match &ty.resolved {
+            Some(tm) => self.maybe_move_mexpr(expr, tm),
+            None => expr.to_string(),
+        }
+    }
+
+    pub fn maybe_move_mexpr(&self, expr: &str, tm: &MExpr) -> String {
+        if self.is_move_only(tm) {
+            format!("std::move({})", expr)
+        } else {
+            expr.to_string()
+        }
+    }
+
+    fn is_move_only(&self, tm: &MExpr) -> bool {
+        match &tm.base {
+            Meta::MDef(d) => {
+                if let TypeDef::Record(r) = &d.body {
+                    r.fields.iter().any(|f| {
+                        match f.ty.resolved.as_ref() {
+                            Some(ftm) => self.is_move_only(ftm),
+                            None => false,
+                        }
+                    })
+                } else {
+                    false
+                }
+            }
+            Meta::MExtern(e) => match e.def_type {
+                DefType::Record => e.cpp.move_only,
+                _ => false,
+            },
+            _ => false,
+        }
+    }
+
     // --- resolve_ext_cpp_hdr ---
 
     pub fn resolve_ext_cpp_hdr(&self, path: &str) -> String {

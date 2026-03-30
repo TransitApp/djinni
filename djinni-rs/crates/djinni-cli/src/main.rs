@@ -320,6 +320,15 @@ fn main() -> Result<()> {
     if let Some(ref dir) = spec.objcpp_out_folder {
         fs::create_dir_all(dir)?;
     }
+    if let Some(ref dir) = spec.java_out_folder {
+        fs::create_dir_all(dir)?;
+    }
+    if let Some(ref dir) = spec.kotlin_out_folder {
+        fs::create_dir_all(dir)?;
+    }
+    if let Some(ref dir) = spec.jni_out_folder {
+        fs::create_dir_all(dir)?;
+    }
 
     // Generate
     eprintln!("Generating...");
@@ -332,6 +341,9 @@ fn main() -> Result<()> {
     generate_cpp(&mut gen_ctx, &all_types);
     djinni_generator::objc_gen::generate_objc(&mut gen_ctx, &all_types);
     djinni_generator::objcpp_gen::generate_objcpp(&mut gen_ctx, &all_types);
+    djinni_generator::kotlin_gen::generate_kotlin(&mut gen_ctx, &all_types);
+    djinni_generator::jni_gen::generate_jni(&mut gen_ctx, &all_types);
+    djinni_generator::java_gen::generate_java(&mut gen_ctx, &all_types);
 
     // Write file lists
     if let Some(ref path) = gen_ctx.spec.list_in_files {
