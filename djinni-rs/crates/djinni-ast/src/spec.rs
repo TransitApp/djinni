@@ -94,6 +94,7 @@ pub struct Spec {
     pub objc_disable_class_ctor: bool,
     pub objc_closed_enums: bool,
     pub objc_strict_protocol: bool,
+    pub objc_type_prefix: String,
 
     // WASM
     pub wasm_out_folder: Option<PathBuf>,
