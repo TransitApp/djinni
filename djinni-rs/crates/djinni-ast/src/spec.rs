@@ -17,7 +17,14 @@ impl JavaAccessModifier {
     pub fn code_generation_string(&self) -> &str {
         match self {
             JavaAccessModifier::Public => "public ",
-            JavaAccessModifier::Package => "",
+            JavaAccessModifier::Package => "/*package*/ ",
+        }
+    }
+
+    pub fn kotlin_code_generation_string(&self) -> &str {
+        match self {
+            JavaAccessModifier::Public => "",
+            JavaAccessModifier::Package => "internal ",
         }
     }
 }
