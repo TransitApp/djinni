@@ -251,7 +251,6 @@ fn generate_interface(
             // Constants
             if !consts.is_empty() {
                 write_kotlin_constants(w, &consts, &marshal, id_java_enum, id_java_const, &id_java.field, _idl);
-                first_member = false;
             }
 
             // Non-static methods
@@ -565,6 +564,10 @@ fn generate_record(
                 for f in &all_fields {
                     let fname = (id_java.field)(&f.ident.name);
                     if let Some(ref resolved) = f.ty.resolved {
+                        // Skip protobuf fields in equals
+                        if matches!(&resolved.base, Meta::MProtobuf(_)) {
+                            continue;
+                        }
                         match &resolved.base {
                             Meta::MBinary | Meta::MArray => {
                                 w.w(&format!("if (!{}.contentEquals(other.{})) return false", fname, fname));
@@ -601,10 +604,11 @@ fn generate_record(
                                 _ => fname.clone(),
                             },
                             Meta::MExtern(e) => match e.def_type {
-                                DefType::Record => format!("({})", e.java.hash.replace("{}", &fname)),
+                                DefType::Record => format!("({})", e.java.hash.replace("%s", &fname)),
                                 DefType::Enum => format!("{}.hashCode()", fname),
                                 _ => fname.clone(),
                             },
+                            Meta::MProtobuf(_) => "()".to_string(),
                             _ => fname.clone(),
                         };
                         w.wl(&format!("hashCode = hashCode * 31 + {}", hash_expr));
