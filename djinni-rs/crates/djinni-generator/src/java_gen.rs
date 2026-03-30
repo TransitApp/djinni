@@ -593,6 +593,12 @@ fn generate_record(
                 w.nested_n(2, |w| {
                     let mut skip_first = true;
                     for f in &fields {
+                        // Skip protobuf fields in equals
+                        if let Some(ref resolved) = f.ty.resolved {
+                            if matches!(&resolved.base, Meta::MProtobuf(_)) {
+                                continue;
+                            }
+                        }
                         if !skip_first {
                             w.wl(" &&");
                         }
@@ -671,10 +677,11 @@ fn generate_record(
                                 _ => fname.clone(),
                             },
                             Meta::MExtern(e) => match e.def_type {
-                                DefType::Record => format!("({})", e.java.hash.replace("{}", &fname)),
+                                DefType::Record => format!("({})", e.java.hash.replace("%s", &fname)),
                                 DefType::Enum => format!("{}.hashCode()", fname),
                                 _ => fname.clone(),
                             },
+                            Meta::MProtobuf(_) => "()".to_string(),
                             _ => fname.clone(),
                         };
                         w.wl(&format!("hashCode = hashCode * 31 + {};", hash_expr));

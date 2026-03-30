@@ -376,7 +376,7 @@ fn generate_interface(
             }
             w.wl_empty();
             wrap_namespace(w, &spec.objcpp_namespace, |w| {
-                w.w(&format!("class {}", helper_class));
+                w.wl(&format!("class {}", helper_class));
                 w.braced_semi(|w| {
                     w.wl_outdent("public:");
                     match &spec.cpp_nn_type {
@@ -439,7 +439,9 @@ fn generate_interface(
             ));
         }
     }
-    if spec.cpp_nn_type.is_some() || spec.cpp_nn_check_expression.is_some() {
+    // Match Scala behavior: condition is `!cppNnType.isEmpty || !cppNnCheckExpression.nonEmpty`
+    // which evaluates to true when cppNnCheckExpression is None (the default)
+    if spec.cpp_nn_type.is_some() || spec.cpp_nn_check_expression.is_none() {
         refs.body.insert("#include <stdexcept>".to_string());
     }
     if i.ext.objc {
