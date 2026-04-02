@@ -844,12 +844,11 @@ fn write_java_const_value(
         ConstValue::String(s) => {
             w.w(&format!("\"{}\"", s));
         }
-        ConstValue::EnumValue { ty: enum_ty, value: val } => {
-            if enum_ty.is_empty() {
-                w.w(&id_java_const(val));
-            } else {
-                w.w(&format!("{}.{}", marshal.typename_from_typeref(ty), id_java_enum(val)));
-            }
+        ConstValue::ConstRef(name) => {
+            w.w(&id_java_const(name));
+        }
+        ConstValue::EnumValue { ty: _enum_ty, value: val } => {
+            w.w(&format!("{}.{}", marshal.typename_from_typeref(ty), id_java_enum(val)));
         }
         ConstValue::Composite(fields) => {
             if let Some(ref resolved) = ty.resolved {

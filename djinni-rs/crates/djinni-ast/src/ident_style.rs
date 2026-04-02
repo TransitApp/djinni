@@ -169,13 +169,13 @@ pub struct JavaIdentStyle {
 }
 
 pub struct ObjcIdentStyle {
-    pub ty: fn(&str) -> String,
+    pub ty: IdentConverter,
     pub type_param: fn(&str) -> String,
     pub method: fn(&str) -> String,
     pub field: fn(&str) -> String,
     pub local: fn(&str) -> String,
-    pub enum_: fn(&str) -> String,
-    pub const_: fn(&str) -> String,
+    pub enum_: IdentConverter,
+    pub const_: IdentConverter,
 }
 
 pub struct JsIdentStyle {
@@ -215,13 +215,13 @@ pub fn java_default() -> JavaIdentStyle {
 
 pub fn objc_default() -> ObjcIdentStyle {
     ObjcIdentStyle {
-        ty: camel_upper,
+        ty: Box::new(camel_upper),
         type_param: camel_upper,
         method: camel_lower,
         field: camel_lower,
         local: camel_lower,
-        enum_: camel_upper,
-        const_: camel_upper,
+        enum_: Box::new(camel_upper),
+        const_: Box::new(camel_upper),
     }
 }
 

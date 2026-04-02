@@ -178,6 +178,7 @@ pub enum ConstValue {
     Bool(bool),
     String(String),
     EnumValue { ty: String, value: String },
+    ConstRef(String),
     Composite(Vec<(String, ConstValue)>),
 }
 

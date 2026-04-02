@@ -196,7 +196,7 @@ fn write_objc_const_value(
         ConstValue::Bool(b) => {
             w.w(&format!("{}{}", boxed_prefix, if *b { "YES" } else { "NO" }));
         }
-        ConstValue::String(s) => { w.w(&format!("@{}", s)); }
+        ConstValue::String(s) => { w.w(&format!("@\"{}\"", s)); }
         ConstValue::EnumValue { ty: _, value } => {
             let type_name = marshal.typename_from_mexpr(tm);
             w.w(&format!(
@@ -204,6 +204,9 @@ fn write_objc_const_value(
                 type_name,
                 (spec.objc_ident_style.enum_)(value)
             ));
+        }
+        ConstValue::ConstRef(name) => {
+            w.w(&format!("{}{}", self_name, (spec.objc_ident_style.const_)(name)));
         }
         ConstValue::Composite(fields) => {
             // Record constant — use find_resolved_record for resolved field types
@@ -1098,8 +1101,8 @@ fn write_hash_code(tm: &MExpr, field_name: &str, _spec: &Spec) -> String {
                     format!("(NSUInteger)self.{}", field_name)
                 }
                 Meta::MExtern(e) => match e.def_type {
-                    DefType::Record => e.objc.hash.replace("{}", &format!("self.{}", field_name)),
-                    _ => format!("self.{}.hash", field_name),
+                    DefType::Record => e.objc.hash.replace("%s", &format!("self.{}", field_name)),
+                    DefType::Interface | DefType::Enum => "()".to_string(),
                 },
                 _ => format!("self.{}.hash", field_name),
             }
@@ -1121,11 +1124,11 @@ fn write_hash_code(tm: &MExpr, field_name: &str, _spec: &Spec) -> String {
             DefType::Enum => format!("(NSUInteger)self.{}", field_name),
             DefType::Record => format!(
                 "({})",
-                e.objc.hash.replace("{}", &format!("self.{}", field_name))
+                e.objc.hash.replace("%s", &format!("self.{}", field_name))
             ),
             _ => panic!("Unreachable"),
         },
-        Meta::MProtobuf(_) => String::new(),
+        Meta::MProtobuf(_) => "()".to_string(),
         _ => format!("self.{}.hash", field_name),
     }
 }
