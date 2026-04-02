@@ -137,6 +137,11 @@ impl<'a> ObjcppMarshal<'a> {
         format!("{}{}", self.helper_name(tm), self.helper_templates(tm))
     }
 
+    /// Public version of helper_name for YAML generator
+    pub fn helper_name_for_yaml(&self, tm: &MExpr) -> String {
+        self.helper_name(tm)
+    }
+
     fn helper_name(&self, tm: &MExpr) -> String {
         let cpp_marshal = CppMarshal::new(self.spec);
         let objc_marshal = ObjcMarshal::new(self.spec);

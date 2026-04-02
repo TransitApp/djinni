@@ -159,7 +159,7 @@ pub struct CppIdentStyle {
 }
 
 pub struct JavaIdentStyle {
-    pub ty: fn(&str) -> String,
+    pub ty: IdentConverter,
     pub type_param: fn(&str) -> String,
     pub method: fn(&str) -> String,
     pub field: IdentConverter,
@@ -203,7 +203,7 @@ pub fn cpp_default() -> CppIdentStyle {
 
 pub fn java_default() -> JavaIdentStyle {
     JavaIdentStyle {
-        ty: camel_upper,
+        ty: Box::new(camel_upper),
         type_param: camel_upper,
         method: camel_lower,
         field: Box::new(camel_lower),

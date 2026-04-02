@@ -14,3 +14,4 @@ pub mod jni_marshal;
 pub mod kotlin_gen;
 pub mod jni_gen;
 pub mod java_gen;
+pub mod yaml_gen;
