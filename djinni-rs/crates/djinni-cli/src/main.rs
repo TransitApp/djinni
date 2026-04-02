@@ -244,7 +244,19 @@ fn build_spec(cli: &Cli) -> Spec {
         cpp_header_ext: "hpp".into(),
         objc_out_folder: cli.objc_out.as_ref().map(PathBuf::from),
         objcpp_out_folder: cli.objcpp_out.as_ref().map(PathBuf::from),
-        objc_ident_style: ident_style::objc_default(),
+        objc_ident_style: {
+            let mut style = ident_style::objc_default();
+            if let Some(ref s) = cli.ident_objc_type {
+                style.ty = infer_ident_converter(&Some(s.clone()), ident_style::camel_upper);
+            }
+            if let Some(ref s) = cli.ident_objc_enum {
+                style.enum_ = infer_ident_converter(&Some(s.clone()), ident_style::camel_upper);
+            }
+            if let Some(ref s) = cli.ident_objc_const {
+                style.const_ = infer_ident_converter(&Some(s.clone()), ident_style::camel_upper);
+            }
+            style
+        },
         objc_file_ident_style: Box::new(ident_style::camel_upper),
         objcpp_ext: "mm".into(),
         objc_header_ext: "h".into(),

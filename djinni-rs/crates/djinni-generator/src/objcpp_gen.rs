@@ -585,7 +585,7 @@ fn generate_interface(
                                 w,
                                 &call_start,
                                 &m.params,
-                                "",
+                                ",",
                                 ")",
                                 |p| {
                                     let tm = match p.ty.resolved.as_ref() {
@@ -906,6 +906,9 @@ fn write_objc_const_value_bridge(
                 type_name,
                 (spec.objc_ident_style.enum_)(value)
             ));
+        }
+        ConstValue::ConstRef(name) => {
+            w.w(&format!("{}{}", self_name, (spec.objc_ident_style.const_)(name)));
         }
         ConstValue::Composite(fields) => {
             // Record constant — use find_resolved_record for resolved field types

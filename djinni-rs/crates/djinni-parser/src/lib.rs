@@ -588,10 +588,7 @@ fn build_const_value(pair: pest::iterators::Pair<Rule>, file: &Path) -> ConstVal
         }
         Rule::const_ref_val => {
             let name = inner.into_inner().next().unwrap().as_str().to_string();
-            ConstValue::EnumValue {
-                ty: String::new(),
-                value: name,
-            }
+            ConstValue::ConstRef(name)
         }
         Rule::composite_val => {
             let mut fields = Vec::new();

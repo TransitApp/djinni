@@ -949,11 +949,11 @@ fn write_cpp_const_value(
         ConstValue::String(s) => {
             w.w(&format!("{{\"{}\"}}",s));
         }
-        ConstValue::EnumValue { ty: enum_ty, value: val } => {
-            if enum_ty.is_empty() {
-                // ConstRef
-                w.w(&format!("{}::{}", self_name, (id_cpp.const_)(val)));
-            } else {
+        ConstValue::ConstRef(name) => {
+            w.w(&format!("{}::{}", self_name, (id_cpp.const_)(name)));
+        }
+        ConstValue::EnumValue { ty: _enum_ty, value: val } => {
+            {
                 // Actual enum value
                 let type_name = marshal.field_type_from_typeref(ty, &[]);
                 w.w(&format!("{}::{}", type_name, (id_cpp.enum_)(val)));
