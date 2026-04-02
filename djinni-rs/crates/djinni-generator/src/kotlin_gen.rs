@@ -218,8 +218,7 @@ fn generate_interface(
     let method_prefix = if gen_java_interface { "" } else { "abstract " };
     let throw_exception = java_cpp_exception.as_ref().map(|e| format!(" throws {}", e)).unwrap_or_default();
 
-    let id_java_ty: fn(&str) -> String = id_java.ty;
-    let file_name = format!("{}.kt", id_java_ty(&ident.name));
+    let file_name = format!("{}.kt", (id_java.ty)(&ident.name));
     let refs_java = refs.java.clone();
     let consts = i.consts.clone();
     let methods = i.methods.clone();

@@ -190,6 +190,9 @@ fn build_spec(cli: &Cli) -> Spec {
                     style.field = conv;
                 }
             }
+            if let Some(ref s) = cli.ident_java_type {
+                style.ty = infer_ident_converter(&Some(s.clone()), ident_style::camel_upper);
+            }
             style
         },
         java_cpp_exception: None,
@@ -232,8 +235,8 @@ fn build_spec(cli: &Cli) -> Spec {
         jni_include_prefix: String::new(),
         jni_include_cpp_prefix: String::new(),
         jni_namespace: "djinni_generated".into(),
-        jni_class_ident_style: Box::new(ident_style::camel_upper),
-        jni_file_ident_style: Box::new(ident_style::camel_upper),
+        jni_class_ident_style: infer_ident_converter(&cli.ident_jni_class, ident_style::camel_upper),
+        jni_file_ident_style: infer_ident_converter(&cli.ident_jni_file, ident_style::camel_upper),
         jni_base_lib_include_prefix: String::new(),
         jni_use_on_load: cli.jni_use_on_load_initializer.unwrap_or(false),
         jni_function_prologue_file: cli.jni_function_prologue_file.clone(),
@@ -329,6 +332,9 @@ fn main() -> Result<()> {
     if let Some(ref dir) = spec.jni_out_folder {
         fs::create_dir_all(dir)?;
     }
+    if let Some(ref dir) = spec.yaml_out_folder {
+        fs::create_dir_all(dir)?;
+    }
 
     // Generate
     eprintln!("Generating...");
@@ -344,6 +350,7 @@ fn main() -> Result<()> {
     djinni_generator::kotlin_gen::generate_kotlin(&mut gen_ctx, &all_types);
     djinni_generator::jni_gen::generate_jni(&mut gen_ctx, &all_types);
     djinni_generator::java_gen::generate_java(&mut gen_ctx, &all_types);
+    djinni_generator::yaml_gen::generate_yaml(&mut gen_ctx, &all_types);
 
     // Write file lists
     if let Some(ref path) = gen_ctx.spec.list_in_files {

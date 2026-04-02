@@ -30,6 +30,10 @@ impl<'a> JniMarshal<'a> {
         }
     }
 
+    pub fn fq_typename_from_name(&self, name: &str, ty: &TypeDef) -> String {
+        self.typename_from_name(name, ty)
+    }
+
     /// JNI param type (C++ JNI type like jint, jstring, jobject...)
     pub fn param_type_from_mexpr(&self, tm: &MExpr) -> String {
         self.to_jni_type(tm, false)

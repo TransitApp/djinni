@@ -313,7 +313,7 @@ fn write_record_prototype(
         w.wl_empty();
         w.wl(&format!("using Boxed = {};", jni_helper));
         w.wl_empty();
-        w.wl(&format!("~{};", jni_helper));
+        w.wl(&format!("~{}();", jni_helper));
         w.wl_empty();
         w.wl("static CppType toCpp(JNIEnv* jniEnv, JniType j);");
         w.wl("static ::djinni::LocalRef<JniType> fromCpp(JNIEnv* jniEnv, const CppType& c);");
@@ -518,7 +518,7 @@ fn generate_interface(
             w.wl_empty();
             w.wl(&format!("using Boxed = {};", jni_self));
             w.wl_empty();
-            w.wl(&format!("~{};", jni_self));
+            w.wl(&format!("~{}();", jni_self));
             w.wl_empty();
 
             if spec.cpp_nn_type.is_some() {
@@ -558,7 +558,7 @@ fn generate_interface(
             w.wl_empty();
 
             if i.ext.java {
-                w.w(&format!(
+                w.wl(&format!(
                     "class JavaProxy final : ::djinni::JavaProxyHandle<JavaProxy>, public {}",
                     cpp_self
                 ));

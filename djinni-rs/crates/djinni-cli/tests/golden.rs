@@ -384,6 +384,42 @@ fn golden_test_suite_main() {
     )
     .unwrap();
 
+    // YAML round-trip: copy yaml-test.djinni to yaml output dir, then parse it back
+    // This mirrors the final invocation in run_djinni.sh
+    let yaml_dir = temp_out.join("yaml");
+    fs::copy(
+        test_suite.join("djinni").join("yaml-test.djinni"),
+        yaml_dir.join("yaml-test.djinni"),
+    )
+    .unwrap();
+
+    run_djinni(
+        &test_suite,
+        &[
+            "--java-out", &temp_out.join("java").to_string_lossy(),
+            "--java-package", "com.dropbox.djinni.test",
+            "--ident-java-field", "mFooBar",
+            "--kotlin-out", &temp_out.join("kotlin").to_string_lossy(),
+            "--cpp-out", &temp_out.join("cpp").to_string_lossy(),
+            "--ident-cpp-enum-type", "foo_bar",
+            "--cpp-optional-template", "std::experimental::optional",
+            "--cpp-optional-header", "\"../../handwritten-src/cpp/optional.hpp\"",
+            "--jni-out", &temp_out.join("jni").to_string_lossy(),
+            "--jni-use-on-load-initializer", "false",
+            "--ident-jni-class", "NativeFooBar",
+            "--ident-jni-file", "NativeFooBar",
+            "--objc-out", &temp_out.join("objc").to_string_lossy(),
+            "--objcpp-out", &temp_out.join("objc").to_string_lossy(),
+            "--objc-type-prefix", "DB",
+            "--wasm-out", &temp_out.join("wasm").to_string_lossy(),
+            "--wasm-namespace", "testsuite",
+            "--ts-out", &temp_out.join("ts").to_string_lossy(),
+            "--ts-module", "test_yaml",
+            "--idl", &temp_out.join("yaml").join("yaml-test.djinni").to_string_lossy(),
+        ],
+    )
+    .unwrap();
+
     // Compare each output subdirectory against golden files
     let generated = test_suite.join("generated-src");
     let subdirs = &["cpp", "jni", "objc", "wasm", "ts"];
@@ -551,33 +587,49 @@ fn golden_cpp_all_invocations() {
     )
     .unwrap();
 
-    // Compare C++ output against golden files
-    // Use subset comparison to ignore YAML round-trip generated files
+    // Invocation 2 with YAML output, then YAML round-trip
+    run_djinni(
+        &test_suite,
+        &[
+            "--cpp-out", &temp_out.join("cpp").to_string_lossy(),
+            "--cpp-namespace", "testsuite",
+            "--ident-cpp-enum-type", "foo_bar",
+            "--cpp-optional-template", "std::experimental::optional",
+            "--cpp-optional-header", "\"../../handwritten-src/cpp/optional.hpp\"",
+            "--cpp-extended-record-include-prefix", "../../handwritten-src/cpp/",
+            "--yaml-out", &temp_out.join("yaml").to_string_lossy(),
+            "--yaml-out-file", "yaml-test.yaml",
+            "--yaml-prefix", "test_",
+            "--idl", "djinni/all.djinni",
+            "--idl-include-path", "djinni/vendor",
+        ],
+    )
+    .unwrap();
+
+    // YAML round-trip: copy yaml-test.djinni to yaml output dir, then parse it back
+    let yaml_dir = temp_out.join("yaml");
+    fs::copy(
+        test_suite.join("djinni").join("yaml-test.djinni"),
+        yaml_dir.join("yaml-test.djinni"),
+    )
+    .unwrap();
+
+    run_djinni(
+        &test_suite,
+        &[
+            "--cpp-out", &temp_out.join("cpp").to_string_lossy(),
+            "--ident-cpp-enum-type", "foo_bar",
+            "--cpp-optional-template", "std::experimental::optional",
+            "--cpp-optional-header", "\"../../handwritten-src/cpp/optional.hpp\"",
+            "--idl", &temp_out.join("yaml").join("yaml-test.djinni").to_string_lossy(),
+        ],
+    )
+    .unwrap();
+
+    // Compare C++ output against golden files (full comparison now includes YAML round-trip)
     let expected = test_suite.join("generated-src").join("cpp");
     let actual = temp_out.join("cpp");
-    if let Some(report) = compare_dirs_subset(&expected, &actual) {
+    if let Some(report) = compare_dirs(&expected, &actual) {
         panic!("Golden file mismatch in 'cpp':\n\n{}", report);
-    }
-
-    // Also check we generated all the expected files (excluding YAML round-trip ones)
-    let expected_files = read_dir_recursive(&expected);
-    let actual_files = read_dir_recursive(&actual);
-    let yaml_roundtrip_files: std::collections::HashSet<&str> = [
-        "extern_record_with_derivings.cpp",
-        "extern_record_with_derivings.hpp",
-        "extern_interface_1.hpp",
-        "extern_interface_2.hpp",
-        "test_optional_extern_interface_record.cpp",
-        "test_optional_extern_interface_record.hpp",
-    ].iter().cloned().collect();
-
-    let mut missing = Vec::new();
-    for key in expected_files.keys() {
-        if !actual_files.contains_key(key) && !yaml_roundtrip_files.contains(key.as_str()) {
-            missing.push(key.clone());
-        }
-    }
-    if !missing.is_empty() {
-        panic!("Missing {} files:\n{}", missing.len(), missing.join("\n"));
     }
 }
