@@ -12,8 +12,8 @@ code generation for **C++, JNI, Objective-C, Objective-C++, Java, Kotlin, and YA
 | C++      | PASS    | Full comparison including YAML round-trip types |
 | JNI      | PASS    | Full comparison, all 7 invocations |
 | ObjC     | PASS    | Full comparison (ObjC + ObjC++ in same dir) |
-| Java     | SKIPPED | Parcelable `writeToParcel`/`createFromParcel` not implemented |
-| Kotlin   | SKIPPED | Minor blank-line formatting diffs in `companion object` |
+| Java     | PASS    | Full comparison, Parcelable implemented |
+| Kotlin   | PASS    | Full comparison, blank-line formatting fixed |
 | WASM     | SKIPPED | Generator not implemented |
 | TS       | SKIPPED | Generator not implemented |
 
@@ -21,33 +21,8 @@ code generation for **C++, JNI, Objective-C, Objective-C++, Java, Kotlin, and YA
 
 ## Phase 1 - Polish Existing Generators
 
-### 1.1 Kotlin blank-line formatting (SMALL)
-**Files:** `kotlin_gen.rs`
-**Issue:** Extra/missing blank lines around `companion object` and static methods.
-The Scala `KotlinGenerator` uses `w.wl` spacing that differs from the Rust version.
-**Fix:** Adjust `wl_empty()` placement around:
-- `companion object` opening (lines ~277, ~351, ~716)
-- First static method inside companion (skip blank line when no `init` block)
-- Interface CppProxy companion object
-**Test:** Re-enable Kotlin golden comparison in `golden.rs`
-
-### 1.2 Java Parcelable (LARGE)
-**Files:** `java_gen.rs`
-**Reference:** `JavaGenerator.scala:474-619` (~145 lines)
-**What:** Generate Android `Parcelable` implementation when `deriving(parcelable)` is set:
-- Static `CREATOR` field (anonymous `Parcelable.Creator<T>`)
-- Constructor from `android.os.Parcel`
-- `describeContents()` (returns 0)
-- `writeToParcel(Parcel out, int flags)`
-**Types to handle in serialization:**
-- Primitives (byte, short, int, long, float, double, boolean) with byte/short special cases
-- String, Binary (byte[]), Date (via `getTime()`/`new Date(readLong())`)
-- Collections: List, Set (as ArrayList), Map
-- Records (recursive `writeToParcel`)
-- Enums (ordinal/values[])
-- External types (use `e.java.readFromParcel`/`writeToParcel` format strings with `%s`)
-- Optional types (null check with `readByte` sentinel)
-**Test:** Re-enable Java golden comparison in `golden.rs`
+### ~~1.1 Kotlin blank-line formatting~~ DONE
+### ~~1.2 Java Parcelable~~ DONE
 
 ---
 
