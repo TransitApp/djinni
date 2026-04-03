@@ -296,8 +296,15 @@ fn generate_interface(
                             });
                         });
                     }
+                    // Share the skip-first state with the instance method loop:
+                    // if instance methods were emitted, first_member is false and
+                    // the first static gets a blank line separator.
+                    let mut need_separator = !first_member || jni_use_on_load;
                     for m in &statics {
-                        w.wl_empty();
+                        if need_separator {
+                            w.wl_empty();
+                        }
+                        need_separator = true;
                         write_method_doc(w, &m.doc, &m.params, id_java_local);
                         let ret = marshal.return_type(&m.ret);
                         let params: Vec<String> = m.params.iter().map(|p| {
