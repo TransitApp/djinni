@@ -70,7 +70,7 @@ public class DateRecord implements Comparable<DateRecord>, android.os.Parcelable
 
     @Override
     public void writeToParcel(android.os.Parcel out, int flags) {
-        out.writeLong(mCreatedAt.getTime());
+        out.writeLong(this.mCreatedAt.getTime());
     }
 
 

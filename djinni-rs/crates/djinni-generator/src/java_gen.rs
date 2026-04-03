@@ -254,7 +254,8 @@ fn generate_interface(
             // Constants
             write_java_constants(w, &consts, &marshal, id_java_enum, id_java_const, &id_java.field, _idl);
 
-            let mut first_member = consts.is_empty();
+            // Constants already emit a trailing blank line, so treat it as if nothing was written
+            let mut first_member = true;
 
             // Non-static methods
             for m in methods.iter().filter(|m| !m.is_static) {
@@ -306,8 +307,12 @@ fn generate_interface(
                     });
                 }
             }
+            let mut need_sep = !first_member || jni_use_on_load;
             for m in &statics {
-                w.wl_empty();
+                if need_sep {
+                    w.wl_empty();
+                }
+                need_sep = true;
                 write_method_doc(w, &m.doc, &m.params, id_java_local);
                 let ret = marshal.return_type(&m.ret);
                 let params: Vec<String> = m.params.iter().map(|p| {
@@ -710,7 +715,7 @@ fn generate_record(
 
             // Parcelable
             if deriving_types.contains(&DerivingType::AndroidParcelable) {
-                // TODO: implement Parcelable writeToParcel/createFromParcel if needed
+                write_parcelable(w, &self_name, &all_fields, &marshal, &*id_java.field);
             }
 
             // compareTo
@@ -889,6 +894,240 @@ fn find_resolved_record<'a>(idl: &'a [TypeDecl], name: &str) -> Option<&'a Recor
             None
         }
     })
+}
+
+fn write_parcelable(
+    w: &mut IndentWriter,
+    self_name: &str,
+    fields: &[Field],
+    marshal: &JavaMarshal,
+    id_java_field: &dyn Fn(&str) -> String,
+) {
+    // CREATOR
+    w.wl_empty();
+    w.wl(&format!(
+        "public static final android.os.Parcelable.Creator<{}> CREATOR",
+        self_name
+    ));
+    w.w(&format!(
+        "    = new android.os.Parcelable.Creator<{}>()",
+        self_name
+    ));
+    w.braced_end(";", |w| {
+        w.wl("@Override");
+        w.w(&format!(
+            "public {} createFromParcel(android.os.Parcel in)",
+            self_name
+        ));
+        w.braced(|w| {
+            w.wl(&format!("return new {}(in);", self_name));
+        });
+        w.wl_empty();
+        w.wl("@Override");
+        w.w(&format!("public {}[] newArray(int size)", self_name));
+        w.braced(|w| {
+            w.wl(&format!("return new {}[size];", self_name));
+        });
+    });
+
+    // Constructor from Parcel
+    w.wl_empty();
+    w.w(&format!("public {}(android.os.Parcel in)", self_name));
+    w.braced(|w| {
+        for f in fields {
+            let field_name = id_java_field(&f.ident.name);
+            let tm = f.ty.resolved.as_ref().expect("TypeRef not resolved");
+            write_deserialize_field(w, &field_name, &f.ty, tm, marshal, false);
+        }
+    });
+
+    // describeContents
+    w.wl_empty();
+    w.wl("@Override");
+    w.w("public int describeContents()");
+    w.braced(|w| {
+        w.wl("return 0;");
+    });
+
+    // writeToParcel
+    w.wl_empty();
+    w.wl("@Override");
+    w.w("public void writeToParcel(android.os.Parcel out, int flags)");
+    w.braced(|w| {
+        for f in fields {
+            let field_name = id_java_field(&f.ident.name);
+            let tm = f.ty.resolved.as_ref().expect("TypeRef not resolved");
+            write_serialize_field(w, &field_name, &f.ty, tm, marshal, false);
+        }
+    });
+    w.wl_empty();
+}
+
+fn write_deserialize_field(
+    w: &mut IndentWriter,
+    field_name: &str,
+    ty: &TypeRef,
+    tm: &MExpr,
+    marshal: &JavaMarshal,
+    in_optional: bool,
+) {
+    match &tm.base {
+        Meta::MString => { w.wl(&format!("this.{} = in.readString();", field_name)); }
+        Meta::MBinary => { w.wl(&format!("this.{} = in.createByteArray();", field_name)); }
+        Meta::MDate => { w.wl(&format!(
+            "this.{} = new {}(in.readLong());",
+            field_name, marshal.typename_from_typeref(ty)
+        )); }
+        Meta::MPrimitive(p) => match p.j_name.as_str() {
+            "short" => { w.wl(&format!("this.{} = (short)in.readInt();", field_name)); }
+            "int" => { w.wl(&format!("this.{} = in.readInt();", field_name)); }
+            "long" => { w.wl(&format!("this.{} = in.readLong();", field_name)); }
+            "byte" => { w.wl(&format!("this.{} = in.readByte();", field_name)); }
+            "boolean" => { w.wl(&format!("this.{} = in.readByte() != 0;", field_name)); }
+            "float" => { w.wl(&format!("this.{} = in.readFloat();", field_name)); }
+            "double" => { w.wl(&format!("this.{} = in.readDouble();", field_name)); }
+            _ => panic!("Unreachable primitive: {}", p.j_name),
+        },
+        Meta::MDef(d) => match d.def_type {
+            DefType::Record => { w.wl(&format!(
+                "this.{} = new {}(in);", field_name, marshal.typename_from_typeref(ty)
+            )); }
+            DefType::Enum => { w.wl(&format!(
+                "this.{} = {}.values()[in.readInt()];", field_name, marshal.typename_from_typeref(ty)
+            )); }
+            _ => panic!("Unreachable def type in Parcelable"),
+        },
+        Meta::MExtern(e) => match e.def_type {
+            DefType::Record => { w.wl(&format!(
+                "this.{} = {};", field_name,
+                e.java.read_from_parcel.replace("%s", &marshal.typename_from_typeref(ty))
+            )); }
+            DefType::Enum => { w.wl(&format!(
+                "this.{} = {}.values()[in.readInt()];", field_name, marshal.typename_from_typeref(ty)
+            )); }
+            _ => panic!("Unreachable extern type in Parcelable"),
+        },
+        Meta::MList => {
+            w.wl(&format!(
+                "this.{} = new {}();",
+                field_name,
+                marshal.typename_from_typeref(ty)
+            ));
+            w.wl(&format!(
+                "in.readList(this.{}, getClass().getClassLoader());",
+                field_name
+            ));
+        }
+        Meta::MSet => {
+            let type_name = marshal.typename_from_typeref(ty);
+            let inner_type = type_name
+                .strip_prefix("HashSet<")
+                .and_then(|s| s.strip_suffix('>'))
+                .unwrap_or(&type_name);
+            w.wl(&format!(
+                "ArrayList<{}> {}Temp = new ArrayList<{}>();",
+                inner_type, field_name, inner_type
+            ));
+            w.wl(&format!(
+                "in.readList({}Temp, getClass().getClassLoader());",
+                field_name
+            ));
+            w.wl(&format!(
+                "this.{} = new {}({}Temp);",
+                field_name, type_name, field_name
+            ));
+        }
+        Meta::MMap => {
+            w.wl(&format!(
+                "this.{} = new {}();",
+                field_name,
+                marshal.typename_from_typeref(ty)
+            ));
+            w.wl(&format!(
+                "in.readMap(this.{}, getClass().getClassLoader());",
+                field_name
+            ));
+        }
+        Meta::MOptional => {
+            assert!(!in_optional, "nested optional?");
+            w.wl("if (in.readByte() == 0) {");
+            w.nested(|w| {
+                w.wl(&format!("this.{} = null;", field_name));
+            });
+            w.wl("} else {");
+            w.nested(|w| {
+                let inner = &tm.args[0];
+                write_deserialize_field(w, field_name, ty, inner, marshal, true);
+            });
+            w.wl("}");
+        }
+        _ => panic!("Unreachable type in Parcelable deserialization"),
+    }
+}
+
+fn write_serialize_field(
+    w: &mut IndentWriter,
+    field_name: &str,
+    ty: &TypeRef,
+    tm: &MExpr,
+    marshal: &JavaMarshal,
+    in_optional: bool,
+) {
+    match &tm.base {
+        Meta::MString => { w.wl(&format!("out.writeString(this.{});", field_name)); }
+        Meta::MBinary => { w.wl(&format!("out.writeByteArray(this.{});", field_name)); }
+        Meta::MDate => { w.wl(&format!("out.writeLong({}.getTime());", field_name)); }
+        Meta::MPrimitive(p) => match p.j_name.as_str() {
+            "short" | "int" => { w.wl(&format!("out.writeInt(this.{});", field_name)); }
+            "long" => { w.wl(&format!("out.writeLong(this.{});", field_name)); }
+            "byte" => { w.wl(&format!("out.writeByte(this.{});", field_name)); }
+            "boolean" => { w.wl(&format!("out.writeByte(this.{} ? (byte)1 : 0);", field_name)); }
+            "float" => { w.wl(&format!("out.writeFloat(this.{});", field_name)); }
+            "double" => { w.wl(&format!("out.writeDouble(this.{});", field_name)); }
+            _ => panic!("Unreachable primitive: {}", p.j_name),
+        },
+        Meta::MDef(d) => match d.def_type {
+            DefType::Record => { w.wl(&format!("this.{}.writeToParcel(out, flags);", field_name)); }
+            DefType::Enum => { w.wl(&format!("out.writeInt(this.{}.ordinal());", field_name)); }
+            _ => panic!("Unreachable def type in Parcelable"),
+        },
+        Meta::MExtern(e) => match e.def_type {
+            DefType::Record => {
+                let expr = e.java.write_to_parcel.replace("%s", &format!("this.{}", field_name));
+                w.wl(&format!("{};", expr));
+            }
+            DefType::Enum => { w.wl(&format!("out.writeInt(this.{}.ordinal());", field_name)); }
+            _ => panic!("Unreachable extern type in Parcelable"),
+        },
+        Meta::MList => { w.wl(&format!("out.writeList(this.{});", field_name)); }
+        Meta::MSet => {
+            let type_name = marshal.typename_from_typeref(ty);
+            let inner_type = type_name
+                .strip_prefix("HashSet<")
+                .and_then(|s| s.strip_suffix('>'))
+                .unwrap_or(&type_name);
+            w.wl(&format!(
+                "out.writeList(new ArrayList<{}>(this.{}));",
+                inner_type, field_name
+            ));
+        }
+        Meta::MMap => { w.wl(&format!("out.writeMap(this.{});", field_name)); }
+        Meta::MOptional => {
+            assert!(!in_optional, "nested optional?");
+            w.wl(&format!("if (this.{} != null) {{", field_name));
+            w.nested(|w| {
+                w.wl("out.writeByte((byte)1);");
+                let inner = &tm.args[0];
+                write_serialize_field(w, field_name, ty, inner, marshal, true);
+            });
+            w.wl("} else {");
+            w.nested(|w| {
+                w.wl("out.writeByte((byte)0);");
+            });
+            w.wl("}");
+        }
+        _ => panic!("Unreachable type in Parcelable serialization"),
+    }
 }
 
 fn java_type_params(params: &[TypeParam], spec: &djinni_ast::spec::Spec) -> String {
