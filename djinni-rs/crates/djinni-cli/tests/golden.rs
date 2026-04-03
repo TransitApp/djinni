@@ -422,8 +422,8 @@ fn golden_test_suite_main() {
 
     // Compare each output subdirectory against golden files
     let generated = test_suite.join("generated-src");
-    // WASM and TS generators are not yet implemented
-    let subdirs = &["cpp", "jni", "objc"];
+    // WASM generator is not yet implemented
+    let subdirs = &["cpp", "jni", "objc", "ts"];
 
     for subdir in subdirs {
         let expected = generated.join(subdir);
