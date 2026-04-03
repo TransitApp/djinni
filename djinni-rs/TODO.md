@@ -15,7 +15,7 @@ code generation for **C++, JNI, Objective-C, Objective-C++, Java, Kotlin, and YA
 | Java     | PASS    | Full comparison, Parcelable implemented |
 | Kotlin   | PASS    | Full comparison, blank-line formatting fixed |
 | WASM     | SKIPPED | Generator not implemented |
-| TS       | SKIPPED | Generator not implemented |
+| TS       | PASS    | Full comparison, all invocations |
 
 ---
 
@@ -28,8 +28,8 @@ code generation for **C++, JNI, Objective-C, Objective-C++, Java, Kotlin, and YA
 
 ## Phase 2 - New Generators
 
-### 2.1 TypeScript Generator (MEDIUM)
-**New file:** `ts_gen.rs`
+### ~~2.1 TypeScript Generator~~ DONE
+~~**New file:** `ts_gen.rs`~~
 **Reference:** `TsGenerator.scala` (~303 lines)
 **What:** Generate TypeScript type definitions for WASM bindings.
 - Single combined output file (not one-per-type)
