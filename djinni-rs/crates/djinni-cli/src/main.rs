@@ -291,7 +291,12 @@ fn build_spec(cli: &Cli) -> Spec {
         yaml_out_folder: cli.yaml_out.as_ref().map(PathBuf::from),
         yaml_out_file: cli.yaml_out_file.clone(),
         yaml_prefix: cli.yaml_prefix.clone().unwrap_or_default(),
-        module_name: String::new(),
+        module_name: cli.idl.first().map(|p| {
+            PathBuf::from(p)
+                .file_stem()
+                .map(|s| s.to_string_lossy().to_string())
+                .unwrap_or_default()
+        }).unwrap_or_default(),
     }
 }
 
@@ -347,6 +352,9 @@ fn main() -> Result<()> {
     if let Some(ref dir) = spec.yaml_out_folder {
         fs::create_dir_all(dir)?;
     }
+    if let Some(ref dir) = spec.ts_out_folder {
+        fs::create_dir_all(dir)?;
+    }
 
     // Generate
     eprintln!("Generating...");
@@ -363,6 +371,7 @@ fn main() -> Result<()> {
     djinni_generator::jni_gen::generate_jni(&mut gen_ctx, &all_types);
     djinni_generator::java_gen::generate_java(&mut gen_ctx, &all_types);
     djinni_generator::yaml_gen::generate_yaml(&mut gen_ctx, &all_types);
+    djinni_generator::ts_gen::generate_ts(&mut gen_ctx, &all_types);
 
     // Write file lists
     if let Some(ref path) = gen_ctx.spec.list_in_files {
