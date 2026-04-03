@@ -443,12 +443,12 @@ fn golden_test_suite_main() {
     //     panic!("Golden file mismatch in 'java':\n\n{}", report);
     // }
 
-    // TODO: Kotlin golden comparison skipped - minor blank line formatting diffs in companion object
-    // let kotlin_expected = generated.join("kotlin").join("com").join("dropbox").join("djinni").join("test");
-    // let kotlin_actual = temp_out.join("kotlin");
-    // if let Some(report) = compare_dirs(&kotlin_expected, &kotlin_actual) {
-    //     panic!("Golden file mismatch in 'kotlin':\n\n{}", report);
-    // }
+    // Kotlin golden files
+    let kotlin_expected = generated.join("kotlin").join("com").join("dropbox").join("djinni").join("test");
+    let kotlin_actual = temp_out.join("kotlin");
+    if let Some(report) = compare_dirs(&kotlin_expected, &kotlin_actual) {
+        panic!("Golden file mismatch in 'kotlin':\n\n{}", report);
+    }
 }
 
 /// Test that compares a single subdirectory (useful for incremental development).
