@@ -436,12 +436,12 @@ fn golden_test_suite_main() {
         }
     }
 
-    // TODO: Java golden comparison skipped - Parcelable writeToParcel/createFromParcel not yet implemented
-    // let java_expected = generated.join("java").join("com").join("dropbox").join("djinni").join("test");
-    // let java_actual = temp_out.join("java");
-    // if let Some(report) = compare_dirs(&java_expected, &java_actual) {
-    //     panic!("Golden file mismatch in 'java':\n\n{}", report);
-    // }
+    // Java golden files are nested under java/com/dropbox/djinni/test
+    let java_expected = generated.join("java").join("com").join("dropbox").join("djinni").join("test");
+    let java_actual = temp_out.join("java");
+    if let Some(report) = compare_dirs(&java_expected, &java_actual) {
+        panic!("Golden file mismatch in 'java':\n\n{}", report);
+    }
 
     // Kotlin golden files
     let kotlin_expected = generated.join("kotlin").join("com").join("dropbox").join("djinni").join("test");
