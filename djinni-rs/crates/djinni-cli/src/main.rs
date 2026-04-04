@@ -355,6 +355,9 @@ fn main() -> Result<()> {
     if let Some(ref dir) = spec.ts_out_folder {
         fs::create_dir_all(dir)?;
     }
+    if let Some(ref dir) = spec.wasm_out_folder {
+        fs::create_dir_all(dir)?;
+    }
 
     // Generate
     eprintln!("Generating...");
@@ -372,6 +375,7 @@ fn main() -> Result<()> {
     djinni_generator::java_gen::generate_java(&mut gen_ctx, &all_types);
     djinni_generator::yaml_gen::generate_yaml(&mut gen_ctx, &all_types);
     djinni_generator::ts_gen::generate_ts(&mut gen_ctx, &all_types);
+    djinni_generator::wasm_gen::generate_wasm(&mut gen_ctx, &all_types);
 
     // Write file lists
     if let Some(ref path) = gen_ctx.spec.list_in_files {
