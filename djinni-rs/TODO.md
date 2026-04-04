@@ -14,7 +14,7 @@ code generation for **C++, JNI, Objective-C, Objective-C++, Java, Kotlin, and YA
 | ObjC     | PASS    | Full comparison (ObjC + ObjC++ in same dir) |
 | Java     | PASS    | Full comparison, Parcelable implemented |
 | Kotlin   | PASS    | Full comparison, blank-line formatting fixed |
-| WASM     | SKIPPED | Generator not implemented |
+| WASM     | PASS    | Full comparison, Emscripten bindings implemented |
 | TS       | PASS    | Full comparison, all invocations |
 
 ---
@@ -29,28 +29,7 @@ code generation for **C++, JNI, Objective-C, Objective-C++, Java, Kotlin, and YA
 ## Phase 2 - New Generators
 
 ### ~~2.1 TypeScript Generator~~ DONE
-~~**New file:** `ts_gen.rs`~~
-**Reference:** `TsGenerator.scala` (~303 lines)
-**What:** Generate TypeScript type definitions for WASM bindings.
-- Single combined output file (not one-per-type)
-- Type mapping: primitives -> boolean/number/bigint, arrays -> typed arrays, collections -> Array/Set/Map
-- Enum: `export enum Foo { ... }`
-- Record: `export interface Foo { field: Type; }`
-- Interface: `export interface Foo { method(params): RetType; }` with separate `_statics` interface
-- Import statements from external modules
-- Optional fields use `?: Type` syntax
-**Test:** Re-enable `ts` in golden subdirs comparison
-
-### 2.2 WASM Generator (LARGE)
-**New file:** `wasm_gen.rs`
-**Reference:** `WasmGenerator.scala` (~495 lines)
-**What:** Generate C++ Emscripten bindings for JavaScript interop.
-- Enum: `WasmEnum` struct + `EM_JS` function + `EMSCRIPTEN_BINDINGS`
-- Interface: `JsInterface` wrapper, C++ stubs -> JS, JS Proxy class -> C++
-- Record: field marshaling (toCpp/fromCpp) + construction/deconstruction
-- C++ template metaprogramming: `JsClassName<...>`, helper templates
-- Exception translation, bidirectional marshaling
-**Test:** Re-enable `wasm` in golden subdirs comparison
+### ~~2.2 WASM Generator~~ DONE
 
 ---
 
