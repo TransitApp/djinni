@@ -1,6 +1,6 @@
 # djinni-rs
 
-A Rust implementation of the [Djinni](https://github.com/nicklockwood/djinni) cross-platform code generator. Translates Djinni IDL interface definitions into type-safe bindings for **9 language targets** -- replacing the original Scala implementation with a fast, single-binary tool.
+A Rust implementation of the [Djinni](https://github.com/TransitApp/djinni) cross-platform code generator. Translates Djinni IDL interface definitions into type-safe bindings for **9 language targets** -- replacing the Scala implementation with a fast, single-binary tool.
 
 ```
 djinni IDL ──> djinni-rs ──> C++, Java, Kotlin, JNI, Objective-C,
