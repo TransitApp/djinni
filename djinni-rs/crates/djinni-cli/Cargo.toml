@@ -20,3 +20,8 @@ similar = { workspace = true }
 pretty_assertions = { workspace = true }
 tempfile = { workspace = true }
 walkdir = { workspace = true }
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "generation"
+harness = false
