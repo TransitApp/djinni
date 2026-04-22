@@ -156,7 +156,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     if (fields.nonEmpty) {
       w.wl
       w.w(s"std::string $actualSelf::getTestRepresentation(const std::string& textIndentation) const").braced {
-        w.w("if constexpr (BuildConstants::UnitTests)").braced {
+        w.w("if constexpr (BuildConstants::UnitTests || BuildConstants::Debug)").braced {
           w.wl("std::ostringstream ss;")
           w.wl("""auto childIndentation = textIndentation + "   ";""")
           w.wl(s"""ss << "$actualSelf {";""")
@@ -180,14 +180,14 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
           }
 
           // Output non-list fields first, then list fields (with empty line separator)
-          val (listFields, nonListFields) = ownFields.partition(isListField)
+          val enabledOwnFields = ownFields.filterNot(f => f.doc.lines.exists(_.contains("@test-representation-disabled-property")))
+          val (listFields, nonListFields) = enabledOwnFields.partition(isListField)
           for (f <- nonListFields) {
             outputField(w, f, isFirstOutput, isInlineRepresentation)
             isFirstOutput = false
           }
           if (!isInlineRepresentation && listFields.nonEmpty && nonListFields.nonEmpty) {
             w.wl
-            w.wl("""ss << "\n";""")
           }
           for (f <- listFields) {
             outputField(w, f, isFirstOutput, isInlineRepresentation)
