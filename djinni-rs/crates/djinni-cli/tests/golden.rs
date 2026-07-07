@@ -24,16 +24,8 @@ fn repo_root() -> PathBuf {
 }
 
 fn djinni_binary() -> PathBuf {
-    let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    path = path
-        .parent()
-        .unwrap()
-        .parent()
-        .unwrap()
-        .join("target")
-        .join("debug")
-        .join("djinni");
-    path
+    // Cargo builds the bin for us and points at the right profile (debug/release)
+    PathBuf::from(env!("CARGO_BIN_EXE_djinni"))
 }
 
 /// Read all files in a directory recursively into a BTreeMap of relative_path -> content.
