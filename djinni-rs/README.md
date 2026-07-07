@@ -29,6 +29,22 @@ cargo build --release
     --wasm-out gen/wasm --wasm-namespace my_types
 ```
 
+## Using it as this repo's generator
+
+`../src/run` dispatches to either the Scala or the Rust generator, so all existing
+scripts (including TransitLib's `generate_view_models.sh`) work unchanged. From the
+repo root:
+
+```sh
+../switch-generator.sh rust      # build djinni-rs and make it the active generator
+../switch-generator.sh verify    # byte-for-byte golden tests against Scala output
+../switch-generator.sh scala     # switch back
+```
+
+Parity has been verified on the full merged `TransitLib.djinni` (all ViewModules):
+both generators produce byte-for-byte identical C++, Kotlin, JNI, ObjC, and ObjC++
+output.
+
 ## Project structure
 
 ```
@@ -149,6 +165,8 @@ Each invocation includes process startup, IDL parsing, type resolution, and file
 | `--cpp-enum-hash-workaround <bool>` | `true` | Generate enum hash specialization |
 | `--cpp-nn-header <hdr>` | | Non-nullable pointer header |
 | `--cpp-nn-type <type>` | | Non-nullable pointer type |
+| `--cpp-ext <ext>` | `cpp` | Implementation file extension |
+| `--hpp-ext <ext>` | `hpp` | Header file extension |
 
 ### Java output
 
@@ -161,6 +179,7 @@ Each invocation includes process startup, IDL parsing, type resolution, and file
 | `--java-gen-interface <bool>` | `false` | Generate interfaces instead of abstract classes |
 | `--java-nullable-annotation <class>` | | Nullable annotation class |
 | `--java-nonnull-annotation <class>` | | NonNull annotation class |
+| `--java-annotation <class>` | | Extra annotation on generated classes (e.g. `androidx.compose.runtime.Immutable`) |
 
 ### Kotlin output
 
@@ -176,6 +195,7 @@ Each invocation includes process startup, IDL parsing, type resolution, and file
 | `--jni-header-out <dir>` | same as `--jni-out` | Separate JNI header directory |
 | `--jni-use-on-load-initializer <bool>` | `false` | Use JNI_OnLoad for initialization |
 | `--jni-function-prologue-file <path>` | | Header to include at top of JNI functions |
+| `--jni-base-lib-include-prefix <pfx>` | `""` | Include prefix for the djinni support library |
 
 ### Objective-C / Objective-C++ output
 
@@ -185,6 +205,7 @@ Each invocation includes process startup, IDL parsing, type resolution, and file
 | `--objcpp-out <dir>` | | Objective-C++ output directory |
 | `--objc-type-prefix <pfx>` | `""` | Type name prefix (e.g., `DB`) |
 | `--objc-gen-protocol <bool>` | `false` | Generate `@protocol` instead of `@interface` |
+| `--objc-closed-enums <bool>` | `false` | Generate `NS_CLOSED_ENUM` instead of `NS_ENUM` |
 | `--objcpp-function-prologue-file <path>` | | Header to include at top of ObjC++ functions |
 
 ### WASM / TypeScript output
@@ -210,8 +231,8 @@ Override naming conventions per language with patterns like `mFooBar`, `foo_bar!
 
 | Flag | Affects |
 |------|---------|
-| `--ident-cpp-enum-type`, `--ident-cpp-file`, `--ident-cpp-type`, ... | C++ identifiers |
-| `--ident-java-field`, `--ident-java-type`, `--ident-java-enum` | Java identifiers |
+| `--ident-cpp-enum`, `--ident-cpp-enum-type`, `--ident-cpp-file`, `--ident-cpp-type`, ... | C++ identifiers |
+| `--ident-java-field`, `--ident-java-type`, `--ident-java-enum` | Java/Kotlin identifiers |
 | `--ident-jni-class`, `--ident-jni-file` | JNI identifiers |
 | `--ident-objc-type`, `--ident-objc-enum`, `--ident-objc-const`, ... | Objective-C identifiers |
 

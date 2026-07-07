@@ -13,6 +13,62 @@ Since we needed some changes we created a fork based on our needs. This fork is 
 
 [Original dropbox readme](README.dropbox.md) for the full Djinni documentation.
 
+## Rust rewrite (djinni-rs)
+
+The repo contains two implementations of the generator:
+
+- **Scala** (`src/`) — the original generator, built with bazel + a JVM. Still the default.
+- **Rust** (`djinni-rs/`) — a rewrite that produces **byte-for-byte identical output** and
+  compiles to a single native binary. Generating all of TransitLib's ViewModels takes
+  about **1 second**, versus the JVM/bazel startup alone taking much longer. See
+  [djinni-rs/README.md](djinni-rs/README.md) for architecture, CLI reference, and benchmarks.
+
+### Switching between generators
+
+Everything (including TransitLib's `generate_view_models.sh`) invokes Djinni through
+`src/run`, which dispatches to whichever generator is active:
+
+```sh
+./switch-generator.sh rust      # build djinni-rs and use it everywhere
+./switch-generator.sh scala     # go back to the Scala generator
+./switch-generator.sh status    # show which generator is active
+./switch-generator.sh verify    # run byte-for-byte golden tests against committed output
+```
+
+The choice is stored per-checkout in a gitignored `.djinni-generator` file, so
+switching never dirties the repo or affects CI. A single invocation can also be
+forced with the `DJINNI_GENERATOR` environment variable:
+
+```sh
+DJINNI_GENERATOR=rust ./src/run --idl my.djinni --cpp-out out
+```
+
+Requirements for the Rust generator: a Rust toolchain (`brew install rustup && rustup-init`,
+Rust 1.70+). No JVM, sbt, or bazel needed.
+
+### Parity guarantees
+
+- The golden tests in `djinni-rs` (`cargo test`) compare generated output for all 9
+  language targets against the committed output of the Scala generator.
+- The full merged `TransitLib.djinni` (all ViewModules, ~3200 lines) generates
+  byte-for-byte identical C++, Kotlin, JNI, ObjC, and ObjC++ with both generators.
+- Two known cosmetic deviations, both deliberate: Java Parcelable writes
+  `mField` instead of `this.mField`, and TypeScript imports are emitted in
+  deterministic order (the Scala generator's order depends on map iteration).
+
+### Claude Code skill
+
+The repo ships a [Claude Code](https://claude.com/claude-code) skill that teaches the
+agent how to drive djinni-rs (generating ViewModels, switching generators, verifying
+parity). Install it from the repo root:
+
+```sh
+npx skills add TransitApp/djinni
+```
+
+This picks up the `djinni-rs` skill from `skills/djinni-rs/` and installs it into
+`~/.claude/skills/` (choose the global scope when prompted, or `--global`).
+
 
 
 # Djinni
