@@ -1034,7 +1034,7 @@ fn write_cpp_get_test_representation(
         actual_self
     ));
     w.braced(|w| {
-        w.w("if constexpr (BuildConstants::UnitTests)");
+        w.w("if constexpr (BuildConstants::UnitTests || BuildConstants::Debug)");
         w.braced(|w| {
             w.wl("std::ostringstream ss;");
             w.wl("auto childIndentation = textIndentation + \"   \";");
@@ -1065,8 +1065,15 @@ fn write_cpp_get_test_representation(
             }
 
             // Separate list and non-list fields
-            let (list_fields, non_list_fields): (Vec<&Field>, Vec<&Field>) =
-                own_fields.iter().partition(|f| is_list_field(f));
+            let (list_fields, non_list_fields): (Vec<&Field>, Vec<&Field>) = own_fields
+                .iter()
+                .filter(|f| {
+                    !f.doc
+                        .lines
+                        .iter()
+                        .any(|l| l.contains("@test-representation-disabled-property"))
+                })
+                .partition(|f| is_list_field(f));
 
             for f in &non_list_fields {
                 output_field(w, f, is_first_output, is_inline, id_cpp, marshal);
@@ -1075,7 +1082,6 @@ fn write_cpp_get_test_representation(
 
             if !is_inline && !list_fields.is_empty() && !non_list_fields.is_empty() {
                 w.wl_empty();
-                w.wl("ss << \"\\n\";");
             }
 
             for f in &list_fields {

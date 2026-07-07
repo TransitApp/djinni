@@ -21,7 +21,7 @@ bool operator!=(const RecordSixInt& lhs, const RecordSixInt& rhs) {
 }
 
 std::string RecordSixInt::getTestRepresentation(const std::string& textIndentation) const {
-    if constexpr (BuildConstants::UnitTests) {
+    if constexpr (BuildConstants::UnitTests || BuildConstants::Debug) {
         std::ostringstream ss;
         auto childIndentation = textIndentation + "   ";
         ss << "RecordSixInt {";

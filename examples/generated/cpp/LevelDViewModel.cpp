@@ -19,7 +19,7 @@ bool operator!=(const LevelD& lhs, const LevelD& rhs) {
 }
 
 std::string LevelD::getTestRepresentation(const std::string& textIndentation) const {
-    if constexpr (BuildConstants::UnitTests) {
+    if constexpr (BuildConstants::UnitTests || BuildConstants::Debug) {
         std::ostringstream ss;
         auto childIndentation = textIndentation + "   ";
         ss << "LevelD {";

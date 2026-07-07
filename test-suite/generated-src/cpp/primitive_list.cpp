@@ -16,7 +16,7 @@ bool operator!=(const PrimitiveList& lhs, const PrimitiveList& rhs) {
 }
 
 std::string PrimitiveList::getTestRepresentation(const std::string& textIndentation) const {
-    if constexpr (BuildConstants::UnitTests) {
+    if constexpr (BuildConstants::UnitTests || BuildConstants::Debug) {
         std::ostringstream ss;
         auto childIndentation = textIndentation + "   ";
         ss << "PrimitiveList {";

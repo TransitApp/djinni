@@ -17,7 +17,7 @@ bool operator!=(const ConstantRecord& lhs, const ConstantRecord& rhs) {
 }
 
 std::string ConstantRecord::getTestRepresentation(const std::string& textIndentation) const {
-    if constexpr (BuildConstants::UnitTests) {
+    if constexpr (BuildConstants::UnitTests || BuildConstants::Debug) {
         std::ostringstream ss;
         auto childIndentation = textIndentation + "   ";
         ss << "ConstantRecord {";
