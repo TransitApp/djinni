@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdint>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -16,6 +17,8 @@ struct MapListRecord final {
 
     friend bool operator==(const MapListRecord& lhs, const MapListRecord& rhs);
     friend bool operator!=(const MapListRecord& lhs, const MapListRecord& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     //NOLINTNEXTLINE(google-explicit-constructor)
     MapListRecord(std::vector<std::unordered_map<std::string, int64_t>> map_list_)

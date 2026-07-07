@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdint>
+#include <sstream>
 #include <utility>
 
 namespace testsuite {
@@ -18,6 +19,8 @@ struct VarnameRecord final {
 
     friend bool operator==(const VarnameRecord& lhs, const VarnameRecord& rhs);
     friend bool operator!=(const VarnameRecord& lhs, const VarnameRecord& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     //NOLINTNEXTLINE(google-explicit-constructor)
     VarnameRecord(int8_t _field__)

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdint>
+#include <sstream>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -16,6 +17,8 @@ struct SetRecord final {
 
     friend bool operator==(const SetRecord& lhs, const SetRecord& rhs);
     friend bool operator!=(const SetRecord& lhs, const SetRecord& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     SetRecord(std::unordered_set<std::string> set_,
               std::unordered_set<int32_t> iset_)

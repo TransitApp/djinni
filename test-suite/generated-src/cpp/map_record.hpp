@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdint>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -16,6 +17,8 @@ struct MapRecord final {
 
     friend bool operator==(const MapRecord& lhs, const MapRecord& rhs);
     friend bool operator!=(const MapRecord& lhs, const MapRecord& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     MapRecord(std::unordered_map<std::string, int64_t> map_,
               std::unordered_map<int32_t, int32_t> imap_)

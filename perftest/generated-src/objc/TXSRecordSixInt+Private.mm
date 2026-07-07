@@ -10,12 +10,14 @@ namespace djinni_generated {
 auto RecordSixInt::toCpp(ObjcType obj) -> CppType
 {
     assert(obj);
-    return {::djinni::I64::toCpp(obj.i1),
-            ::djinni::I64::toCpp(obj.i2),
-            ::djinni::I64::toCpp(obj.i3),
-            ::djinni::I64::toCpp(obj.i4),
-            ::djinni::I64::toCpp(obj.i5),
-            ::djinni::I64::toCpp(obj.i6)};
+    ::snapchat::djinni::benchmark::RecordSixInt model;
+    model.mI1 = ::djinni::I64::toCpp(obj.i1);
+    model.mI2 = ::djinni::I64::toCpp(obj.i2);
+    model.mI3 = ::djinni::I64::toCpp(obj.i3);
+    model.mI4 = ::djinni::I64::toCpp(obj.i4);
+    model.mI5 = ::djinni::I64::toCpp(obj.i5);
+    model.mI6 = ::djinni::I64::toCpp(obj.i6);
+    return model;
 }
 
 auto RecordSixInt::fromCpp(const CppType& cpp) -> ObjcType

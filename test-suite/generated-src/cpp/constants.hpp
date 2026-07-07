@@ -6,6 +6,7 @@
 #include "../../handwritten-src/cpp/optional.hpp"
 #include "constant_record.hpp"
 #include <cstdint>
+#include <sstream>
 #include <string>
 #include <utility>
 
