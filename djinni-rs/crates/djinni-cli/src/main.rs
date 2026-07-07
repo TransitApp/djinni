@@ -174,6 +174,12 @@ struct Cli {
     #[arg(long = "objcpp-include-objc-prefix")]
     objcpp_include_objc_prefix: Option<String>,
 
+    #[arg(long = "objcpp-ext")]
+    objcpp_ext: Option<String>,
+
+    #[arg(long = "objc-base-lib-include-prefix")]
+    objc_base_lib_include_prefix: Option<String>,
+
     #[arg(long = "objcpp-namespace")]
     objcpp_namespace: Option<String>,
 
@@ -290,54 +296,88 @@ struct Cli {
     skip_generation: Option<bool>,
 }
 
-/// Infer an ident converter that may include prefix/suffix (returns IdentConverter).
-/// Falls back to a plain fn pointer wrapped in Box.
-fn infer_ident_converter(opt: &Option<String>, default: fn(&str) -> String) -> IdentConverter {
+/// Infer an ident converter from a style spec, erroring like Scala on invalid specs.
+/// Returns None when the flag was not given.
+fn parse_ident_spec(flag: &str, opt: &Option<String>) -> Result<Option<IdentConverter>> {
     match opt {
-        Some(s) => ident_style::infer(s).unwrap_or_else(|| Box::new(default)),
-        None => Box::new(default),
+        Some(s) => match ident_style::infer(s) {
+            Some(c) => Ok(Some(c)),
+            None => anyhow::bail!("Invalid ident spec for --{}: \"{}\"", flag, s),
+        },
+        None => Ok(None),
     }
 }
 
-fn build_spec(cli: &Cli) -> Spec {
+fn build_spec(cli: &Cli) -> Result<Spec> {
+    let ident = |flag: &str, opt: &Option<String>, default: fn(&str) -> String| -> Result<IdentConverter> {
+        Ok(parse_ident_spec(flag, opt)?.unwrap_or_else(|| Box::new(default)))
+    };
+
     let cpp_ident_style = {
         let mut style = ident_style::cpp_default();
-        if let Some(ref s) = cli.ident_cpp_enum_type {
-            if let Some(f) = ident_style::infer_fn(s) {
-                style.enum_type = f;
-            }
+        if let Some(c) = parse_ident_spec("ident-cpp-type", &cli.ident_cpp_type)? {
+            style.ty = c;
         }
-        if let Some(ref s) = cli.ident_cpp_enum {
-            if let Some(f) = ident_style::infer_fn(s) {
-                style.enum_ = f;
-            }
+        if let Some(c) = parse_ident_spec("ident-cpp-enum-type", &cli.ident_cpp_enum_type)? {
+            style.enum_type = c;
+        }
+        if let Some(c) = parse_ident_spec("ident-cpp-type-param", &cli.ident_cpp_type_param)? {
+            style.type_param = c;
+        }
+        if let Some(c) = parse_ident_spec("ident-cpp-method", &cli.ident_cpp_method)? {
+            style.method = c;
+        }
+        if let Some(c) = parse_ident_spec("ident-cpp-field", &cli.ident_cpp_field)? {
+            style.field = c;
+        }
+        if let Some(c) = parse_ident_spec("ident-cpp-local", &cli.ident_cpp_local)? {
+            style.local = c;
+        }
+        if let Some(c) = parse_ident_spec("ident-cpp-enum", &cli.ident_cpp_enum)? {
+            style.enum_ = c;
         }
         style
     };
 
-    let cpp_file_ident_style: IdentConverter = infer_ident_converter(&cli.ident_cpp_file, ident_style::under_lower);
+    let cpp_file_ident_style: IdentConverter =
+        ident("ident-cpp-file", &cli.ident_cpp_file, ident_style::under_lower)?;
 
-    Spec {
+    // Scala couples these defaults: jni class follows the cpp type style, jni/objc file
+    // names follow the cpp file / objc type styles unless explicitly overridden.
+    let jni_class_ident_style = match parse_ident_spec("ident-jni-class", &cli.ident_jni_class)? {
+        Some(c) => c,
+        None => ident("ident-cpp-type", &cli.ident_cpp_type, ident_style::camel_upper)?,
+    };
+    let jni_file_ident_style = match parse_ident_spec("ident-jni-file", &cli.ident_jni_file)? {
+        Some(c) => c,
+        None => ident("ident-cpp-file", &cli.ident_cpp_file, ident_style::under_lower)?,
+    };
+    let objc_file_ident_style = match parse_ident_spec("ident-objc-file", &cli.ident_objc_file)? {
+        Some(c) => c,
+        None => ident("ident-objc-type", &cli.ident_objc_type, ident_style::camel_upper)?,
+    };
+
+    let spec = Spec {
         java_out_folder: cli.java_out.as_ref().map(PathBuf::from),
         java_package: cli.java_package.clone(),
         java_class_access_modifier: match cli.java_class_access_modifier.as_deref() {
             Some("package") => JavaAccessModifier::Package,
-            _ => JavaAccessModifier::Public,
+            Some("public") | None => JavaAccessModifier::Public,
+            Some(other) => anyhow::bail!(
+                "Invalid --java-class-access-modifier \"{}\" (expected \"public\" or \"package\")",
+                other
+            ),
         },
         java_ident_style: {
             let mut style = ident_style::java_default();
-            if let Some(ref s) = cli.ident_java_field {
-                if let Some(conv) = ident_style::infer(s) {
-                    style.field = conv;
-                }
+            if let Some(c) = parse_ident_spec("ident-java-field", &cli.ident_java_field)? {
+                style.field = c;
             }
-            if let Some(ref s) = cli.ident_java_type {
-                style.ty = infer_ident_converter(&Some(s.clone()), ident_style::camel_upper);
+            if let Some(c) = parse_ident_spec("ident-java-type", &cli.ident_java_type)? {
+                style.ty = c;
             }
-            if let Some(ref s) = cli.ident_java_enum {
-                if let Some(f) = ident_style::infer_fn(s) {
-                    style.enum_ = f;
-                }
+            if let Some(c) = parse_ident_spec("ident-java-enum", &cli.ident_java_enum)? {
+                style.enum_ = c;
             }
             style
         },
@@ -381,8 +421,8 @@ fn build_spec(cli: &Cli) -> Spec {
         jni_include_prefix: cli.jni_include_prefix.clone().unwrap_or_default(),
         jni_include_cpp_prefix: cli.jni_include_cpp_prefix.clone().unwrap_or_default(),
         jni_namespace: cli.jni_namespace.clone().unwrap_or_else(|| "djinni_generated".into()),
-        jni_class_ident_style: infer_ident_converter(&cli.ident_jni_class, ident_style::camel_upper),
-        jni_file_ident_style: infer_ident_converter(&cli.ident_jni_file, ident_style::camel_upper),
+        jni_class_ident_style,
+        jni_file_ident_style,
         jni_base_lib_include_prefix: cli.jni_base_lib_include_prefix.clone().unwrap_or_default(),
         jni_use_on_load: cli.jni_use_on_load_initializer.unwrap_or(false),
         jni_function_prologue_file: cli.jni_function_prologue_file.clone(),
@@ -392,29 +432,46 @@ fn build_spec(cli: &Cli) -> Spec {
         objcpp_out_folder: cli.objcpp_out.as_ref().map(PathBuf::from),
         objc_ident_style: {
             let mut style = ident_style::objc_default();
-            if let Some(ref s) = cli.ident_objc_type {
-                style.ty = infer_ident_converter(&Some(s.clone()), ident_style::camel_upper);
+            if let Some(c) = parse_ident_spec("ident-objc-type", &cli.ident_objc_type)? {
+                style.ty = c;
             }
-            if let Some(ref s) = cli.ident_objc_enum {
-                style.enum_ = infer_ident_converter(&Some(s.clone()), ident_style::camel_upper);
+            if let Some(c) = parse_ident_spec("ident-objc-type-param", &cli.ident_objc_type_param)? {
+                style.type_param = c;
             }
-            if let Some(ref s) = cli.ident_objc_const {
-                style.const_ = infer_ident_converter(&Some(s.clone()), ident_style::camel_upper);
+            if let Some(c) = parse_ident_spec("ident-objc-method", &cli.ident_objc_method)? {
+                style.method = c;
+            }
+            if let Some(c) = parse_ident_spec("ident-objc-field", &cli.ident_objc_field)? {
+                style.field = c;
+            }
+            if let Some(c) = parse_ident_spec("ident-objc-local", &cli.ident_objc_local)? {
+                style.local = c;
+            }
+            if let Some(c) = parse_ident_spec("ident-objc-enum", &cli.ident_objc_enum)? {
+                style.enum_ = c;
+            }
+            if let Some(c) = parse_ident_spec("ident-objc-const", &cli.ident_objc_const)? {
+                style.const_ = c;
             }
             style
         },
-        objc_file_ident_style: infer_ident_converter(&cli.ident_objc_file, ident_style::camel_upper),
-        objcpp_ext: "mm".into(),
+        objc_file_ident_style,
+        objcpp_ext: cli.objcpp_ext.clone().unwrap_or_else(|| "mm".into()),
         objc_header_ext: cli.objc_h_ext.clone().unwrap_or_else(|| "h".into()),
         objc_include_prefix: cli.objc_include_prefix.clone().unwrap_or_default(),
         objc_extended_record_include_prefix: cli.objc_extended_record_include_prefix.clone().unwrap_or_default(),
         objcpp_include_prefix: cli.objcpp_include_prefix.clone().unwrap_or_default(),
         objcpp_include_cpp_prefix: cli.objcpp_include_cpp_prefix.clone().unwrap_or_default(),
-        objcpp_include_objc_prefix: cli.objcpp_include_objc_prefix.clone().unwrap_or_default(),
+        // Scala defaults this to --objcpp-include-prefix when not given
+        objcpp_include_objc_prefix: cli
+            .objcpp_include_objc_prefix
+            .clone()
+            .or_else(|| cli.objcpp_include_prefix.clone())
+            .unwrap_or_default(),
         objcpp_namespace: cli.objcpp_namespace.clone().unwrap_or_else(|| "djinni_generated".into()),
         objcpp_function_prologue_file: cli.objcpp_function_prologue_file.clone(),
         objcpp_disable_exception_translation: cli.objcpp_disable_exception_translation.unwrap_or(false),
-        objc_base_lib_include_prefix: String::new(),
+        objc_base_lib_include_prefix: cli.objc_base_lib_include_prefix.clone().unwrap_or_default(),
         objc_swift_bridging_header_name: cli.objc_swift_bridging_header.clone(),
         objc_gen_protocol: cli.objc_gen_protocol.unwrap_or(false),
         objc_disable_class_ctor: cli.objc_disable_class_ctor.unwrap_or(false),
@@ -437,23 +494,41 @@ fn build_spec(cli: &Cli) -> Spec {
         yaml_out_folder: cli.yaml_out.as_ref().map(PathBuf::from),
         yaml_out_file: cli.yaml_out_file.clone(),
         yaml_prefix: cli.yaml_prefix.clone().unwrap_or_default(),
+        // Scala strips only a literal ".djinni" suffix from the file name
         module_name: cli.idl.first().map(|p| {
             PathBuf::from(p)
-                .file_stem()
-                .map(|s| s.to_string_lossy().to_string())
+                .file_name()
+                .map(|s| {
+                    let name = s.to_string_lossy();
+                    name.strip_suffix(".djinni").unwrap_or(&name).to_string()
+                })
                 .unwrap_or_default()
         }).unwrap_or_default(),
+    };
+    Ok(spec)
+}
+
+fn write_file_list(path: &std::path::Path, entries: &[PathBuf]) -> Result<()> {
+    if let Some(parent) = path.parent() {
+        if !parent.as_os_str().is_empty() {
+            fs::create_dir_all(parent)?;
+        }
     }
+    let content: String = entries
+        .iter()
+        .map(|p| p.to_string_lossy().to_string())
+        .collect::<Vec<_>>()
+        .join("\n");
+    fs::write(path, content + "\n")?;
+    Ok(())
 }
 
 fn main() -> Result<()> {
-    let cli = Cli::parse();
+    let mut cli = Cli::parse();
 
     if cli.idl.is_empty() {
         anyhow::bail!("No IDL files specified");
     }
-
-    let spec = build_spec(&cli);
 
     // Include paths: empty string means "relative to current file"
     let mut include_paths = vec![String::new()];
@@ -464,11 +539,28 @@ fn main() -> Result<()> {
     let mut parser_ctx = ParserContext::new(include_paths);
     let mut all_types = Vec::new();
     let mut in_files = Vec::new();
+    let mut all_flags = Vec::new();
 
     for idl_path in &cli.idl {
         let path = PathBuf::from(idl_path);
-        let (types, _flags) = parser_ctx.parse_file(&path, &mut in_files)?;
+        let (types, flags) = parser_ctx.parse_file(&path, &mut in_files)?;
         all_types.extend(types);
+        all_flags.extend(flags);
+    }
+
+    // @flag directives in the IDL override command-line options, like Scala's re-parse
+    if !all_flags.is_empty() {
+        let mut argv: Vec<String> = vec!["djinni".into()];
+        for flag in &all_flags {
+            argv.extend(flag.splitn(2, ' ').map(str::to_string));
+        }
+        cli.try_update_from(argv)?;
+    }
+
+    let spec = build_spec(&cli)?;
+
+    if let Some(ref path) = spec.list_in_files {
+        write_file_list(path, &in_files)?;
     }
 
     // Resolve types
@@ -477,35 +569,28 @@ fn main() -> Result<()> {
     resolve(&defaults, &mut all_types).map_err(|e| anyhow::anyhow!("{}", e))?;
 
     // Create output directories
-    if let Some(ref dir) = spec.cpp_out_folder {
-        fs::create_dir_all(dir)?;
-    }
-    if let Some(ref dir) = spec.objc_out_folder {
-        fs::create_dir_all(dir)?;
-    }
-    if let Some(ref dir) = spec.objcpp_out_folder {
-        fs::create_dir_all(dir)?;
-    }
-    if let Some(ref dir) = spec.java_out_folder {
-        fs::create_dir_all(dir)?;
-    }
-    if let Some(ref dir) = spec.kotlin_out_folder {
-        fs::create_dir_all(dir)?;
-    }
-    if let Some(ref dir) = spec.jni_out_folder {
-        fs::create_dir_all(dir)?;
-    }
-    if let Some(ref dir) = spec.yaml_out_folder {
-        fs::create_dir_all(dir)?;
-    }
-    if let Some(ref dir) = spec.ts_out_folder {
-        fs::create_dir_all(dir)?;
-    }
-    if let Some(ref dir) = spec.wasm_out_folder {
-        fs::create_dir_all(dir)?;
+    if !spec.skip_generation {
+        for dir in [
+            &spec.cpp_out_folder,
+            &spec.cpp_header_out_folder,
+            &spec.objc_out_folder,
+            &spec.objcpp_out_folder,
+            &spec.java_out_folder,
+            &spec.kotlin_out_folder,
+            &spec.jni_out_folder,
+            &spec.jni_header_out_folder,
+            &spec.yaml_out_folder,
+            &spec.ts_out_folder,
+            &spec.wasm_out_folder,
+        ]
+        .into_iter()
+        .flatten()
+        {
+            fs::create_dir_all(dir)?;
+        }
     }
 
-    // Generate
+    // Generate (same target order as the Scala generator, so out-file lists match)
     eprintln!("Generating...");
     let mut gen_ctx = GeneratorContext {
         spec,
@@ -514,33 +599,60 @@ fn main() -> Result<()> {
     };
 
     generate_cpp(&mut gen_ctx, &all_types);
-    djinni_generator::objc_gen::generate_objc(&mut gen_ctx, &all_types);
-    djinni_generator::objcpp_gen::generate_objcpp(&mut gen_ctx, &all_types);
+    djinni_generator::java_gen::generate_java(&mut gen_ctx, &all_types);
     djinni_generator::kotlin_gen::generate_kotlin(&mut gen_ctx, &all_types);
     djinni_generator::jni_gen::generate_jni(&mut gen_ctx, &all_types);
-    djinni_generator::java_gen::generate_java(&mut gen_ctx, &all_types);
-    djinni_generator::yaml_gen::generate_yaml(&mut gen_ctx, &all_types);
-    djinni_generator::ts_gen::generate_ts(&mut gen_ctx, &all_types);
+    djinni_generator::objc_gen::generate_objc(&mut gen_ctx, &all_types);
+    djinni_generator::objcpp_gen::generate_objcpp(&mut gen_ctx, &all_types);
+    write_swift_bridging_header(&gen_ctx, &all_types)?;
     djinni_generator::wasm_gen::generate_wasm(&mut gen_ctx, &all_types);
+    djinni_generator::ts_gen::generate_ts(&mut gen_ctx, &all_types);
+    djinni_generator::yaml_gen::generate_yaml(&mut gen_ctx, &all_types);
 
-    // Write file lists
-    if let Some(ref path) = gen_ctx.spec.list_in_files {
-        let content: String = in_files
-            .iter()
-            .map(|p| p.to_string_lossy().to_string())
-            .collect::<Vec<_>>()
-            .join("\n");
-        fs::write(path, content + "\n")?;
-    }
     if let Some(ref path) = gen_ctx.spec.list_out_files {
-        let content: String = gen_ctx
-            .out_files
-            .iter()
-            .map(|p| p.to_string_lossy().to_string())
-            .collect::<Vec<_>>()
-            .join("\n");
-        fs::write(path, content + "\n")?;
+        write_file_list(path, &gen_ctx.out_files)?;
     }
 
+    Ok(())
+}
+
+/// Port of Scala's SwiftBridgingHeaderGenerator: one #import per non-extern type.
+fn write_swift_bridging_header(
+    gen_ctx: &GeneratorContext,
+    all_types: &[djinni_ast::ast::TypeDecl],
+) -> Result<()> {
+    let spec = &gen_ctx.spec;
+    let (Some(name), Some(objc_out)) = (
+        spec.objc_swift_bridging_header_name.as_ref(),
+        spec.objc_out_folder.as_ref(),
+    ) else {
+        return Ok(());
+    };
+
+    let header_name = name.split('-').collect::<Vec<_>>().join("_");
+    let var_name = name.split('-').collect::<Vec<_>>().join("");
+    let mut content = String::new();
+    content.push_str("// AUTOGENERATED FILE - DO NOT MODIFY!\n");
+    content.push_str("// This file was generated by Djinni\n\n");
+    content.push_str(&format!("// {}.h\n", header_name));
+    content.push_str(&format!("// {}\n\n", header_name));
+    content.push_str("#import <Foundation/Foundation.h>\n\n");
+    content.push_str(&format!("//! Project version number for {}.\n", var_name));
+    content.push_str(&format!("FOUNDATION_EXPORT double {}VersionNumber;\n\n", var_name));
+    content.push_str(&format!("//! Project version string for {}.\n", var_name));
+    content.push_str(&format!(
+        "FOUNDATION_EXPORT const unsigned char {}VersionString[];\n\n",
+        var_name
+    ));
+
+    let marshal = djinni_generator::objc_marshal::ObjcMarshal::new(spec);
+    for decl in all_types {
+        if let djinni_ast::ast::TypeDecl::Intern { ident, .. } = decl {
+            content.push_str(&format!("#import \"{}\"\n", marshal.header_name(&ident.name)));
+        }
+    }
+
+    fs::create_dir_all(objc_out)?;
+    fs::write(objc_out.join(format!("{}.h", name)), content)?;
     Ok(())
 }

@@ -17,6 +17,7 @@ pub struct GeneratorContext {
 }
 
 pub fn create_file_from_parts<F>(
+    skip_generation: bool,
     out_files: &mut Vec<PathBuf>,
     written_files: &mut HashMap<String, String>,
     folder: &Path,
@@ -38,6 +39,11 @@ pub fn create_file_from_parts<F>(
     }
     written_files.insert(cp, file_path.to_string_lossy().to_string());
 
+    // With --skip-generation, record the out-file entry but leave the disk alone
+    if skip_generation {
+        return;
+    }
+
     let mut w = IndentWriter::new();
     f(&mut w);
     fs::write(&file_path, w.into_string()).expect("Failed to write file");
@@ -48,7 +54,14 @@ impl GeneratorContext {
     where
         F: FnOnce(&mut IndentWriter),
     {
-        create_file_from_parts(&mut self.out_files, &mut self.written_files, folder, file_name, f);
+        create_file_from_parts(
+            self.spec.skip_generation,
+            &mut self.out_files,
+            &mut self.written_files,
+            folder,
+            file_name,
+            f,
+        );
     }
 
     /// Split borrow: returns (&Spec, &mut out_files, &mut written_files) so that
@@ -163,7 +176,7 @@ pub fn write_method_doc(
     w: &mut IndentWriter,
     doc: &Doc,
     params: &[Field],
-    ident_fn: fn(&str) -> String,
+    ident_fn: impl Fn(&str) -> String,
 ) {
     if doc.lines.is_empty() {
         return;
@@ -207,7 +220,7 @@ pub fn normal_enum_options(e: &Enum) -> Vec<&EnumOption> {
 pub fn write_enum_option_none(
     w: &mut IndentWriter,
     e: &Enum,
-    ident_fn: &dyn Fn(&str) -> String,
+    ident_fn: impl Fn(&str) -> String,
     delim: &str,
 ) {
     if let Some(o) = e.options.iter().find(|o| o.special_flag == Some(SpecialFlag::NoFlags)) {
@@ -219,7 +232,7 @@ pub fn write_enum_option_none(
 pub fn write_enum_options(
     w: &mut IndentWriter,
     e: &Enum,
-    ident_fn: &dyn Fn(&str) -> String,
+    ident_fn: impl Fn(&str) -> String,
     delim: &str,
 ) {
     for (shift, o) in normal_enum_options(e).iter().enumerate() {
@@ -245,7 +258,7 @@ pub fn write_enum_options(
 pub fn write_enum_option_all(
     w: &mut IndentWriter,
     e: &Enum,
-    ident_fn: &dyn Fn(&str) -> String,
+    ident_fn: impl Fn(&str) -> String,
     delim: &str,
 ) {
     if let Some(o) = e

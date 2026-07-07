@@ -145,35 +145,17 @@ pub fn infer(input: &str) -> Option<IdentConverter> {
     None
 }
 
-/// Like `infer`, but only for exact style tokens (no prefix/suffix), returning a plain fn
-/// pointer for style fields that can't hold closures.
-pub fn infer_fn(input: &str) -> Option<fn(&str) -> String> {
-    match input {
-        "FOO_BAR!" => Some(under_caps),
-        "FooBar!" => Some(camel_upper_strict),
-        "fooBar!" => Some(camel_lower_strict),
-        "foo_bar!" => Some(under_lower_strict),
-        "Foo_Bar!" => Some(under_upper_strict),
-        "FOO_BAR" => Some(under_caps),
-        "FooBar" => Some(camel_upper),
-        "fooBar" => Some(camel_lower),
-        "foo_bar" => Some(under_lower),
-        "Foo_Bar" => Some(under_upper),
-        _ => None,
-    }
-}
-
 // Language-specific identifier style collections
 
 pub struct CppIdentStyle {
-    pub ty: fn(&str) -> String,
-    pub enum_type: fn(&str) -> String,
-    pub type_param: fn(&str) -> String,
-    pub method: fn(&str) -> String,
-    pub field: fn(&str) -> String,
-    pub local: fn(&str) -> String,
-    pub enum_: fn(&str) -> String,
-    pub const_: fn(&str) -> String,
+    pub ty: IdentConverter,
+    pub enum_type: IdentConverter,
+    pub type_param: IdentConverter,
+    pub method: IdentConverter,
+    pub field: IdentConverter,
+    pub local: IdentConverter,
+    pub enum_: IdentConverter,
+    pub const_: IdentConverter,
 }
 
 pub struct JavaIdentStyle {
@@ -182,16 +164,16 @@ pub struct JavaIdentStyle {
     pub method: fn(&str) -> String,
     pub field: IdentConverter,
     pub local: fn(&str) -> String,
-    pub enum_: fn(&str) -> String,
+    pub enum_: IdentConverter,
     pub const_: fn(&str) -> String,
 }
 
 pub struct ObjcIdentStyle {
     pub ty: IdentConverter,
-    pub type_param: fn(&str) -> String,
-    pub method: fn(&str) -> String,
-    pub field: fn(&str) -> String,
-    pub local: fn(&str) -> String,
+    pub type_param: IdentConverter,
+    pub method: IdentConverter,
+    pub field: IdentConverter,
+    pub local: IdentConverter,
     pub enum_: IdentConverter,
     pub const_: IdentConverter,
 }
@@ -208,14 +190,14 @@ pub struct JsIdentStyle {
 
 pub fn cpp_default() -> CppIdentStyle {
     CppIdentStyle {
-        ty: camel_upper,
-        enum_type: camel_upper,
-        type_param: camel_upper,
-        method: under_lower,
-        field: under_lower,
-        local: under_lower,
-        enum_: under_caps,
-        const_: under_caps,
+        ty: Box::new(camel_upper),
+        enum_type: Box::new(camel_upper),
+        type_param: Box::new(camel_upper),
+        method: Box::new(under_lower),
+        field: Box::new(under_lower),
+        local: Box::new(under_lower),
+        enum_: Box::new(under_caps),
+        const_: Box::new(under_caps),
     }
 }
 
@@ -226,7 +208,7 @@ pub fn java_default() -> JavaIdentStyle {
         method: camel_lower,
         field: Box::new(camel_lower),
         local: camel_lower,
-        enum_: camel_upper,
+        enum_: Box::new(camel_upper),
         const_: under_caps,
     }
 }
@@ -234,10 +216,10 @@ pub fn java_default() -> JavaIdentStyle {
 pub fn objc_default() -> ObjcIdentStyle {
     ObjcIdentStyle {
         ty: Box::new(camel_upper),
-        type_param: camel_upper,
-        method: camel_lower,
-        field: camel_lower,
-        local: camel_lower,
+        type_param: Box::new(camel_upper),
+        method: Box::new(camel_lower),
+        field: Box::new(camel_lower),
+        local: Box::new(camel_lower),
         enum_: Box::new(camel_upper),
         const_: Box::new(camel_upper),
     }
