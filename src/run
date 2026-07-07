@@ -13,9 +13,34 @@ while [ -h "$loc" ]; do
     fi
 done
 base_dir=$(cd "`dirname "$loc"`" && pwd)
+repo_root=$(cd "$base_dir/.." && pwd)
 
-pushd $base_dir
-${BAZEL_EXECUTABLE:-bazel} build //src:djinni
-popd
+# Generator selection: DJINNI_GENERATOR env var wins, then the marker file
+# written by switch-generator.sh, then the legacy Scala generator.
+generator="${DJINNI_GENERATOR:-}"
+if [ -z "$generator" ] && [ -f "$repo_root/.djinni-generator" ]; then
+    generator=$(cat "$repo_root/.djinni-generator")
+fi
+generator="${generator:-scala}"
 
-exec "$base_dir/../bazel-bin/src/djinni" "$@"
+case "$generator" in
+    rust)
+        rust_bin="$repo_root/djinni-rs/target/release/djinni"
+        if [ ! -x "$rust_bin" ]; then
+            echo "djinni-rs binary not found, building it (cargo build --release)..." 1>&2
+            (cd "$repo_root/djinni-rs" && cargo build --release)
+        fi
+        exec "$rust_bin" "$@"
+        ;;
+    scala)
+        pushd "$base_dir" > /dev/null
+        ${BAZEL_EXECUTABLE:-bazel} build //src:djinni
+        popd > /dev/null
+        exec "$base_dir/../bazel-bin/src/djinni" "$@"
+        ;;
+    *)
+        echo "Unknown Djinni generator \"$generator\" (expected \"rust\" or \"scala\")." 1>&2
+        echo "Fix $repo_root/.djinni-generator or run ./switch-generator.sh" 1>&2
+        exit 1
+        ;;
+esac

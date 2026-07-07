@@ -27,3 +27,5 @@ test-suite/djinni/vendor/third-party/proto/ts/*.js
 *.db
 src/source/.metals/*
 src/source/.scala-build/*
+# generator selection marker written by switch-generator.sh
+.djinni-generator
