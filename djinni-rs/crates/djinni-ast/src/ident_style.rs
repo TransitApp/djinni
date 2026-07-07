@@ -145,6 +145,24 @@ pub fn infer(input: &str) -> Option<IdentConverter> {
     None
 }
 
+/// Like `infer`, but only for exact style tokens (no prefix/suffix), returning a plain fn
+/// pointer for style fields that can't hold closures.
+pub fn infer_fn(input: &str) -> Option<fn(&str) -> String> {
+    match input {
+        "FOO_BAR!" => Some(under_caps),
+        "FooBar!" => Some(camel_upper_strict),
+        "fooBar!" => Some(camel_lower_strict),
+        "foo_bar!" => Some(under_lower_strict),
+        "Foo_Bar!" => Some(under_upper_strict),
+        "FOO_BAR" => Some(under_caps),
+        "FooBar" => Some(camel_upper),
+        "fooBar" => Some(camel_lower),
+        "foo_bar" => Some(under_lower),
+        "Foo_Bar" => Some(under_upper),
+        _ => None,
+    }
+}
+
 // Language-specific identifier style collections
 
 pub struct CppIdentStyle {

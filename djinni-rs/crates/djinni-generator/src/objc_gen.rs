@@ -699,7 +699,8 @@ fn generate_record(
         }
 
         // Constructor
-        if !r.fields.is_empty() || !super_fields.is_empty() {
+        // Scala checks own fields only, so a fieldless `record extends` keeps plain init
+        if !r.fields.is_empty() {
             w.wl("- (nonnull instancetype)init NS_UNAVAILABLE;");
             w.wl("+ (nonnull instancetype)new NS_UNAVAILABLE;");
         }

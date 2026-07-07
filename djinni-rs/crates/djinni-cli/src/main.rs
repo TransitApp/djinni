@@ -303,13 +303,13 @@ fn build_spec(cli: &Cli) -> Spec {
     let cpp_ident_style = {
         let mut style = ident_style::cpp_default();
         if let Some(ref s) = cli.ident_cpp_enum_type {
-            match s.as_str() {
-                "foo_bar" => style.enum_type = ident_style::under_lower,
-                "FooBar" => style.enum_type = ident_style::camel_upper,
-                "FOO_BAR" => style.enum_type = ident_style::under_caps,
-                "foo_bar!" => style.enum_type = ident_style::under_lower_strict,
-                "FooBar!" => style.enum_type = ident_style::camel_upper_strict,
-                _ => {}
+            if let Some(f) = ident_style::infer_fn(s) {
+                style.enum_type = f;
+            }
+        }
+        if let Some(ref s) = cli.ident_cpp_enum {
+            if let Some(f) = ident_style::infer_fn(s) {
+                style.enum_ = f;
             }
         }
         style
@@ -333,6 +333,11 @@ fn build_spec(cli: &Cli) -> Spec {
             }
             if let Some(ref s) = cli.ident_java_type {
                 style.ty = infer_ident_converter(&Some(s.clone()), ident_style::camel_upper);
+            }
+            if let Some(ref s) = cli.ident_java_enum {
+                if let Some(f) = ident_style::infer_fn(s) {
+                    style.enum_ = f;
+                }
             }
             style
         },

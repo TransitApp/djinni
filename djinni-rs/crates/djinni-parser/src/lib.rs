@@ -702,6 +702,11 @@ fn parse_extern_yaml(content: &str, file: &Path) -> Result<Vec<TypeDecl>, ParseE
             }
         })?;
 
+        // A trailing "---" yields an empty document; skip it like the Scala generator does
+        if value.is_null() {
+            continue;
+        }
+
         let map = value.as_mapping().ok_or_else(|| ParseError::YamlError {
             file: file.display().to_string(),
             message: "Expected YAML mapping".into(),
