@@ -12,7 +12,7 @@
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and
   * limitations under the License.
-  * 
+  *
   * This file has been modified by Snap, Inc.
   */
 
@@ -47,6 +47,50 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
   // Helper function to check if a field is a list type
   def isListField(f: Field): Boolean = {
     f.ty.resolved.base == MList || isListOfPtrType(f.ty.resolved.base)
+  }
+
+  // Emits the code appending the representation of a single list element (`accessor`)
+  // whose type is described by `elemExpr`. When the element is itself a list
+  // (e.g. vector<vector<Type>>) it recurses, emitting a nested loop with a
+  // distinct index variable per depth so arbitrarily nested lists are supported.
+  def appendListElement(w: IndentWriter, accessor: String, elemExpr: MExpr, depth: Int): Unit = {
+    val base = elemExpr.base
+    val baseName = base match {
+      case df: MDef => df.name
+      case e: MExtern => e.name
+      case _ => ""
+    }
+    val isEnum = base match {
+      case df: MDef => df.defType == DEnum
+      case e: MExtern => e.defType == DEnum
+      case _ => false
+    }
+    val isRecord = base match {
+      case df: MDef => df.defType == DRecord
+      case e: MExtern => e.defType == DRecord
+      case _ => false
+    }
+    val isPtr = isPtrType(base)
+    val isSmartString = baseName == "SmartString"
+
+    if (base == MList) {
+      val indexVars = Seq("i", "j", "k", "l", "m", "n")
+      val idx = if (depth < indexVars.size) indexVars(depth) else s"i$depth"
+      w.wl("""ss << "[";""")
+      w.w(s"for (size_t $idx = 0; $idx < $accessor.size(); ++$idx)").braced {
+        w.wl(s"""if ($idx > 0) { ss << ","; }""")
+        appendListElement(w, s"$accessor[$idx]", elemExpr.args.head, depth + 1)
+      }
+      w.wl("""ss << "]";""")
+    } else {
+      val expr =
+        if (isEnum) s"to_string($accessor)"
+        else if (isSmartString) s"$accessor.value"
+        else if (isPtr) s"""$accessor->getTestRepresentation(childIndentation + "   ")"""
+        else if (isRecord) s"""$accessor.getTestRepresentation(childIndentation + "   ")"""
+        else accessor
+      w.wl(s"ss << $expr;")
+    }
   }
 
   // Helper function to output a single field
@@ -88,13 +132,19 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     }
     if (isOptional) {
       w.w(s"if ($name)").braced {
-        val valueExpr =
-          if (isInnerEnum) s"to_string(*$name)"
-          else if (isInnerSmartString) s"$name->value"
-          else if (isInnerPtr) s"(*$name)->getTestRepresentation(childIndentation)"
-          else if (isInnerRecord) s"$name->getTestRepresentation(childIndentation)"
-          else s"*$name"
-        w.wl(s"""ss << "$inlinePrefix$name=" << $valueExpr;""")
+        if (innerType == MList) {
+          // optional<vector<...>>: dereference to the vector, then render it like a list
+          w.wl(s"""ss << "$inlinePrefix$name=";""")
+          appendListElement(w, s"(*$name)", f.ty.resolved.args.head, 0)
+        } else {
+          val valueExpr =
+            if (isInnerEnum) s"to_string(*$name)"
+            else if (isInnerSmartString) s"$name->value"
+            else if (isInnerPtr) s"(*$name)->getTestRepresentation(childIndentation)"
+            else if (isInnerRecord) s"$name->getTestRepresentation(childIndentation)"
+            else s"*$name"
+          w.wl(s"""ss << "$inlinePrefix$name=" << $valueExpr;""")
+        }
       }
       w.w("else").braced {
         w.wl(s"""ss << "$inlinePrefix$name=<none>";""")
@@ -106,13 +156,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         if (!isInlineRepresentation) {
           w.wl("""ss << "\n" << childIndentation << "   ";""")
         }
-        val itemExpr =
-          if (isInnerEnum) s"to_string($name[i])"
-          else if (isInnerSmartString) s"$name[i].value"
-          else if (isInnerPtr) s"""$name[i]->getTestRepresentation(childIndentation + "   ")"""
-          else if (isInnerRecord) s"""$name[i].getTestRepresentation(childIndentation + "   ")"""
-          else s"$name[i]"
-        w.wl(s"ss << $itemExpr;")
+        appendListElement(w, s"$name[i]", f.ty.resolved.args.head, 1)
       }
       if (!isInlineRepresentation) {
         w.w(s"if (!$name.empty())").braced {
@@ -147,7 +191,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
       w.wl(s"""ss << "$inlinePrefix$name=" << $name;""")
     }
   }
-  
+
   val testRepresentationIndent = "   "
 
   def writeCppGetTestRepresentation(w: IndentWriter, actualSelf: String, fields: Seq[Field], ownFields: Seq[Field], superRecord: Option[SuperRecord], doc: Doc): Unit = {
@@ -218,7 +262,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     }
     def find(m: Meta, forwardDeclareOnly : Boolean) = {
       for(r <- marshal.hppReferences(m, name, forwardDeclareOnly)) r match {
-        case ImportRef(arg) => arg.split(",").foreach((part) => hpp.add("#include " + part.trim()))        
+        case ImportRef(arg) => arg.split(",").foreach((part) => hpp.add("#include " + part.trim()))
         case DeclRef(decl, Some(spec.cppNamespace)) => hppFwds.add(decl)
         case DeclRef(_, _) =>
       }
@@ -379,14 +423,14 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     val isRecordInherited = isInherited(idl, ident.name)
 
     val superRecord = getSuperRecord(idl, r)
-    
+
     superRecord match {
       case None => {}
       case Some(value) => {
         refs.hpp.add("#include "+q(spec.cppExtendedRecordIncludePrefix + spec.cppFileIdentStyle(value.ident) + "." + spec.cppHeaderExt))
       }
     }
-    
+
     val superFields: Seq[Field] = superRecord match {
       case None => Seq.empty
       case Some(value) => value.fields
@@ -433,7 +477,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         if (r.derivingTypes.contains(DerivingType.Ord)) {
           w.wl
           w.wl(s"friend bool operator<(const $actualSelf& lhs, const $actualSelf& rhs);")
-          w.wl(s"friend bool operator>(const $actualSelf& lhs, const $actualSelf& rhs);")        
+          w.wl(s"friend bool operator>(const $actualSelf& lhs, const $actualSelf& rhs);")
           w.wl
           w.wl(s"friend bool operator<=(const $actualSelf& lhs, const $actualSelf& rhs);")
           w.wl(s"friend bool operator>=(const $actualSelf& lhs, const $actualSelf& rhs);")
@@ -453,7 +497,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
           writeAlignedCall(w, actualSelf + "(", superFields ++ r.fields, ")", f => marshal.fieldType(f.ty) + " " + idCpp.local(f.ident) + "_")
           w.wl
           val init = (f: Field) => idCpp.field(f.ident) + "(std::move(" + idCpp.local(f.ident) + "_))"
-          
+
           superRecord match {
             case None => w.wl(": " + init(r.fields.head))
             case Some(value) => {
@@ -462,7 +506,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
               writeAlignedCall(w, superRecordName + "(", superFields, ")", f => " " + idCpp.local(f.ident) + "_")
               w.w(", " + init(r.fields.head))
             }
-          }    
+          }
 
           r.fields.tail.map(f => ", " + init(f)).foreach(w.wl)
           w.wl("{}")
@@ -523,7 +567,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         w.w(s"bool operator>(const $actualSelf& lhs, const $actualSelf& rhs)").braced {
           w.wl("return rhs < lhs;")
         }
-        
+
         w.wl
         w.w(s"bool operator<=(const $actualSelf& lhs, const $actualSelf& rhs)").braced {
           w.wl("return !(rhs < lhs);")
