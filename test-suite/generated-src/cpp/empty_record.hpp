@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <iomanip>
+#include <sstream>
 #include <utility>
 
 namespace testsuite {

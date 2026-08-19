@@ -4,6 +4,8 @@
 #pragma once
 
 #include "access_flags.hpp"
+#include <iomanip>
+#include <sstream>
 #include <utility>
 
 namespace testsuite {
@@ -13,6 +15,8 @@ struct RecordWithFlags final {
 
     friend bool operator==(const RecordWithFlags& lhs, const RecordWithFlags& rhs);
     friend bool operator!=(const RecordWithFlags& lhs, const RecordWithFlags& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     //NOLINTNEXTLINE(google-explicit-constructor)
     RecordWithFlags(access_flags access_)

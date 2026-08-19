@@ -4,6 +4,8 @@
 #pragma once
 
 #include <cstdint>
+#include <iomanip>
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -20,6 +22,8 @@ struct TestIdentRecord final {
 
     friend bool operator==(const TestIdentRecord& lhs, const TestIdentRecord& rhs);
     friend bool operator!=(const TestIdentRecord& lhs, const TestIdentRecord& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     TestIdentRecord(int32_t FirstValue_,
                     std::string second_value_)

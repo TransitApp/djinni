@@ -4,6 +4,8 @@
 #pragma once
 
 #include <cstdint>
+#include <iomanip>
+#include <sstream>
 #include <utility>
 #include <vector>
 
@@ -14,6 +16,8 @@ struct PrimitiveList final {
 
     friend bool operator==(const PrimitiveList& lhs, const PrimitiveList& rhs);
     friend bool operator!=(const PrimitiveList& lhs, const PrimitiveList& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     //NOLINTNEXTLINE(google-explicit-constructor)
     PrimitiveList(std::vector<int64_t> list_)

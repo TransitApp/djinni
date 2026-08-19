@@ -5,7 +5,9 @@
 
 #include "../../handwritten-src/cpp/optional.hpp"
 #include "sample_interface.hpp"
+#include <iomanip>
 #include <memory>
+#include <sstream>
 #include <utility>
 
 struct TestOptionalExternInterfaceRecord final {
@@ -13,6 +15,8 @@ struct TestOptionalExternInterfaceRecord final {
 
     friend bool operator==(const TestOptionalExternInterfaceRecord& lhs, const TestOptionalExternInterfaceRecord& rhs);
     friend bool operator!=(const TestOptionalExternInterfaceRecord& lhs, const TestOptionalExternInterfaceRecord& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     //NOLINTNEXTLINE(google-explicit-constructor)
     TestOptionalExternInterfaceRecord(/*nullable*/ std::shared_ptr<::testsuite::SampleInterface> sample_interface_)

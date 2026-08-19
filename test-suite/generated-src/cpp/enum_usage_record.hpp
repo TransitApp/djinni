@@ -5,6 +5,8 @@
 
 #include "../../handwritten-src/cpp/optional.hpp"
 #include "color.hpp"
+#include <iomanip>
+#include <sstream>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -21,6 +23,8 @@ struct EnumUsageRecord final {
 
     friend bool operator==(const EnumUsageRecord& lhs, const EnumUsageRecord& rhs);
     friend bool operator!=(const EnumUsageRecord& lhs, const EnumUsageRecord& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     EnumUsageRecord(color e_,
                     std::experimental::optional<color> o_,

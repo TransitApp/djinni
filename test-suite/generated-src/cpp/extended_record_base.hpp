@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <iomanip>
+#include <sstream>
 #include <utility>
 
 namespace testsuite {
@@ -17,6 +19,8 @@ struct ExtendedRecordBase {
 
     friend bool operator==(const ExtendedRecordBase& lhs, const ExtendedRecordBase& rhs);
     friend bool operator!=(const ExtendedRecordBase& lhs, const ExtendedRecordBase& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     //NOLINTNEXTLINE(google-explicit-constructor)
     ExtendedRecordBase(bool foo_)

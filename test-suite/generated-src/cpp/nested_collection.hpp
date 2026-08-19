@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <iomanip>
+#include <sstream>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -15,6 +17,8 @@ struct NestedCollection final {
 
     friend bool operator==(const NestedCollection& lhs, const NestedCollection& rhs);
     friend bool operator!=(const NestedCollection& lhs, const NestedCollection& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     //NOLINTNEXTLINE(google-explicit-constructor)
     NestedCollection(std::vector<std::unordered_set<std::string>> set_list_)

@@ -5,6 +5,8 @@
 
 #include "../../handwritten-src/cpp/optional.hpp"
 #include <cstdint>
+#include <iomanip>
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -18,6 +20,8 @@ struct ClientReturnedRecord final {
 
     friend bool operator==(const ClientReturnedRecord& lhs, const ClientReturnedRecord& rhs);
     friend bool operator!=(const ClientReturnedRecord& lhs, const ClientReturnedRecord& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     ClientReturnedRecord(int64_t record_id_,
                          std::string content_,

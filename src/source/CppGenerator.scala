@@ -202,6 +202,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
       w.w(s"std::string $actualSelf::getTestRepresentation(const std::string& textIndentation) const").braced {
         w.w("if constexpr (BuildConstants::UnitTests || BuildConstants::Debug)").braced {
           w.wl("std::ostringstream ss;")
+          w.wl("ss << std::fixed << std::setprecision(3);")
           w.wl("""auto childIndentation = textIndentation + "   ";""")
           w.wl(s"""ss << "$actualSelf {";""")
 
@@ -417,6 +418,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     r.consts.foreach(c => refs.find(c.ty, false))
     refs.hpp.add("#include <utility>") // Add for std::move
     refs.hpp.add("#include <sstream>") // Add for getTestRepresentation
+    refs.cpp.add("#include <iomanip>") // Add for std::setprecision in getTestRepresentation
     refs.cpp.add("#include \"BuildConstants.h\"") // Add for BuildConstants::UnitTests
 
     val self = marshal.typename(ident, r)

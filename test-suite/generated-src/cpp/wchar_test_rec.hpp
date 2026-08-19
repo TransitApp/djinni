@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <iomanip>
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -13,6 +15,8 @@ struct WcharTestRec final {
 
     friend bool operator==(const WcharTestRec& lhs, const WcharTestRec& rhs);
     friend bool operator!=(const WcharTestRec& lhs, const WcharTestRec& rhs);
+
+    std::string getTestRepresentation(const std::string& indentation) const;
 
     //NOLINTNEXTLINE(google-explicit-constructor)
     WcharTestRec(std::wstring s_)
