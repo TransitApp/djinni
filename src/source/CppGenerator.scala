@@ -251,10 +251,8 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
   }
 
   // Emits code collecting one field's test leaves into `scope` (the record's
-  // TestLeafSink is available as `sink`). Mirrors outputField: any value text
-  // handed to the runtime parser must be formatted exactly like
-  // getTestRepresentation formats it.
-  def collectField(w: IndentWriter, f: Field, isInlineRepresentation: Boolean): Unit = {
+  // TestLeafSink is available as `sink`).
+  def collectField(w: IndentWriter, f: Field): Unit = {
     val name = idCpp.field(f.ident)
     val typeName = marshal.fieldType(f.ty)
     val isOptional = f.ty.resolved.base == MOptional
@@ -290,47 +288,18 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
       w.braced {
         w.wl("std::ostringstream ss;")
         w.wl(s"ss << $expr;")
-        w.wl(s"""scope.addFieldText("$name", ss.str());""")
+        w.wl(s"""scope.addScalarField("$name", ss.str());""")
       }
     }
-    // Builds the exact list text getTestRepresentation emits, then parses it.
-    def listAsText(accessor: String, elemExpr: MExpr): Unit = {
-      w.braced {
-        w.wl("std::ostringstream ss;")
-        w.wl("""auto childIndentation = std::string("   ");""")
-        w.wl("""ss << "[";""")
-        w.w(s"for (size_t i = 0; i < $accessor.size(); ++i)").braced {
-          w.wl("""if (i > 0) { ss << ","; }""")
-          if (!isInlineRepresentation) {
-            w.wl("""ss << "\n" << childIndentation << "   ";""")
-          }
-          appendListElement(w, s"$accessor[i]", elemExpr, 1)
-        }
-        if (!isInlineRepresentation) {
-          w.w(s"if (!$accessor.empty())").braced {
-            w.wl("""ss << "\n" << childIndentation;""")
-          }
-        }
-        w.wl("""ss << "]";""")
-        w.wl(s"""scope.addFieldText("$name", ss.str());""")
-      }
-    }
-
     w.wl
     if (isOptional) {
       w.w(s"if ($name)").braced {
         if (innerType == MList) {
-          // optional lists render inline; reproduce the text and parse it
-          w.braced {
-            w.wl("std::ostringstream ss;")
-            w.wl("""auto childIndentation = std::string("   ");""")
-            appendListElement(w, s"(*$name)", f.ty.resolved.args.head, 0)
-            w.wl(s"""scope.addFieldText("$name", ss.str());""")
-          }
+          w.wl(s"""::transitLib::testleaves::addListField(scope, "$name", *$name);""")
         } else if (isInnerEnum) {
-          w.wl(s"""scope.addFieldText("$name", to_string(*$name));""")
+          w.wl(s"""scope.addScalarField("$name", to_string(*$name));""")
         } else if (isInnerSmartString) {
-          w.wl(s"""scope.addFieldText("$name", $name->value);""")
+          w.wl(s"""scope.addScalarField("$name", $name->value);""")
         } else if (isInnerPtr) {
           w.wl(s"""::transitLib::testleaves::addRecordField(scope, "$name", *(*$name));""")
         } else if (isInnerRecord) {
@@ -340,45 +309,18 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         }
       }
       w.w("else").braced {
-        w.wl(s"""scope.addFieldText("$name", "<none>");""")
+        w.wl(s"""scope.addScalarField("$name", "<none>");""")
       }
     } else if (isList) {
-      val elemExpr = f.ty.resolved.args.head
-      val elemIsPtr = isPtrType(elemExpr.base)
-      val elemName = elemExpr.base match {
-        case df: MDef => df.name
-        case e: MExtern => e.name
-        case _ => ""
-      }
-      val elemIsRecord = elemExpr.base match {
-        case df: MDef => df.defType == DRecord
-        case e: MExtern => e.defType == DRecord
-        case _ => false
-      }
-      if ((elemIsRecord && elemName != "SmartString") || elemIsPtr) {
-        w.braced {
-          w.wl(s"""auto listPath = scope.beginRecordList("$name", $name.size());""")
-          w.w(s"for (size_t i = 0; i < $name.size(); ++i)").braced {
-            val deref = if (elemIsPtr) s"*$name[i]" else s"$name[i]"
-            w.wl(s"::transitLib::testleaves::addRecordListItem(sink, listPath, i, $deref);")
-          }
-        }
-      } else {
-        listAsText(name, elemExpr)
-      }
+      w.wl(s"""::transitLib::testleaves::addListField(scope, "$name", $name);""")
     } else if (isInnerEnum) {
-      w.wl(s"""scope.addFieldText("$name", to_string($name));""")
+      w.wl(s"""scope.addScalarField("$name", to_string($name));""")
     } else if (isSmartString) {
-      w.wl(s"""scope.addFieldText("$name", $name.value);""")
+      w.wl(s"""scope.addScalarField("$name", $name.value);""")
     } else if (isPtr) {
       w.wl(s"""::transitLib::testleaves::addRecordField(scope, "$name", *$name);""")
     } else if (isListOfPtr) {
-      w.braced {
-        w.wl(s"""auto listPath = scope.beginRecordList("$name", $name.size());""")
-        w.w(s"for (size_t i = 0; i < $name.size(); ++i)").braced {
-          w.wl(s"::transitLib::testleaves::addRecordListItem(sink, listPath, i, *$name[i]);")
-        }
-      }
+      w.wl(s"""::transitLib::testleaves::addListField(scope, "$name", $name);""")
     } else if (isInnerRecord) {
       w.wl(s"""::transitLib::testleaves::addRecordField(scope, "$name", $name);""")
     } else {
@@ -388,10 +330,9 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
 
   // Emits collectTestLeaves/collectTestLeafEntries, mirroring
   // writeCppGetTestRepresentation's traversal exactly (field order, inheritance,
-  // optionals, lists, value formatting).
+  // optionals, and scalar value formatting), while traversing records and lists
+  // directly instead of parsing their rendered text.
   def writeCppCollectTestLeaves(w: IndentWriter, actualSelf: String, fields: Seq[Field], ownFields: Seq[Field], superRecord: Option[SuperRecord], doc: Doc): Unit = {
-    val isInlineRepresentation = doc.lines.exists(_.contains("@test-representation-inline"))
-
     if (fields.nonEmpty) {
       w.wl
       w.wl("#if TRANSITLIB_TEST_LEAVES")
@@ -404,8 +345,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
       w.wl
       w.w(s"void $actualSelf::collectTestLeafEntries(const std::string& path, ::transitLib::TestLeafSink& sink) const").braced {
         w.w("if constexpr (BuildConstants::UnitTests || BuildConstants::Debug)").braced {
-          val inlineFlag = if (isInlineRepresentation) "true" else "false"
-          w.wl(s"::transitLib::testleaves::TestLeafScope scope(path, sink, /*inlineRepresentation=*/$inlineFlag);")
+          w.wl("::transitLib::testleaves::TestLeafScope scope(path, sink);")
 
           superRecord match {
             case Some(sr) =>
@@ -418,10 +358,10 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
           val enabledOwnFields = ownFields.filterNot(f => f.doc.lines.exists(_.contains("@test-representation-disabled-property")))
           val (listFields, nonListFields) = enabledOwnFields.partition(isListField)
           for (f <- nonListFields) {
-            collectField(w, f, isInlineRepresentation)
+            collectField(w, f)
           }
           for (f <- listFields) {
-            collectField(w, f, isInlineRepresentation)
+            collectField(w, f)
           }
         }
       }
