@@ -394,6 +394,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
 
     if (fields.nonEmpty) {
       w.wl
+      w.wl("#if TRANSITLIB_TEST_LEAVES")
       w.w(s"void $actualSelf::collectTestLeaves(const std::string& path, ::transitLib::TestLeafSink& sink) const").braced {
         w.w("if constexpr (BuildConstants::UnitTests || BuildConstants::Debug)").braced {
           w.wl(s"""sink.addLeaf(path + ".@type", "$actualSelf");""")
@@ -424,6 +425,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
           }
         }
       }
+      w.wl("#endif")
     }
   }
 
@@ -594,9 +596,9 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     r.consts.foreach(c => refs.find(c.ty, false))
     refs.hpp.add("#include <utility>") // Add for std::move
     refs.hpp.add("#include <sstream>") // Add for getTestRepresentation
-    refs.hpp.add("namespace transitLib { class TestLeafSink; } // fwd for collectTestLeaves")
+    refs.hpp.add("#if TRANSITLIB_TEST_LEAVES\nnamespace transitLib { class TestLeafSink; } // fwd for collectTestLeaves\n#endif")
     refs.cpp.add("#include \"BuildConstants.h\"") // Add for BuildConstants::UnitTests
-    refs.cpp.add("#include \"TestLeaves.h\"") // Add for collectTestLeaves
+    refs.cpp.add("#if TRANSITLIB_TEST_LEAVES\n#include \"TestLeaves.h\"\n#endif") // Add for collectTestLeaves
 
     val self = marshal.typename(ident, r)
     val isRecordInherited = isInherited(idl, ident.name)
@@ -651,8 +653,10 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
           val virtualPrefix = if (isRecordInherited && superRecord.isEmpty) "virtual " else ""
           val overrideSuffix = if (superRecord.nonEmpty) " override" else ""
           w.wl(s"${virtualPrefix}std::string getTestRepresentation(const std::string& indentation) const$overrideSuffix;")
+          w.wl("#if TRANSITLIB_TEST_LEAVES")
           w.wl(s"${virtualPrefix}void collectTestLeaves(const std::string& path, ::transitLib::TestLeafSink& sink) const$overrideSuffix;")
           w.wl(s"void collectTestLeafEntries(const std::string& path, ::transitLib::TestLeafSink& sink) const;")
+          w.wl("#endif")
         }
 
         if (r.derivingTypes.contains(DerivingType.Ord)) {
