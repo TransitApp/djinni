@@ -54,9 +54,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
       w.wl
       w.w(s"std::string $actualSelf::getTestRepresentation(const std::string& textIndentation) const").braced {
         w.w("if constexpr (BuildConstants::UnitTests || BuildConstants::Debug)").braced {
-          w.wl("return ::transitLib::testleaves::renderTestRepresentation(textIndentation, [&](::transitLib::TestLeafSink& sink) {")
-          w.wl("    collectTestLeaves(\"$\", sink);")
-          w.wl("});")
+          w.wl("return ::transitLib::testleaves::renderTestRepresentation(*this, textIndentation);")
         }
         w.wl("""return "";""")
       }
