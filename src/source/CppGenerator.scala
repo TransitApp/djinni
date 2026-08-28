@@ -49,18 +49,6 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     f.ty.resolved.base == MList || isListOfPtrType(f.ty.resolved.base)
   }
 
-  def writeCppGetTestRepresentation(w: IndentWriter, actualSelf: String, fields: Seq[Field], ownFields: Seq[Field], superRecord: Option[SuperRecord], doc: Doc): Unit = {
-    if (fields.nonEmpty) {
-      w.wl
-      w.w(s"std::string $actualSelf::getTestRepresentation(const std::string& textIndentation) const").braced {
-        w.w("if constexpr (BuildConstants::UnitTests || BuildConstants::Debug)").braced {
-          w.wl("return ::transitLib::testleaves::renderTestRepresentation(*this, textIndentation);")
-        }
-        w.wl("""return "";""")
-      }
-    }
-  }
-
   // Emits code collecting one field's test leaves into `scope` (the record's
   // TestLeafSink is available as `sink`).
   def collectField(w: IndentWriter, f: Field): Unit = {
@@ -139,10 +127,8 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     }
   }
 
-  // Emits collectTestLeaves/collectTestLeafEntries, mirroring
-  // writeCppGetTestRepresentation's traversal exactly (field order, inheritance,
-  // optionals, and scalar value formatting), while traversing records and lists
-  // directly instead of parsing their rendered text.
+  // Emits collectTestLeaves/collectTestLeafEntries, preserving field order,
+  // inheritance, optionals, and scalar value formatting.
   def writeCppCollectTestLeaves(w: IndentWriter, actualSelf: String, fields: Seq[Field], ownFields: Seq[Field], superRecord: Option[SuperRecord], doc: Doc): Unit = {
     if (fields.nonEmpty) {
       w.wl
@@ -347,10 +333,9 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     r.fields.foreach(f => refs.find(f.ty, false))
     r.consts.foreach(c => refs.find(c.ty, false))
     refs.hpp.add("#include <utility>") // Add for std::move
-    refs.hpp.add("#include <sstream>") // Add for getTestRepresentation
     refs.hpp.add("namespace transitLib { class TestLeafSink; } // fwd for collectTestLeaves")
     refs.cpp.add("#include \"BuildConstants.h\"") // Add for BuildConstants::UnitTests
-    refs.cpp.add("#include \"TestLeaves.h\"") // Add for collectTestLeaves and getTestRepresentation
+    refs.cpp.add("#include \"TestLeaves.h\"") // Add for collectTestLeaves
 
     val self = marshal.typename(ident, r)
     val isRecordInherited = isInherited(idl, ident.name)
@@ -404,7 +389,6 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
           w.wl
           val virtualPrefix = if (isRecordInherited && superRecord.isEmpty) "virtual " else ""
           val overrideSuffix = if (superRecord.nonEmpty) " override" else ""
-          w.wl(s"${virtualPrefix}std::string getTestRepresentation(const std::string& indentation) const$overrideSuffix;")
           w.wl(s"${virtualPrefix}void collectTestLeaves(const std::string& path, ::transitLib::TestLeafSink& sink) const$overrideSuffix;")
           w.wl(s"void collectTestLeafEntries(const std::string& path, ::transitLib::TestLeafSink& sink) const;")
         }
@@ -483,7 +467,6 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         w.wl("return !(lhs == rhs);")
       }
 
-      writeCppGetTestRepresentation(w, actualSelf, fields, r.fields, superRecord, doc)
       writeCppCollectTestLeaves(w, actualSelf, fields, r.fields, superRecord, doc)
 
       if (r.derivingTypes.contains(DerivingType.Ord)) {
