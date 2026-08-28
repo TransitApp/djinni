@@ -333,6 +333,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     r.fields.foreach(f => refs.find(f.ty, false))
     r.consts.foreach(c => refs.find(c.ty, false))
     refs.hpp.add("#include <utility>") // Add for std::move
+    refs.hpp.add("#include <string>") // Add for collectTestLeaves path
     refs.hpp.add("namespace transitLib { class TestLeafSink; } // fwd for collectTestLeaves")
     refs.cpp.add("#include \"BuildConstants.h\"") // Add for BuildConstants::UnitTests
     refs.cpp.add("#include \"TestLeaves.h\"") // Add for collectTestLeaves
