@@ -49,52 +49,9 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     f.ty.resolved.base == MList || isListOfPtrType(f.ty.resolved.base)
   }
 
-  // Emits the code appending the representation of a single list element (`accessor`)
-  // whose type is described by `elemExpr`. When the element is itself a list
-  // (e.g. vector<vector<Type>>) it recurses, emitting a nested loop with a
-  // distinct index variable per depth so arbitrarily nested lists are supported.
-  def appendListElement(w: IndentWriter, accessor: String, elemExpr: MExpr, depth: Int): Unit = {
-    val base = elemExpr.base
-    val baseName = base match {
-      case df: MDef => df.name
-      case e: MExtern => e.name
-      case _ => ""
-    }
-    val isEnum = base match {
-      case df: MDef => df.defType == DEnum
-      case e: MExtern => e.defType == DEnum
-      case _ => false
-    }
-    val isRecord = base match {
-      case df: MDef => df.defType == DRecord
-      case e: MExtern => e.defType == DRecord
-      case _ => false
-    }
-    val isPtr = isPtrType(base)
-    val isSmartString = baseName == "SmartString"
-
-    if (base == MList) {
-      val indexVars = Seq("i", "j", "k", "l", "m", "n")
-      val idx = if (depth < indexVars.size) indexVars(depth) else s"i$depth"
-      w.wl("""ss << "[";""")
-      w.w(s"for (size_t $idx = 0; $idx < $accessor.size(); ++$idx)").braced {
-        w.wl(s"""if ($idx > 0) { ss << ","; }""")
-        appendListElement(w, s"$accessor[$idx]", elemExpr.args.head, depth + 1)
-      }
-      w.wl("""ss << "]";""")
-    } else {
-      val expr =
-        if (isEnum) s"to_string($accessor)"
-        else if (isSmartString) s"$accessor.value"
-        else if (isPtr) s"""$accessor->getTestRepresentation(childIndentation + "   ")"""
-        else if (isRecord) s"""$accessor.getTestRepresentation(childIndentation + "   ")"""
-        else accessor
-      w.wl(s"ss << $expr;")
-    }
-  }
-
-  // Helper function to output a single field
-  def outputField(w: IndentWriter, f: Field, isFirst: Boolean, isInlineRepresentation: Boolean): Unit = {
+  // Emits code collecting one field's test leaves into `scope` (the record's
+  // TestLeafSink is available as `sink`).
+  def collectField(w: IndentWriter, f: Field): Unit = {
     val name = idCpp.field(f.ident)
     val typeName = marshal.fieldType(f.ty)
     val isOptional = f.ty.resolved.base == MOptional
@@ -125,127 +82,87 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
       case e: MExtern => e.defType == DRecord
       case _ => false
     }
-    w.wl
-    val inlinePrefix = if (isInlineRepresentation && !isFirst) ", " else ""
-    if (!isInlineRepresentation) {
-      w.wl("""ss << "\n" << childIndentation;""")
+
+    def streamToText(expr: String): Unit = {
+      w.braced {
+        w.wl("std::ostringstream ss;")
+        w.wl(s"ss << $expr;")
+        w.wl(s"""scope.addScalarField("$name", ss.str());""")
+      }
     }
+    w.wl
     if (isOptional) {
       w.w(s"if ($name)").braced {
         if (innerType == MList) {
-          // optional<vector<...>>: dereference to the vector, then render it like a list
-          w.wl(s"""ss << "$inlinePrefix$name=";""")
-          appendListElement(w, s"(*$name)", f.ty.resolved.args.head, 0)
+          w.wl(s"""::transitLib::testleaves::addListField(scope, "$name", *$name);""")
+        } else if (isInnerEnum) {
+          w.wl(s"""scope.addScalarField("$name", to_string(*$name));""")
+        } else if (isInnerSmartString) {
+          w.wl(s"""scope.addScalarField("$name", $name->value);""")
+        } else if (isInnerPtr) {
+          w.wl(s"""::transitLib::testleaves::addRecordField(scope, "$name", *(*$name));""")
+        } else if (isInnerRecord) {
+          w.wl(s"""::transitLib::testleaves::addRecordField(scope, "$name", *$name);""")
         } else {
-          val valueExpr =
-            if (isInnerEnum) s"to_string(*$name)"
-            else if (isInnerSmartString) s"$name->value"
-            else if (isInnerPtr) s"(*$name)->getTestRepresentation(childIndentation)"
-            else if (isInnerRecord) s"$name->getTestRepresentation(childIndentation)"
-            else s"*$name"
-          w.wl(s"""ss << "$inlinePrefix$name=" << $valueExpr;""")
+          streamToText(s"*$name")
         }
       }
       w.w("else").braced {
-        w.wl(s"""ss << "$inlinePrefix$name=<none>";""")
+        w.wl(s"""scope.addScalarField("$name", "<none>");""")
       }
     } else if (isList) {
-      w.wl(s"""ss << "$inlinePrefix$name=[";""")
-      w.w(s"for (size_t i = 0; i < $name.size(); ++i)").braced {
-        w.wl("""if (i > 0) { ss << ","; }""")
-        if (!isInlineRepresentation) {
-          w.wl("""ss << "\n" << childIndentation << "   ";""")
-        }
-        appendListElement(w, s"$name[i]", f.ty.resolved.args.head, 1)
-      }
-      if (!isInlineRepresentation) {
-        w.w(s"if (!$name.empty())").braced {
-          w.wl("""ss << "\n" << childIndentation;""")
-        }
-      }
-      w.wl("""ss << "]";""")
+      w.wl(s"""::transitLib::testleaves::addListField(scope, "$name", $name);""")
     } else if (isInnerEnum) {
-      w.wl(s"""ss << "$inlinePrefix$name=" << to_string($name);""")
+      w.wl(s"""scope.addScalarField("$name", to_string($name));""")
     } else if (isSmartString) {
-      w.wl(s"""ss << "$inlinePrefix$name=" << $name.value;""")
+      w.wl(s"""scope.addScalarField("$name", $name.value);""")
     } else if (isPtr) {
-      w.wl(s"""ss << "$inlinePrefix$name=" << $name->getTestRepresentation(childIndentation);""")
+      w.wl(s"""::transitLib::testleaves::addRecordField(scope, "$name", *$name);""")
     } else if (isListOfPtr) {
-      w.wl(s"""ss << "$inlinePrefix$name=[";""")
-      w.w(s"for (size_t i = 0; i < $name.size(); ++i)").braced {
-        w.wl("""if (i > 0) { ss << ","; }""")
-        if (!isInlineRepresentation) {
-          w.wl("""ss << "\n" << childIndentation << "   ";""")
-        }
-        w.wl(s"""ss << $name[i]->getTestRepresentation(childIndentation + "   ");""")
-      }
-      if (!isInlineRepresentation) {
-        w.w(s"if (!$name.empty())").braced {
-          w.wl("""ss << "\n" << childIndentation;""")
-        }
-      }
-      w.wl("""ss << "]";""")
+      w.wl(s"""::transitLib::testleaves::addListField(scope, "$name", $name);""")
     } else if (isInnerRecord) {
-      w.wl(s"""ss << "$inlinePrefix$name=" << $name.getTestRepresentation(childIndentation);""")
+      w.wl(s"""::transitLib::testleaves::addRecordField(scope, "$name", $name);""")
     } else {
-      w.wl(s"""ss << "$inlinePrefix$name=" << $name;""")
+      streamToText(name)
     }
   }
 
-  val testRepresentationIndent = "   "
-
-  def writeCppGetTestRepresentation(w: IndentWriter, actualSelf: String, fields: Seq[Field], ownFields: Seq[Field], superRecord: Option[SuperRecord], doc: Doc): Unit = {
-    val isInlineRepresentation = doc.lines.exists(_.contains("@test-representation-inline"))
-
+  // Emits collectTestLeaves/collectTestLeafEntries, preserving field order,
+  // inheritance, optionals, and scalar value formatting.
+  def writeCppCollectTestLeaves(w: IndentWriter, actualSelf: String, fields: Seq[Field], ownFields: Seq[Field], superRecord: Option[SuperRecord], doc: Doc): Unit = {
     if (fields.nonEmpty) {
       w.wl
-      w.w(s"std::string $actualSelf::getTestRepresentation(const std::string& textIndentation) const").braced {
-        w.w("if constexpr (BuildConstants::UnitTests || BuildConstants::Debug)").braced {
-          w.wl("std::ostringstream ss;")
-          w.wl("""auto childIndentation = textIndentation + "   ";""")
-          w.wl(s"""ss << "$actualSelf {";""")
+      w.w(s"void $actualSelf::collectTestLeaves(const std::string& path, ::transitLib::TestLeafSink& sink) const").braced {
+        w.w("if constexpr (BuildConstants::GoLogSupportEnabled)").braced {
+          w.wl(s"""sink.addLeaf(path + ".@type", "$actualSelf");""")
+          w.wl("collectTestLeafEntries(path, sink);")
+        }
+      }
+      w.wl
+      w.w(s"void $actualSelf::collectTestLeafEntries(const std::string& path, ::transitLib::TestLeafSink& sink) const").braced {
+        w.w("if constexpr (BuildConstants::GoLogSupportEnabled)").braced {
+          val representationFormat = if (doc.lines.exists(_.contains("@test-representation-inline"))) "GeneratedInline" else "GeneratedMultiline"
+          w.wl(s"""sink.beginRecord(path, "$actualSelf", ::transitLib::TestRepresentationFormat::$representationFormat);""")
+          w.wl("::transitLib::testleaves::TestLeafScope scope(path, sink);")
 
-          // Track if we've output anything (for inline separator)
-          var isFirstOutput = true
-
-          // Call parent's getTestRepresentation if this record extends another
           superRecord match {
             case Some(sr) =>
               val parentName = marshal.typename(sr.ident, sr.record)
               w.wl
-              if (isInlineRepresentation) {
-                w.wl(s"""ss << $parentName::getTestRepresentation(textIndentation);""")
-              } else {
-                w.wl("""ss << "\n" << childIndentation;""")
-                w.wl(s"""ss << $parentName::getTestRepresentation(childIndentation);""")
-              }
-              isFirstOutput = false
+              w.wl(s"""$parentName::collectTestLeafEntries(scope.embedPath("$parentName"), sink);""")
             case None =>
           }
 
-          // Output non-list fields first, then list fields (with empty line separator)
           val enabledOwnFields = ownFields.filterNot(f => f.doc.lines.exists(_.contains("@test-representation-disabled-property")))
           val (listFields, nonListFields) = enabledOwnFields.partition(isListField)
           for (f <- nonListFields) {
-            outputField(w, f, isFirstOutput, isInlineRepresentation)
-            isFirstOutput = false
-          }
-          if (!isInlineRepresentation && listFields.nonEmpty && nonListFields.nonEmpty) {
-            w.wl
+            collectField(w, f)
           }
           for (f <- listFields) {
-            outputField(w, f, isFirstOutput, isInlineRepresentation)
-            isFirstOutput = false
+            collectField(w, f)
           }
-          w.wl
-          if (isInlineRepresentation) {
-            w.wl("""ss << "}";""")
-          } else {
-            w.wl("""ss << "\n" << textIndentation << "}";""")
-          }
-          w.wl("return ss.str();")
+          w.wl("sink.endRecord(path);")
         }
-        w.wl("""return "";""")
       }
     }
   }
@@ -416,8 +333,10 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     r.fields.foreach(f => refs.find(f.ty, false))
     r.consts.foreach(c => refs.find(c.ty, false))
     refs.hpp.add("#include <utility>") // Add for std::move
-    refs.hpp.add("#include <sstream>") // Add for getTestRepresentation
+    refs.hpp.add("#include <string>") // Add for collectTestLeaves path
+    refs.hpp.add("namespace transitLib { class TestLeafSink; } // fwd for collectTestLeaves")
     refs.cpp.add("#include \"BuildConstants.h\"") // Add for BuildConstants::UnitTests
+    refs.cpp.add("#include \"TestLeaves.h\"") // Add for collectTestLeaves
 
     val self = marshal.typename(ident, r)
     val isRecordInherited = isInherited(idl, ident.name)
@@ -471,7 +390,8 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
           w.wl
           val virtualPrefix = if (isRecordInherited && superRecord.isEmpty) "virtual " else ""
           val overrideSuffix = if (superRecord.nonEmpty) " override" else ""
-          w.wl(s"${virtualPrefix}std::string getTestRepresentation(const std::string& indentation) const$overrideSuffix;")
+          w.wl(s"${virtualPrefix}void collectTestLeaves(const std::string& path, ::transitLib::TestLeafSink& sink) const$overrideSuffix;")
+          w.wl(s"void collectTestLeafEntries(const std::string& path, ::transitLib::TestLeafSink& sink) const;")
         }
 
         if (r.derivingTypes.contains(DerivingType.Ord)) {
@@ -548,7 +468,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         w.wl("return !(lhs == rhs);")
       }
 
-      writeCppGetTestRepresentation(w, actualSelf, fields, r.fields, superRecord, doc)
+      writeCppCollectTestLeaves(w, actualSelf, fields, r.fields, superRecord, doc)
 
       if (r.derivingTypes.contains(DerivingType.Ord)) {
         w.wl
