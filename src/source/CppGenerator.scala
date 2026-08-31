@@ -133,14 +133,14 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     if (fields.nonEmpty) {
       w.wl
       w.w(s"void $actualSelf::collectTestLeaves(const std::string& path, ::transitLib::TestLeafSink& sink) const").braced {
-        w.w("if constexpr (BuildConstants::UnitTests || BuildConstants::Debug)").braced {
+        w.w("if constexpr (BuildConstants::GoLogSupportEnabled)").braced {
           w.wl(s"""sink.addLeaf(path + ".@type", "$actualSelf");""")
           w.wl("collectTestLeafEntries(path, sink);")
         }
       }
       w.wl
       w.w(s"void $actualSelf::collectTestLeafEntries(const std::string& path, ::transitLib::TestLeafSink& sink) const").braced {
-        w.w("if constexpr (BuildConstants::UnitTests || BuildConstants::Debug)").braced {
+        w.w("if constexpr (BuildConstants::GoLogSupportEnabled)").braced {
           val representationFormat = if (doc.lines.exists(_.contains("@test-representation-inline"))) "GeneratedInline" else "GeneratedMultiline"
           w.wl(s"""sink.beginRecord(path, "$actualSelf", ::transitLib::TestRepresentationFormat::$representationFormat);""")
           w.wl("::transitLib::testleaves::TestLeafScope scope(path, sink);")
